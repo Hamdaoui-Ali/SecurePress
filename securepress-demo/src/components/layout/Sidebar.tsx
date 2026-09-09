@@ -1,0 +1,78 @@
+import {
+  ClipboardCheck,
+  FileSearch,
+  LayoutDashboard,
+  ListChecks,
+  Shield,
+  Sparkles,
+} from 'lucide-react'
+import { NavLink } from 'react-router'
+import { Badge } from '../ui/Badge'
+import { Button } from '../ui/Button'
+
+interface SidebarProps {
+  onStartGuidedDemo: () => void
+}
+
+const navigation = [
+  { to: '/', label: 'Vue d’ensemble', icon: LayoutDashboard },
+  { to: '/inventaire', label: 'Inventaire', icon: ListChecks },
+  { to: '/audit', label: 'Audit & qualification', icon: FileSearch },
+  { to: '/remediation', label: 'Remédiation', icon: Shield },
+  {
+    to: '/validation',
+    label: 'Durcissement & validation',
+    icon: ClipboardCheck,
+  },
+  { to: '/rapport', label: 'Comparaison & rapport', icon: Sparkles },
+] as const
+
+export function Sidebar({ onStartGuidedDemo }: SidebarProps) {
+  return (
+    <aside className="sidebar">
+      <div className="brand-block">
+        <div className="brand-mark" aria-hidden="true">
+          <Shield size={22} />
+        </div>
+        <div>
+          <p className="brand-name">SecurePress</p>
+          <p className="brand-subtitle">Audit Lab</p>
+        </div>
+      </div>
+
+      <div className="project-block">
+        <p className="sidebar-label">Projet</p>
+        <p className="project-name">TELCO</p>
+        <Badge tone="demo">MODE DÉMO</Badge>
+      </div>
+
+      <nav className="sidebar-nav" aria-label="Étapes de la démonstration">
+        {navigation.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === '/'}
+            className={({ isActive }) =>
+              `nav-link${isActive ? ' nav-link-active' : ''}`
+            }
+          >
+            <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="sidebar-footer">
+        <p className="sidebar-footnote">Copie hors production</p>
+        <Button
+          className="guided-button"
+          variant="secondary"
+          onClick={onStartGuidedDemo}
+        >
+          <Sparkles aria-hidden="true" size={16} />
+          Démarrer la démo guidée
+        </Button>
+      </div>
+    </aside>
+  )
+}
