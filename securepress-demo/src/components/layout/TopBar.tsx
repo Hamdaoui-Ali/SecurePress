@@ -20,10 +20,10 @@ export function TopBar({ onReset }: TopBarProps) {
   const [resetOpen, setResetOpen] = useState(false)
 
   return (
-    <header className="topbar">
+    <header className="topbar" aria-labelledby="page-title">
       <div>
         <p className="topbar-kicker">TELCO · AUDIT STATIQUE</p>
-        <h1>
+        <h1 id="page-title">
           SecurePress Audit Lab · {titles[pathname] ?? 'Vue d’ensemble'}
         </h1>
       </div>

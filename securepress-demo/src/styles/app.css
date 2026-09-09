@@ -29,6 +29,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -46,9 +51,30 @@ a {
 }
 
 button:focus-visible,
-a:focus-visible {
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
   outline: 3px solid #60a5fa;
   outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 12px;
+  left: 12px;
+  padding: 10px 14px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 750;
+  background: var(--navy);
+  border-radius: 8px;
+  transform: translateY(-160%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 #root {
@@ -277,6 +303,10 @@ a:focus-visible {
   padding: 30px 34px 48px;
 }
 
+.main-content:focus {
+  outline: 0;
+}
+
 .page-stack {
   display: grid;
   gap: 24px;
@@ -303,6 +333,7 @@ a:focus-visible {
 
 .page-heading > p:last-child,
 .muted-copy {
+  max-width: 72ch;
   margin: 0;
   color: var(--muted);
   font-size: 1rem;

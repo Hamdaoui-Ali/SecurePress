@@ -14,13 +14,20 @@ export function AppShell({
   children,
 }: PropsWithChildren<AppShellProps>) {
   return (
-    <div className="app-shell">
-      <Sidebar onStartGuidedDemo={onStartGuidedDemo} />
-      <div className="app-content">
-        <TopBar onReset={onReset} />
-        <DemoBanner />
-        <main className="main-content">{children}</main>
+    <>
+      <a className="skip-link" href="#main-content">
+        Aller au contenu
+      </a>
+      <div className="app-shell">
+        <Sidebar onStartGuidedDemo={onStartGuidedDemo} />
+        <div className="app-content">
+          <TopBar onReset={onReset} />
+          <DemoBanner />
+          <main id="main-content" className="main-content" tabIndex={-1}>
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

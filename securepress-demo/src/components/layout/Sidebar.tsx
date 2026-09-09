@@ -46,7 +46,10 @@ export function Sidebar({ onStartGuidedDemo }: SidebarProps) {
         <Badge tone="demo">MODE DÉMO</Badge>
       </div>
 
-      <nav className="sidebar-nav" aria-label="Étapes de la démonstration">
+      <nav className="sidebar-nav" aria-labelledby="sidebar-nav-title">
+        <h2 id="sidebar-nav-title" className="sr-only">
+          Étapes de la démonstration
+        </h2>
         {navigation.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}

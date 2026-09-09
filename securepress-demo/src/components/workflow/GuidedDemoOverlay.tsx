@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, Sparkles, X } from 'lucide-react'
+import { useId } from 'react'
 import { Button } from '../../components/ui/Button'
 
 interface GuidedDemoOverlayProps {
@@ -26,20 +27,28 @@ export function GuidedDemoOverlay({
   onNext,
   onExit,
 }: GuidedDemoOverlayProps) {
+  const guideLabelId = useId()
+  const titleId = useId()
+  const descriptionId = useId()
+
   return (
     <aside
       className="guided-demo-overlay"
       role="region"
-      aria-label="Guide de démonstration"
       aria-live="polite"
+      aria-labelledby={`${guideLabelId} ${titleId}`}
+      aria-describedby={descriptionId}
     >
+      <span id={guideLabelId} className="sr-only">
+        Guide de démonstration
+      </span>
       <div className="guided-demo-overlay-header">
         <div className="guided-demo-icon" aria-hidden="true">
           <Sparkles size={17} />
         </div>
         <div>
           <p className="guided-demo-step">Étape {stepNumber} sur {totalSteps}</p>
-          <h2>{title}</h2>
+          <h2 id={titleId}>{title}</h2>
         </div>
         <button
           type="button"
@@ -50,7 +59,7 @@ export function GuidedDemoOverlay({
           <X aria-hidden="true" size={17} />
         </button>
       </div>
-      <p>{description}</p>
+      <p id={descriptionId}>{description}</p>
       <div className="guided-demo-actions">
         <Button variant="ghost" disabled={isFirst} onClick={onPrevious}>
           <ArrowLeft aria-hidden="true" size={15} />

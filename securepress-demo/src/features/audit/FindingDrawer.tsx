@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import { useEffect, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, type RefObject } from 'react'
 import type {
   AssessmentState,
   Finding,
@@ -53,27 +53,54 @@ export function FindingDrawer({
   onClose,
 }: FindingDrawerProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+
+  const closeAndReturnFocus = useCallback(() => {
+    onClose()
+    window.setTimeout(() => returnFocusRef.current?.focus(), 0)
+  }, [onClose, returnFocusRef])
 
   useEffect(() => {
     if (!finding) return
 
-    dialogRef.current?.focus()
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus())
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeAndReturnFocus()
+        return
+      }
+
+      if (event.key !== 'Tab') return
+
+      const focusableElements = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      )
+      if (focusableElements.length === 0) return
+
+      const first = focusableElements[0]
+      const last = focusableElements[focusableElements.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
     }
 
     document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [finding, onClose])
+    return () => {
+      window.cancelAnimationFrame(focusFrame)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [closeAndReturnFocus, finding])
 
   if (!finding) return null
 
   const applied = state.appliedFindingIds.includes(finding.id)
-
-  const closeAndReturnFocus = () => {
-    onClose()
-    window.setTimeout(() => returnFocusRef.current?.focus(), 0)
-  }
 
   return (
     <div className="drawer-backdrop" onMouseDown={closeAndReturnFocus}>
@@ -95,6 +122,7 @@ export function FindingDrawer({
             type="button"
             className="icon-button"
             aria-label="Fermer"
+            ref={closeButtonRef}
             onClick={closeAndReturnFocus}
           >
             <X aria-hidden="true" size={20} />

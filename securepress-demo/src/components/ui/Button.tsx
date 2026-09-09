@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, PropsWithChildren } from 'react'
+import { forwardRef, type ButtonHTMLAttributes, type PropsWithChildren } from 'react'
 import { clsx } from 'clsx'
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -8,17 +8,24 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   busy?: boolean
 }
 
-export function Button({
-  variant = 'primary',
-  busy = false,
-  disabled,
-  children,
-  className,
-  ...props
-}: PropsWithChildren<ButtonProps>) {
+export const Button = forwardRef<
+  HTMLButtonElement,
+  PropsWithChildren<ButtonProps>
+>(function Button(
+  {
+    variant = 'primary',
+    busy = false,
+    disabled,
+    children,
+    className,
+    ...props
+  },
+  ref,
+) {
   return (
     <button
       {...props}
+      ref={ref}
       type={props.type ?? 'button'}
       className={clsx('button', `button-${variant}`, className)}
       disabled={disabled || busy}
@@ -27,4 +34,4 @@ export function Button({
       {busy ? 'En cours…' : children}
     </button>
   )
-}
+})
