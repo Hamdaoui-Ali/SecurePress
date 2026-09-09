@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router'
 import { AppShell } from '../components/layout/AppShell'
 import { Card } from '../components/ui/Card'
 import { OverviewPage } from '../features/overview/OverviewPage'
+import { InventoryPage } from '../features/inventory/InventoryPage'
 
 export const workflowRoutes = [
   '/',
@@ -45,12 +46,7 @@ export function AppRoutes({ onReset, onStartGuidedDemo }: AppRoutesProps) {
         />
         <Route
           path="/inventaire"
-          element={
-            <StagePlaceholder
-              title="Inventaire de la copie"
-              description="Composants présents dans les fichiers et limites d’activation."
-            />
-          }
+          element={<InventoryPage />}
         />
         <Route
           path="/audit"
