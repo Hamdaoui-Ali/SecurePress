@@ -1087,6 +1087,192 @@ a:focus-visible {
   font-size: 0.82rem;
 }
 
+.remediation-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(260px, 1.4fr);
+  align-items: center;
+  gap: 16px;
+}
+
+.remediation-summary > div {
+  display: grid;
+  gap: 5px;
+  padding-right: 16px;
+  border-right: 1px solid var(--line);
+}
+
+.remediation-summary span,
+.remediation-rationale > span,
+.remediation-artifact-line > span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.remediation-summary strong {
+  color: var(--navy);
+  font-size: 1.55rem;
+  line-height: 1;
+}
+
+.remediation-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.remediation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.remediation-card {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(20, 45, 82, 0.035);
+}
+
+.remediation-card-header,
+.remediation-status-row,
+.remediation-card-footer,
+.artifact-preview-header,
+.remediation-artifact-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.remediation-id {
+  margin: 0 0 4px;
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.remediation-card h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.remediation-status-row {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.before-after-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.before-after-column {
+  display: grid;
+  gap: 7px;
+  min-height: 83px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+
+.before-after-column > span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.before-after-column p {
+  margin: 0;
+  color: #42526d;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.before-after-before {
+  background: #f8fafc;
+}
+
+.before-after-after {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.remediation-rationale {
+  display: grid;
+  gap: 4px;
+}
+
+.remediation-rationale p {
+  margin: 0;
+  color: #52617a;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.remediation-artifact-line {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.remediation-artifact-line strong {
+  color: var(--navy);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.artifact-preview {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  background: #f8f7ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 9px;
+}
+
+.artifact-preview-header {
+  color: var(--purple);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.artifact-preview pre {
+  margin: 0;
+  padding: 10px;
+  overflow-x: auto;
+  color: #3b2a6f;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  background: #ffffff;
+  border: 1px solid #e9e4ff;
+  border-radius: 7px;
+}
+
+.remediation-card-footer {
+  align-items: flex-end;
+}
+
+.simulation-applied-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--green);
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1264,6 +1450,18 @@ a:focus-visible {
   .filter-clear {
     grid-column: span 2;
   }
+
+  .remediation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .remediation-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .remediation-summary p {
+    grid-column: span 2;
+  }
 }
 
 @media (max-width: 680px) {
@@ -1328,6 +1526,33 @@ a:focus-visible {
 
   .finding-drawer {
     padding: 22px 18px;
+  }
+
+  .remediation-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .remediation-summary > div {
+    padding: 0 0 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .remediation-summary p {
+    grid-column: auto;
+  }
+
+  .before-after-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .remediation-card-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .remediation-card-footer .button {
+    width: 100%;
   }
 }
 

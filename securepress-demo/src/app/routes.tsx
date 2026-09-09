@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card'
 import { OverviewPage } from '../features/overview/OverviewPage'
 import { InventoryPage } from '../features/inventory/InventoryPage'
 import { AuditPage } from '../features/audit/AuditPage'
+import { RemediationPage } from '../features/remediation/RemediationPage'
 
 export const workflowRoutes = [
   '/',
@@ -55,12 +56,7 @@ export function AppRoutes({ onReset, onStartGuidedDemo }: AppRoutesProps) {
         />
         <Route
           path="/remediation"
-          element={
-            <StagePlaceholder
-              title="Centre de remédiation"
-              description="Avant, après, artefacts préparés et application simulée."
-            />
-          }
+          element={<RemediationPage />}
         />
         <Route
           path="/validation"
