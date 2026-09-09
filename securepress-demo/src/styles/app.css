@@ -1898,3 +1898,331 @@ a:focus-visible {
     flex-direction: column;
   }
 }
+
+.report-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.report-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  color: #164e63;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  border-radius: 12px;
+}
+
+.report-disclaimer > svg {
+  flex: 0 0 auto;
+  color: #0e7490;
+}
+
+.report-disclaimer div {
+  display: grid;
+  gap: 3px;
+}
+
+.report-disclaimer strong {
+  color: #0e7490;
+  font-size: 0.8rem;
+}
+
+.report-disclaimer span {
+  font-size: 0.88rem;
+}
+
+.report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.report-summary-grid > div {
+  display: grid;
+  gap: 5px;
+  min-height: 94px;
+  padding: 13px 14px;
+  background: #f8fafc;
+  border: 1px solid #e8edf4;
+  border-radius: 10px;
+}
+
+.report-summary-grid span,
+.report-summary-grid small {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.report-summary-grid strong {
+  color: var(--navy);
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.report-section,
+.residual-risk-panel,
+.timeline-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.report-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.report-section-heading h2 {
+  margin: 5px 0 0;
+  color: var(--navy);
+  font-size: 1.25rem;
+}
+
+.report-section-note,
+.timeline-count {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.comparison-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 12px 11px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.comparison-table thead th {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: #f8fafc;
+}
+
+.comparison-table tbody tr:last-child th,
+.comparison-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.comparison-table tbody th {
+  width: 19%;
+  color: var(--navy);
+}
+
+.comparison-table tbody th span,
+.comparison-table tbody th strong {
+  display: block;
+}
+
+.comparison-table tbody th span {
+  margin-bottom: 4px;
+  color: var(--blue);
+  font-size: 0.7rem;
+}
+
+.comparison-table tbody th strong {
+  line-height: 1.4;
+}
+
+.comparison-table tbody td {
+  color: #52617a;
+  line-height: 1.45;
+}
+
+.comparison-row-applied {
+  background: #fbfffc;
+}
+
+.report-table-scroll {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.residual-risk-panel,
+.timeline-panel {
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(20, 45, 82, 0.035);
+}
+
+.residual-risk-summary {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 13px 14px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 10px;
+}
+
+.residual-risk-summary strong {
+  color: #9a3412;
+  font-size: 0.94rem;
+}
+
+.residual-risk-summary span {
+  color: #c2410c;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.residual-risk-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.residual-risk-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.residual-risk-list li:last-child {
+  border-bottom: 0;
+}
+
+.residual-risk-list li > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.residual-risk-list strong {
+  color: var(--navy);
+  font-size: 0.82rem;
+}
+
+.residual-risk-list li > div:first-child span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.4;
+}
+
+.residual-risk-badges {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.residual-risk-badges > span {
+  color: #9a3412;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.assessment-timeline {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.assessment-timeline li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 11px;
+  min-height: 58px;
+}
+
+.assessment-timeline li:not(:last-child)::before {
+  position: absolute;
+  top: 18px;
+  bottom: 0;
+  left: 8px;
+  width: 1px;
+  content: '';
+  background: #cbd7e6;
+}
+
+.timeline-marker {
+  position: relative;
+  z-index: 1;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  background: var(--blue-soft);
+  border: 4px solid #bfdbfe;
+  border-radius: 50%;
+}
+
+.assessment-timeline li > div {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 15px;
+}
+
+.assessment-timeline strong {
+  color: var(--navy);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.assessment-timeline time {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.timeline-empty {
+  margin: 0;
+  padding: 15px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  background: #f8fafc;
+  border: 1px dashed #cbd7e6;
+  border-radius: 9px;
+}
+
+@media (max-width: 900px) {
+  .report-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .report-section-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .report-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .residual-risk-list li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .residual-risk-badges {
+    flex-wrap: wrap;
+  }
+}

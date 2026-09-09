@@ -1,0 +1,64 @@
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  :root {
+    --background: #ffffff;
+  }
+
+  body {
+    min-width: 0;
+    color: #111827;
+    background: #ffffff;
+  }
+
+  .sidebar,
+  .topbar,
+  .demo-banner,
+  .report-actions,
+  .button,
+  .guided-button {
+    display: none !important;
+  }
+
+  .app-shell,
+  .app-content {
+    display: block;
+    min-height: 0;
+  }
+
+  .main-content {
+    width: 100%;
+    padding: 0;
+  }
+
+  .page-stack {
+    gap: 14px;
+  }
+
+  .card,
+  .report-section,
+  .residual-risk-panel,
+  .timeline-panel {
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .comparison-table {
+    min-width: 0;
+    font-size: 8pt;
+  }
+
+  .report-disclaimer {
+    color: #111827;
+    background: #ffffff;
+    border-color: #9ca3af;
+  }
+
+  .report-section,
+  .residual-risk-panel,
+  .timeline-panel {
+    break-before: auto;
+  }
+}
