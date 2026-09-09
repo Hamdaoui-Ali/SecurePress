@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { AppShell } from '../components/layout/AppShell'
 import { Card } from '../components/ui/Card'
+import { OverviewPage } from '../features/overview/OverviewPage'
 
 export const workflowRoutes = [
   '/',
@@ -40,12 +41,7 @@ export function AppRoutes({ onReset, onStartGuidedDemo }: AppRoutesProps) {
       <Routes>
         <Route
           path="/"
-          element={
-            <StagePlaceholder
-              title="Vue d’ensemble"
-              description="Périmètre, posture et limites de l’évaluation hors production."
-            />
-          }
+          element={<OverviewPage />}
         />
         <Route
           path="/inventaire"
