@@ -3,6 +3,7 @@ import { AppShell } from '../components/layout/AppShell'
 import { Card } from '../components/ui/Card'
 import { OverviewPage } from '../features/overview/OverviewPage'
 import { InventoryPage } from '../features/inventory/InventoryPage'
+import { AuditPage } from '../features/audit/AuditPage'
 
 export const workflowRoutes = [
   '/',
@@ -50,12 +51,7 @@ export function AppRoutes({ onReset, onStartGuidedDemo }: AppRoutesProps) {
         />
         <Route
           path="/audit"
-          element={
-            <StagePlaceholder
-              title="Audit et qualification"
-              description="Constats, preuves, sévérités et confiance de l’observation."
-            />
-          }
+          element={<AuditPage />}
         />
         <Route
           path="/remediation"
