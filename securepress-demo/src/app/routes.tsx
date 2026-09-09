@@ -5,6 +5,7 @@ import { OverviewPage } from '../features/overview/OverviewPage'
 import { InventoryPage } from '../features/inventory/InventoryPage'
 import { AuditPage } from '../features/audit/AuditPage'
 import { RemediationPage } from '../features/remediation/RemediationPage'
+import { ValidationPage } from '../features/validation/ValidationPage'
 
 export const workflowRoutes = [
   '/',
@@ -60,12 +61,7 @@ export function AppRoutes({ onReset, onStartGuidedDemo }: AppRoutesProps) {
         />
         <Route
           path="/validation"
-          element={
-            <StagePlaceholder
-              title="Durcissement et validation"
-              description="Contrôles simulés, intégrité, non-régression et limites cible."
-            />
-          }
+          element={<ValidationPage />}
         />
         <Route
           path="/rapport"
