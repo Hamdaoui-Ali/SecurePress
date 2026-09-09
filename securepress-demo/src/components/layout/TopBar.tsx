@@ -1,6 +1,6 @@
-import { RotateCcw } from 'lucide-react'
 import { useLocation } from 'react-router'
-import { Button } from '../ui/Button'
+import { useState } from 'react'
+import { ResetDemoDialog } from '../workflow/ResetDemoDialog'
 
 interface TopBarProps {
   onReset: () => void
@@ -17,6 +17,7 @@ const titles: Record<string, string> = {
 
 export function TopBar({ onReset }: TopBarProps) {
   const { pathname } = useLocation()
+  const [resetOpen, setResetOpen] = useState(false)
 
   return (
     <header className="topbar">
@@ -31,11 +32,24 @@ export function TopBar({ onReset }: TopBarProps) {
           <span className="status-dot" aria-hidden="true" />
           Session locale
         </span>
-        <Button variant="ghost" onClick={onReset}>
-          <RotateCcw aria-hidden="true" size={16} />
+        <button
+          type="button"
+          className="button button-ghost"
+          onClick={() => setResetOpen(true)}
+        >
           Réinitialiser la démo
-        </Button>
+        </button>
       </div>
+      <ResetDemoDialog
+        open={resetOpen}
+        title="Réinitialiser la démo ?"
+        description="Toutes les actions locales, remédiations et validations seront effacées."
+        onCancel={() => setResetOpen(false)}
+        onConfirm={() => {
+          setResetOpen(false)
+          onReset()
+        }}
+      />
     </header>
   )
 }

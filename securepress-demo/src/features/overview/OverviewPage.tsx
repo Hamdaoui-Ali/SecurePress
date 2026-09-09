@@ -22,7 +22,7 @@ export function OverviewPage() {
     appliedCount > 0 ? 'Projeté, non vérifié sur cible' : 'État initial simulé'
 
   return (
-    <div className="page-stack">
+    <div className="page-stack" data-guide-id="overview">
       <div className="page-heading">
         <p className="eyebrow">PÉRIMÈTRE & POSTURE</p>
         <h2>Comprendre la copie avant de corriger</h2>

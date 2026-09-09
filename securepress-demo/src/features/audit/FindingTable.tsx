@@ -49,6 +49,7 @@ export function FindingTable({
                   <button
                     type="button"
                     className="finding-title-button"
+                    data-guide-id={finding.id === 'F-001' ? 'open-f001' : undefined}
                     onClick={(event) => onSelect(finding, event.currentTarget)}
                   >
                     {finding.title}

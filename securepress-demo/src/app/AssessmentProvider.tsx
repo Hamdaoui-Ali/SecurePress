@@ -32,6 +32,10 @@ export interface AssessmentContextValue {
   applyRemediation(findingId: Finding['id']): Promise<void>
   runHardeningCheck(controlId: string): Promise<void>
   runValidation(): Promise<void>
+  startGuidedDemo(): void
+  nextGuidedStep(): void
+  previousGuidedStep(): void
+  exitGuidedDemo(): void
   resetDemo(): void
 }
 
@@ -120,6 +124,56 @@ export function AssessmentProvider({
     [transition],
   )
 
+  const startGuidedDemo = useCallback(() => {
+    const nextState = {
+      ...createInitialAssessment(),
+      guidedStep: 0,
+    }
+    stateRef.current = nextState
+    setState(nextState)
+    setProgress(null)
+    clearAssessment()
+    saveAssessment(nextState)
+  }, [])
+
+  const nextGuidedStep = useCallback(() => {
+    const currentStep = stateRef.current.guidedStep
+    if (currentStep === null) return
+
+    const nextState = {
+      ...stateRef.current,
+      guidedStep: Math.min(7, currentStep + 1),
+    }
+    stateRef.current = nextState
+    setState(nextState)
+    saveAssessment(nextState)
+  }, [])
+
+  const previousGuidedStep = useCallback(() => {
+    const currentStep = stateRef.current.guidedStep
+    if (currentStep === null) return
+
+    const nextState = {
+      ...stateRef.current,
+      guidedStep: Math.max(0, currentStep - 1),
+    }
+    stateRef.current = nextState
+    setState(nextState)
+    saveAssessment(nextState)
+  }, [])
+
+  const exitGuidedDemo = useCallback(() => {
+    if (stateRef.current.guidedStep === null) return
+
+    const nextState = {
+      ...stateRef.current,
+      guidedStep: null,
+    }
+    stateRef.current = nextState
+    setState(nextState)
+    saveAssessment(nextState)
+  }, [])
+
   const resetDemo = useCallback(() => {
     const nextState = createInitialAssessment()
     stateRef.current = nextState
@@ -138,6 +192,10 @@ export function AssessmentProvider({
       applyRemediation,
       runHardeningCheck,
       runValidation,
+      startGuidedDemo,
+      nextGuidedStep,
+      previousGuidedStep,
+      exitGuidedDemo,
       resetDemo,
     }),
     [
@@ -149,6 +207,10 @@ export function AssessmentProvider({
       applyRemediation,
       runHardeningCheck,
       runValidation,
+      startGuidedDemo,
+      nextGuidedStep,
+      previousGuidedStep,
+      exitGuidedDemo,
       resetDemo,
     ],
   )

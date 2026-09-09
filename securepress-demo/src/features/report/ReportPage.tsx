@@ -8,6 +8,7 @@ import {
 } from '../../domain/selectors'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import { ComparisonTable } from './ComparisonTable'
 import { AssessmentTimeline } from './AssessmentTimeline'
 import { ResidualRisk } from './ResidualRisk'
@@ -33,7 +34,7 @@ export function ReportPage() {
         : 'Risque résiduel nul'
 
   return (
-    <div className="page-stack report-page">
+    <div className="page-stack report-page" data-guide-id="review-comparison">
       <div className="page-heading page-heading-with-action">
         <div>
           <p className="eyebrow">ÉTAPE 6 · RAPPORT</p>
@@ -44,7 +45,11 @@ export function ReportPage() {
           </p>
         </div>
         <div className="report-actions">
-          <Button variant="secondary" onClick={() => window.print()}>
+          <Button
+            variant="secondary"
+            onClick={() => window.print()}
+            data-guide-id="finish-report"
+          >
             <Printer aria-hidden="true" size={16} />
             Imprimer le rapport
           </Button>
@@ -57,6 +62,10 @@ export function ReportPage() {
           <strong>Rapport généré depuis un environnement local simulé</strong>
           <span>Aucun serveur réel n’a été évalué par cette application</span>
         </div>
+        <StatusBadge
+          label="Contre-audit dynamique externe — NON EXÉCUTÉ"
+          tone="prepared"
+        />
       </div>
 
       <Card title="Synthèse de posture" eyebrow="RÉSUMÉ CALCULÉ">
