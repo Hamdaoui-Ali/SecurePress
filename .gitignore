@@ -1,0 +1,13 @@
+.worktrees/
+.superpowers/
+securepress-demo/node_modules/
+securepress-demo/dist/
+securepress-demo/coverage/
+securepress-demo/playwright-report/
+securepress-demo/test-results/
+presentation-kit/build/
+presentation-kit/captures/
+presentation-kit/video/
+*.log
+.DS_Store
+Thumbs.db
