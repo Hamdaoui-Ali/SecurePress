@@ -67,7 +67,7 @@ export function TestGroup({
         </div>
       ) : (
         <p className="validation-empty-group">
-          {emptyMessage ?? 'Aucun contrôle local supplémentaire dans cette démo.'}
+          {emptyMessage ?? 'Aucun contrôle local supplémentaire dans ce workspace.'}
         </p>
       )}
     </section>

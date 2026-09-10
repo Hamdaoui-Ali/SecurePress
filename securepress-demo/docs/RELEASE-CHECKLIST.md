@@ -1,4 +1,4 @@
-# Checklist de release — SecurePress Audit Lab
+# Checklist de release — SecurePress Operations Workspace
 
 Date de vérification : **9 septembre 2026**<br>
 Branche : `main`<br>
@@ -15,7 +15,7 @@ npm : `11.6.2`
 - [x] `npm.cmd run release:check`
 - [x] `npm.cmd run lint` — aucune erreur ; avertissements React existants documentés dans la sortie
 
-## Environnement de démonstration
+## Environnement de workspace
 
 - Navigateur : Chromium via Playwright
 - Résolutions vérifiées : 1440 × 900, 1024 × 768 et 390 × 844
@@ -25,7 +25,7 @@ npm : `11.6.2`
 
 ## Répétition
 
-Le parcours guidé comporte huit étapes, revient à 42/100 après réinitialisation et projette 82/100 après les remédiations guidées. Lors de la vérification du 9 septembre 2026, la suite E2E complète a duré 23,2 s et la suite Vitest 21,0 s ; le contrôle `release:check` a passé ces deux étapes, le build et l’audit hors ligne.
+Le parcours guidé comporte huit étapes, revient à 42/100 après réinitialisation et projette 82/100 après les change sets guidés. Lors de la vérification du 9 septembre 2026, la suite E2E complète a duré 23,2 s et la suite Vitest 21,0 s ; le contrôle `release:check` a passé ces deux étapes, le build et l’audit hors ligne.
 
 ## Limites
 

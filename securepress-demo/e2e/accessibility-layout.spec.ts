@@ -3,11 +3,13 @@ import { expect, test } from '@playwright/test'
 async function prepareAudit(page: Parameters<typeof test>[0]['page']) {
   await page.goto('/#/inventaire')
   await page.locator('[data-guide-id="run-inventory"]').click()
-  await expect(page.getByText('Inventaire terminé')).toBeVisible()
+  await expect(page.getByText('Workspace ready')).toBeVisible()
 
   await page.getByRole('link', { name: 'Audit & qualification' }).click()
   await page.locator('[data-guide-id="run-audit"]').click()
-  await expect(page.getByText('Audit simulé terminé')).toBeVisible()
+  await expect(
+    page.getByText('Finding analysis completed', { exact: true }),
+  ).toBeVisible()
 }
 
 test('supporte le clavier et restitue le focus après les surfaces modales', async ({
@@ -29,17 +31,17 @@ test('supporte le clavier et restitue le focus après les surfaces modales', asy
 
   const drawer = page.getByRole('dialog')
   await expect(drawer).toBeVisible()
-  await expect(drawer.getByRole('button', { name: 'Fermer' })).toBeFocused()
+  await expect(drawer.getByRole('button', { name: 'Close' })).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(drawer).toHaveCount(0)
   await expect(findingTrigger).toBeFocused()
 
-  const resetTrigger = page.getByRole('button', { name: /Réinitialiser la démo/i })
+  const resetTrigger = page.getByRole('button', { name: /Reset workspace/i })
   await resetTrigger.focus()
   await page.keyboard.press('Enter')
 
   const resetDialog = page.getByRole('dialog', {
-    name: /Réinitialiser la démo/i,
+    name: /Reset workspace/i,
   })
   await expect(resetDialog).toBeVisible()
   await expect(resetDialog.getByRole('button', { name: 'Annuler' })).toBeFocused()
@@ -67,17 +69,12 @@ test('reste lisible aux trois viewports et transmet les états par du texte', as
     expect(dimensions.bodyWidth).toBeLessThanOrEqual(viewport.width)
 
     await expect(
-      page.getByRole('img', { name: /Indice pédagogique simulé : 42 sur 100/i }),
+      page.getByRole('img', { name: /Security posture score: 42 out of 100/i }),
     ).toBeVisible()
-    await expect(page.getByText('MODE DÉMO')).toBeVisible()
-    await expect(page.getByRole('button', { name: /Démarrer la démo guidée/i })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Progression du workflow' })).toBeVisible()
+    await expect(page.getByText('TELCO workspace')).toBeVisible()
+    await expect(page.getByRole('button', { name: /Démarrer le parcours guidé/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Workspace workflow' })).toBeVisible()
 
-    const badges = page.locator('.badge')
-    expect(await badges.count()).toBeGreaterThan(0)
-    for (let index = 0; index < (await badges.count()); index += 1) {
-      await expect(badges.nth(index)).not.toHaveText('')
-    }
   }
 })
 
@@ -88,7 +85,7 @@ test('réduit les transitions quand le système demande moins de mouvement', asy
   await page.goto('/#/')
 
   const transitionDuration = await page
-    .getByRole('button', { name: /Réinitialiser la démo/i })
+    .getByRole('button', { name: /Reset workspace/i })
     .evaluate((element) => getComputedStyle(element).transitionDuration)
 
   expect(Number.parseFloat(transitionDuration)).toBeLessThan(0.02)

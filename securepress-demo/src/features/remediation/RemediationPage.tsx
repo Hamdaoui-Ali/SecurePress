@@ -38,14 +38,14 @@ export function RemediationPage() {
       {!state.auditCompleted ? (
         <div className="prerequisite-banner" role="status">
           <ShieldCheck aria-hidden="true" size={19} />
-          <span>Terminez d’abord l’audit statique simulé</span>
+          <span>Complete finding analysis before preparing a change set</span>
         </div>
       ) : null}
 
       <Card title="Workspace posture" eyebrow="WORKSPACE STATE">
         <div className="remediation-summary">
           <div>
-            <span>Indice pédagogique</span>
+            <span>Security posture score</span>
             <strong>{score} / 100</strong>
           </div>
           <div>

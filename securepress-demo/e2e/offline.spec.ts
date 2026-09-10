@@ -10,9 +10,9 @@ test('ne contacte aucun hôte externe', async ({ page }) => {
   })
 
   await page.goto('/')
-  await page.getByRole('button', { name: /Démarrer la démo guidée/i }).click()
+  await page.getByRole('button', { name: /Démarrer le parcours guidé/i }).click()
   await expect(
-    page.getByRole('dialog', { name: /Démarrer la démo guidée/i }),
+    page.getByRole('dialog', { name: /Démarrer le parcours guidé/i }),
   ).toBeVisible()
 
   expect(external).toEqual([])

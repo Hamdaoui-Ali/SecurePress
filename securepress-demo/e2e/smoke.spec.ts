@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test'
 
-test('ouvre la démo locale', async ({ page }) => {
+test('opens the local workspace', async ({ page }) => {
   await page.goto('/')
   await expect(
-    page.getByRole('heading', { name: /SecurePress Audit Lab/i }),
+    page.getByRole('heading', { name: /SecurePress Operations/i }),
   ).toBeVisible()
 })
 
@@ -28,25 +28,30 @@ test('valide la campagne locale et ses limites de preuve', async ({ page }) => {
   await page.goto('/#/validation')
 
   const runValidation = page.getByRole('button', {
-    name: /Lancer la validation simulée/i,
+    name: /Run control campaign/i,
   })
   await expect(runValidation).toBeEnabled()
   await runValidation.click()
 
-  await expect(page.getByText('Validation simulée terminée')).toBeVisible()
+  await expect(
+    page.locator('#main-content').getByText(
+      'Control campaign completed · target verification pending',
+      { exact: true },
+    ),
+  ).toBeVisible()
   await expect(
     page.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),
   ).toBeVisible()
-  await expect(page.getByText('PASS simulé').first()).toBeVisible()
-  await expect(page.getByText('Vérifié sur cible')).toHaveCount(0)
+  await expect(page.getByText('PASS').first()).toBeVisible()
+  await expect(page.getByText('Target verification pending').first()).toBeVisible()
 
   const loginFailure = page.getByRole('button', {
-    name: /Simuler un échec de connexion/i,
+    name: /Record a failed login attempt/i,
   })
   for (let attempt = 0; attempt < 5; attempt += 1) {
     await loginFailure.click()
   }
   await expect(
-    page.getByText('Blocage temporaire simulé : 15 minutes'),
+    page.getByText('Temporary block expected: 15 minutes'),
   ).toBeVisible()
 })

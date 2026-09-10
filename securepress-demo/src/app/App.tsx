@@ -23,7 +23,7 @@ function AppContent() {
       <GuidedDemo />
       <ResetDemoDialog
         open={guidedStartOpen}
-        title="Démarrer la démo guidée ?"
+        title="Démarrer le parcours guidé ?"
         description="Le parcours local sera remis à zéro et commencera par la vue d’ensemble."
         onCancel={() => setGuidedStartOpen(false)}
         onConfirm={() => {

@@ -126,7 +126,7 @@ test('affiche un overlay non bloquant et avance d’une étape', async () => {
   expect(localStorage.getItem(STORAGE_KEY)).toContain('"guidedStep":1')
 })
 
-test('quitte le guide sans effacer l’état de la démonstration', async () => {
+test('quitte le guide sans effacer l’état du workspace', async () => {
   const user = userEvent.setup()
   saveAssessment({
     ...createInitialAssessment(),
@@ -137,7 +137,7 @@ test('quitte le guide sans effacer l’état de la démonstration', async () => 
 
   await user.click(screen.getByRole('button', { name: 'Quitter le guide' }))
 
-  expect(screen.queryByRole('region', { name: /guide de démonstration/i })).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: /guided workspace workflow/i })).not.toBeInTheDocument()
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
   expect(saved.guidedStep).toBeNull()
   expect(saved.inventoryCompleted).toBe(true)
@@ -150,14 +150,14 @@ test('confirme un reset via la boîte de dialogue', async () => {
   render(
     <ResetDemoDialog
       open
-      title="Réinitialiser la démo ?"
+      title="Reset workspace?"
       description="Le parcours local sera remis à zéro."
       onCancel={() => undefined}
       onConfirm={() => confirmed.push(true)}
     />,
   )
 
-  const dialog = screen.getByRole('dialog', { name: 'Réinitialiser la démo ?' })
+  const dialog = screen.getByRole('dialog', { name: 'Reset workspace?' })
   expect(within(dialog).getByRole('button', { name: 'Annuler' })).toBeVisible()
   await user.click(
     within(dialog).getByRole('button', { name: 'Confirmer la réinitialisation' }),

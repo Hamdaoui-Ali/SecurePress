@@ -52,7 +52,7 @@ test('shows truthful workspace context and an empty operational activity state',
   expect(
     screen.getByRole('button', { name: 'Reset workspace' }),
   ).toBeVisible()
-  expect(screen.queryByText('MODE DÉMO')).not.toBeInTheDocument()
+  expect(screen.queryByText('DEMONSTRATION MODE')).not.toBeInTheDocument()
   expect(
     screen.queryByText(/Aucun système réel n’est connecté/i),
   ).not.toBeInTheDocument()

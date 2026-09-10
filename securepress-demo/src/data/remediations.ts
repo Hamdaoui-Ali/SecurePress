@@ -66,7 +66,7 @@ export const remediations: Remediation[] = [
     findingId: 'F-007',
     title: 'Préparer la restriction XML-RPC',
     before: 'Restriction non démontrée',
-    after: 'Restriction proposée dans la simulation, validation cible requise',
+    after: 'Restriction proposée pour le workspace, validation cible requise',
     rationale: 'Réduire une surface d’exposition tout en conservant la preuve séparée.',
     artifact: 'Règle de restriction proposée',
     initialStatus: 'prepared',
