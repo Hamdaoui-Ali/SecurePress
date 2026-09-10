@@ -274,9 +274,23 @@ export function createSimulationEngine(
   ): Promise<AssessmentState> {
     if (!state.auditCompleted) throw new Error('AUDIT_REQUIRED')
     if (!controlId.trim()) throw new Error('HARDENING_CONTROL_REQUIRED')
-    if (state.completedHardeningCheckIds.includes(controlId)) return state
 
-    const controlTotal = 1
+    const hardeningControls = telcoScenario.validationChecks.filter(
+      (check) => check.category === 'hardening',
+    )
+    const control = hardeningControls.find((check) => check.id === controlId)
+    if (!control) throw new Error('HARDENING_CONTROL_NOT_FOUND')
+    if (state.completedHardeningCheckIds.includes(control.id)) return state
+
+    const controlTotal = hardeningControls.length
+    const completedControlCount = state.completedHardeningCheckIds.filter(
+      (completedControlId) =>
+        hardeningControls.some((check) => check.id === completedControlId),
+    ).length
+    const processedControlCount = Math.min(
+      controlTotal,
+      completedControlCount + 1,
+    )
 
     return runPhases(
       [
@@ -287,12 +301,12 @@ export function createSimulationEngine(
         },
         {
           step: 'Contrôles de durcissement',
-          processed: controlTotal,
+          processed: processedControlCount,
           total: controlTotal,
         },
         {
           step: 'Clôture de la campagne',
-          processed: controlTotal,
+          processed: processedControlCount,
           total: controlTotal,
         },
       ],
@@ -305,12 +319,12 @@ export function createSimulationEngine(
             stage: 'validation',
             completedHardeningCheckIds: [
               ...state.completedHardeningCheckIds,
-              controlId,
+              control.id,
             ],
           },
           options.now,
-          `hardening-${controlId}`,
-          `Contrôle de durcissement simulé : ${controlId}`,
+          `hardening-${control.id}`,
+          `Contrôle de durcissement simulé : ${control.id}`,
         ),
     )
   }

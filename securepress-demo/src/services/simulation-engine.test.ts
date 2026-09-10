@@ -141,7 +141,7 @@ describe('simulation engine', () => {
     expect(afterChangeSet.appliedFindingIds).toEqual(['F-001'])
   })
 
-  test('emits controls phases for a hardening check and the validation campaign', async () => {
+  test('emits controls phases for a TELCO hardening check and the validation campaign', async () => {
     const setupEngine = createEngine()
     const inventory = await setupEngine.runInventory(createInitialAssessment())
     const audit = await setupEngine.runStaticAudit(inventory)
@@ -150,7 +150,7 @@ describe('simulation engine', () => {
 
     const afterHardening = await hardeningEngine.runHardeningCheck(
       audit,
-      'file-editor',
+      'V-FILE-EDITOR',
     )
 
     expectPhasedProgress(hardeningUpdates, [
@@ -159,8 +159,8 @@ describe('simulation engine', () => {
       'Clôture de la campagne',
     ])
     expect(hardeningUpdates.map((update) => update.processed)).toEqual([0, 1, 1])
-    expect(hardeningUpdates.map((update) => update.total)).toEqual([1, 1, 1])
-    expect(afterHardening.completedHardeningCheckIds).toEqual(['file-editor'])
+    expect(hardeningUpdates.map((update) => update.total)).toEqual([2, 2, 2])
+    expect(afterHardening.completedHardeningCheckIds).toEqual(['V-FILE-EDITOR'])
 
     const campaignUpdates: ProgressUpdate[] = []
     const campaignEngine = createEngine(campaignUpdates)
@@ -200,7 +200,7 @@ describe('simulation engine', () => {
     expect(firstResult).toEqual(secondResult)
   })
 
-  test('propagates invalid change-set and hardening-control errors without progress', async () => {
+  test('propagates invalid change-set and required hardening-control errors without progress', async () => {
     const setupEngine = createEngine()
     const inventory = await setupEngine.runInventory(createInitialAssessment())
     const audit = await setupEngine.runStaticAudit(inventory)
@@ -212,6 +212,19 @@ describe('simulation engine', () => {
     )
     await expect(engine.runHardeningCheck(audit, '  ')).rejects.toThrow(
       'HARDENING_CONTROL_REQUIRED',
+    )
+    expect(progressUpdates).toEqual([])
+  })
+
+  test('rejects unknown hardening check IDs without progress', async () => {
+    const setupEngine = createEngine()
+    const inventory = await setupEngine.runInventory(createInitialAssessment())
+    const audit = await setupEngine.runStaticAudit(inventory)
+    const progressUpdates: ProgressUpdate[] = []
+    const engine = createEngine(progressUpdates)
+
+    await expect(engine.runHardeningCheck(audit, 'file-editor')).rejects.toThrow(
+      'HARDENING_CONTROL_NOT_FOUND',
     )
     expect(progressUpdates).toEqual([])
   })
