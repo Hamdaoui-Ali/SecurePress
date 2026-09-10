@@ -1,13 +1,13 @@
 import { X } from 'lucide-react'
 import { useCallback, useEffect, useRef, type RefObject } from 'react'
+import { SeverityBadge } from '../../components/ui/SeverityBadge'
+import { StatusBadge } from '../../components/ui/StatusBadge'
 import type {
   AssessmentState,
   Finding,
   Remediation,
   ValidationCheck,
 } from '../../domain/models'
-import { SeverityBadge } from '../../components/ui/SeverityBadge'
-import { StatusBadge } from '../../components/ui/StatusBadge'
 
 interface FindingDrawerProps {
   finding: Finding | null
@@ -21,26 +21,26 @@ interface FindingDrawerProps {
 function evidenceLabel(status: Finding['evidenceStatus']) {
   switch (status) {
     case 'observed_in_snapshot':
-      return 'Constaté dans l’instantané'
+      return 'Observed in package'
     case 'documented_in_audit':
-      return 'Mentionné dans le rapport'
+      return 'Documented finding'
     case 'not_observable_offline':
-      return 'Non observable hors ligne'
+      return 'Not observable locally'
   }
 }
 
 function validationLabel(status: string | undefined) {
   switch (status) {
     case 'simulated_pass':
-      return 'PASS simulé'
+      return 'PASS (local check)'
     case 'simulated_fail':
-      return 'ÉCHEC simulé'
+      return 'FAIL (local check)'
     case 'target_validation_required':
-      return 'Validation cible requise'
+      return 'Target validation required'
     case 'dynamic_retest_not_executed':
-      return 'Contre-audit non exécuté'
+      return 'Dynamic retest not executed'
     default:
-      return 'Non exécutée'
+      return 'Not run'
   }
 }
 
@@ -115,13 +115,13 @@ export function FindingDrawer({
       >
         <div className="drawer-header">
           <div>
-            <p className="eyebrow">{finding.id} · DÉCISION DE RISQUE</p>
+            <p className="eyebrow">{finding.id} · RISK DECISION</p>
             <h2 id="finding-drawer-title">{finding.title}</h2>
           </div>
           <button
             type="button"
             className="icon-button"
-            aria-label="Fermer"
+            aria-label="Close"
             ref={closeButtonRef}
             onClick={closeAndReturnFocus}
           >
@@ -133,26 +133,26 @@ export function FindingDrawer({
           <SeverityBadge severity={finding.severity} />
           <StatusBadge label={evidenceLabel(finding.evidenceStatus)} tone="neutral" />
           <StatusBadge
-            label={applied ? 'Appliquée en simulation' : 'Remédiation à traiter'}
+            label={applied ? 'Change set applied' : 'Change set pending'}
             tone={applied ? 'success' : 'prepared'}
           />
         </div>
 
         {finding.severity === 'variable' ? (
-          <p className="drawer-warning">Exploitabilité inconnue hors environnement exécuté.</p>
+          <p className="drawer-warning">Exploitability is unknown without a running target.</p>
         ) : null}
 
         <div className="drawer-content">
           <section className="drawer-section">
-            <h3>Preuve observée</h3>
+            <h3>Observed evidence</h3>
             <p>{finding.evidence}</p>
-            <p className="drawer-meta">Confiance : {finding.confidence}</p>
+            <p className="drawer-meta">Confidence: {finding.confidence}</p>
           </section>
           <section className="drawer-section">
-            <h3>Exposition et impact</h3>
+            <h3>Exposure and impact</h3>
             <dl className="drawer-definitions">
               <div>
-                <dt>Exposition</dt>
+                <dt>Exposure</dt>
                 <dd>{finding.exposure}</dd>
               </div>
               <div>
@@ -162,17 +162,17 @@ export function FindingDrawer({
             </dl>
           </section>
           <section className="drawer-section">
-            <h3>Recommandation</h3>
+            <h3>Recommended change</h3>
             <p>{finding.recommendation}</p>
             {remediation ? (
               <div className="drawer-remediation-preview">
                 <strong>{remediation.title}</strong>
-                <span>Artefact : {remediation.artifact}</span>
+                <span>Artifact: {remediation.artifact}</span>
               </div>
             ) : null}
           </section>
           <section className="drawer-section">
-            <h3>Validation associée</h3>
+            <h3>Associated validation</h3>
             <div className="drawer-validation-list">
               {validationChecks.map((check) => (
                 <div key={check.id}>
@@ -190,10 +190,10 @@ export function FindingDrawer({
             </div>
           </section>
           <section className="drawer-section drawer-section-last">
-            <h3>Source et limite</h3>
+            <h3>Source and limit</h3>
             <p>{finding.sourceNote}</p>
             <p className="drawer-meta">
-              Une réussite simulée ne devient jamais une preuve vérifiée sur cible.
+              A local validation result does not establish target verification.
             </p>
           </section>
         </div>

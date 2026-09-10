@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
+import { AssessmentProvider } from '../../app/AssessmentProvider'
 import { createInitialAssessment } from '../../domain/models'
 import { saveAssessment } from '../../services/storage'
-import { AssessmentProvider } from '../../app/AssessmentProvider'
 import { OverviewPage } from './OverviewPage'
 
 beforeEach(() => {
@@ -17,51 +17,65 @@ function renderOverview() {
   )
 }
 
-test('affiche les métriques initiales et les limites de preuve', () => {
+test('presents deterministic workspace posture and next operational action', () => {
   renderOverview()
 
-  const metricValue = (label: string) => {
-    const card = screen.getByText(label).closest('article')
-    if (!card) throw new Error(`Metric card not found: ${label}`)
-    const value = card.querySelector('.metric-value')
-    if (!value) throw new Error(`Metric value not found: ${label}`)
-    return value
-  }
-
-  expect(metricValue('Extensions identifiées')).toHaveTextContent('17')
-  expect(metricValue('Thèmes inventoriés')).toHaveTextContent('4')
-  expect(metricValue('Constats qualifiés')).toHaveTextContent('10')
-  expect(metricValue('Constats critiques')).toHaveTextContent('2')
+  expect(screen.getByText('Indexed components')).toBeVisible()
+  expect(screen.getByText('22')).toBeVisible()
+  expect(screen.getByText('TELCO source package')).toBeVisible()
+  expect(screen.getByText('Findings available')).toBeVisible()
   expect(
-    screen.getByRole('img', { name: /Indice pédagogique simulé : 42 sur 100/i }),
+    screen.getByRole('img', { name: /Security posture score: 42 out of 100/i }),
   ).toBeVisible()
-  expect(screen.getByText('Indice pédagogique simulé')).toBeVisible()
-  expect(screen.getByText('Audit statique')).toBeVisible()
-  expect(screen.getByText('Copie hors production')).toBeVisible()
-  expect(screen.getByText('Activation des extensions inconnue')).toBeVisible()
-  expect(
-    screen.getByText('Contre-audit dynamique non exécuté'),
-  ).toBeVisible()
+  expect(screen.getByText('Security posture score')).toBeVisible()
+  expect(screen.getByText('Run discovery')).toBeVisible()
+  expect(document.body.textContent).not.toMatch(/demo|simul/i)
 })
 
-test('affiche la posture projetée sans la transformer en preuve cible', () => {
+test('keeps the deterministic score transition tied to applied findings', () => {
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'remediation',
-    appliedFindingIds: [
-      'F-001',
-      'F-002',
-      'F-003',
-      'F-004',
-      'F-007',
-      'F-009',
-    ],
+    appliedFindingIds: ['F-001', 'F-002', 'F-003', 'F-004', 'F-007', 'F-009'],
   })
 
   renderOverview()
 
   expect(
-    screen.getByRole('img', { name: /Indice pédagogique simulé : 82 sur 100/i }),
+    screen.getByRole('img', { name: /Security posture score: 82 out of 100/i }),
   ).toBeVisible()
-  expect(screen.getByText('Projeté, non vérifié sur cible')).toBeVisible()
+  expect(screen.getByText('Projected, target verification required')).toBeVisible()
+})
+
+test('shows completed operation activity with the recorded timestamp and duration', () => {
+  saveAssessment({
+    ...createInitialAssessment(),
+    stage: 'inventory',
+    inventoryCompleted: true,
+    lastRun: {
+      id: 'discovery-1',
+      kind: 'discovery',
+      status: 'completed',
+      startedAt: '2026-09-10T10:00:00.000Z',
+      completedAt: '2026-09-10T10:00:05.000Z',
+      durationMs: 5_000,
+      message: 'Discovery run completed · 22 components indexed',
+      currentStep: 'Component summary',
+      processed: 22,
+      total: 22,
+    },
+    operationHistory: [],
+  })
+
+  renderOverview()
+
+  expect(screen.getByText('Discovery run completed · 22 components indexed')).toBeVisible()
+  expect(screen.getByText('Completed in 5s')).toBeVisible()
+  expect(
+    screen.getByText((_, element) =>
+      element?.tagName === 'TIME' &&
+      element.getAttribute('datetime') === '2026-09-10T10:00:05.000Z',
+    ),
+  ).toBeVisible()
+  expect(screen.getByText('Analyze findings')).toBeVisible()
 })

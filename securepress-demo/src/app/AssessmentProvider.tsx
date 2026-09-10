@@ -14,6 +14,7 @@ import {
   type OperationKind,
   type OperationRun,
 } from '../domain/models'
+import { telcoScenario } from '../data/scenario'
 import {
   clearAssessment,
   loadAssessment,
@@ -257,7 +258,7 @@ export function AssessmentProvider({
           runningMessage: 'Discovery run in progress',
           failurePrefix: 'Discovery run failed',
           getCompletedMessage: () =>
-            'Discovery run completed \u00b7 17 components indexed',
+            `Discovery run completed · ${telcoScenario.inventory.components.length} components indexed`,
         },
         (current) => engineRef.current!.runInventory(current),
       ),

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
@@ -10,33 +10,42 @@ beforeEach(() => {
   localStorage.clear()
 })
 
-function renderInventory() {
+function renderInventory(delayMs = 0) {
   return render(
-    <AssessmentProvider delayMs={0}>
+    <AssessmentProvider delayMs={delayMs}>
       <InventoryPage />
     </AssessmentProvider>,
   )
 }
 
-test('lance l’inventaire et affiche ses résultats simulés', async () => {
+test('runs discovery with phase progress and waits to expose the indexed table', async () => {
   const user = userEvent.setup()
-  renderInventory()
+  renderInventory(500)
 
-  await user.click(
-    screen.getByRole('button', { name: /Lancer l’inventaire simulé/i }),
+  await user.click(screen.getByRole('button', { name: 'Run discovery' }))
+
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Discovery in progress' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Discovery in progress' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    )
+    expect(screen.getByText('Read TELCO source package')).toBeVisible()
+  })
+  expect(screen.queryByRole('table')).not.toBeInTheDocument()
+
+  await waitFor(
+    () => {
+      expect(screen.getByText('Workspace ready')).toBeVisible()
+    },
+    { timeout: 3_000 },
   )
-
-  expect(screen.getByText('Inventaire terminé')).toBeVisible()
-  expect(screen.getByText('17 extensions identifiées')).toBeVisible()
-  expect(
-    screen.getByText(
-      'Présent dans les fichiers ne signifie pas actif ou exploitable.',
-    ),
-  ).toBeVisible()
+  expect(screen.getByText('22 components indexed')).toBeVisible()
   expect(screen.getByRole('table')).toBeVisible()
+  expect(document.body.textContent).not.toMatch(/demo|simul/i)
 })
 
-test('conserve le tableau après rechargement d’un inventaire terminé', () => {
+test('keeps indexed components available and offers another discovery run', () => {
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'inventory',
@@ -45,8 +54,6 @@ test('conserve le tableau après rechargement d’un inventaire terminé', () =>
 
   renderInventory()
 
-  expect(
-    screen.getByRole('button', { name: /Relancer la simulation/i }),
-  ).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Run discovery again' })).toBeVisible()
   expect(screen.getByRole('table')).toBeVisible()
 })

@@ -1,37 +1,47 @@
-import { Database, Play, RefreshCcw } from 'lucide-react'
+import { Database, LoaderCircle, Play, RefreshCcw } from 'lucide-react'
 import { useAssessment } from '../../app/AssessmentProvider'
-import { telcoScenario } from '../../data/scenario'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
+import { telcoScenario } from '../../data/scenario'
 import { ComponentTable } from './ComponentTable'
 import { InventoryProgress } from './InventoryProgress'
 
 export function InventoryPage() {
-  const { state, busy, progress, runInventory } = useAssessment()
+  const { state, busy, progress, activeOperation, runInventory } = useAssessment()
   const completed = state.inventoryCompleted
+  const isDiscovering = busy && activeOperation?.kind === 'discovery'
+  const componentCount = telcoScenario.inventory.components.length
 
   return (
     <div className="page-stack">
       <div className="page-heading page-heading-with-action">
         <div>
-          <p className="eyebrow">ÉTAPE 2 · INVENTAIRE</p>
-          <h2>Ce qui est présent dans la copie</h2>
+          <p className="eyebrow">DISCOVERY</p>
+          <h2>Index the source package</h2>
           <p>
-            L’inventaire confirme les fichiers disponibles sans déduire leur
-            activation ni leur exploitabilité.
+            Discovery records components present in the indexed package without
+            inferring activation or target exposure.
           </p>
         </div>
         <Button
-          busy={busy}
+          busy={false}
+          disabled={busy}
+          aria-busy={isDiscovering || undefined}
           onClick={() => void runInventory()}
           data-guide-id="run-inventory"
         >
-          {completed ? (
+          {isDiscovering ? (
+            <LoaderCircle aria-hidden="true" size={17} />
+          ) : completed ? (
             <RefreshCcw aria-hidden="true" size={17} />
           ) : (
             <Play aria-hidden="true" size={17} />
           )}
-          {completed ? 'Relancer la simulation' : 'Lancer l’inventaire simulé'}
+          {isDiscovering
+            ? 'Discovery in progress'
+            : completed
+              ? 'Run discovery again'
+              : 'Run discovery'}
         </Button>
       </div>
 
@@ -40,36 +50,33 @@ export function InventoryPage() {
           <Database size={22} />
         </div>
         <div>
-          <strong>
-            {telcoScenario.inventory.pluginCount} extensions identifiées
-          </strong>
+          <strong>{componentCount} components indexed</strong>
           <span>
-            {telcoScenario.inventory.themeCount} thèmes · WordPress{' '}
-            {telcoScenario.project.wordpressVersion}
+            TELCO source package · WordPress {telcoScenario.project.wordpressVersion}
           </span>
         </div>
       </div>
 
-      <Card title="Progression de l’inventaire" eyebrow="LECTURE LOCALE">
+      <Card title="Discovery progress" eyebrow="PACKAGE INDEXING">
         <InventoryProgress
           completed={completed}
-          busy={busy}
+          running={isDiscovering}
           progress={progress}
         />
       </Card>
 
       {completed ? (
-        <Card title="Composants inventoriés" eyebrow="PRÉSENCE DANS LES FICHIERS">
+        <Card title="Indexed components" eyebrow="SOURCE PACKAGE">
           <p className="inventory-truth">
-            Présent dans les fichiers ne signifie pas actif ou exploitable.
+            Presence in the package does not establish activation or exposure.
           </p>
           <ComponentTable components={telcoScenario.inventory.components} />
         </Card>
       ) : (
-        <Card title="Tableau en attente" eyebrow="PROCHAINE PREUVE">
+        <Card title="Component index pending" eyebrow="NEXT ACTION">
           <p className="muted-copy">
-            Lancez la simulation pour remplir le tableau des composants et
-            distinguer présence, activation et dépendance à la base WordPress.
+            Run discovery to index components and retain the distinction between
+            package presence, activation, and database-dependent evidence.
           </p>
         </Card>
       )}

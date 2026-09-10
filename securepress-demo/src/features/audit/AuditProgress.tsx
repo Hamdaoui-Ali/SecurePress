@@ -2,26 +2,26 @@ import type { ProgressUpdate } from '../../services/simulation-engine'
 
 interface AuditProgressProps {
   completed: boolean
-  busy: boolean
+  running: boolean
   progress: ProgressUpdate | null
 }
 
 export function AuditProgress({
   completed,
-  busy,
+  running,
   progress,
 }: AuditProgressProps) {
-  const message = busy
-    ? progress?.message ?? 'Préparation de l’audit statique simulé'
+  const message = running
+    ? progress?.step ?? 'Finding analysis queued'
     : completed
-      ? 'Audit simulé terminé'
-      : 'Prêt à qualifier les constats locaux'
+      ? 'Finding analysis completed'
+      : 'Ready to analyze findings'
 
   return (
     <div className="audit-progress" aria-live="polite">
       <span className="progress-pulse" aria-hidden="true" />
       <strong>{message}</strong>
-      {busy && progress ? <span>{progress.percent}%</span> : null}
+      {running && progress ? <span>{progress.percent}%</span> : null}
     </div>
   )
 }

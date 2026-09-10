@@ -6,19 +6,19 @@ interface WorkflowStepperProps {
 }
 
 const stages: Array<{ id: WorkflowStage; label: string }> = [
-  { id: 'overview', label: 'Vue d’ensemble' },
-  { id: 'inventory', label: 'Inventaire' },
-  { id: 'audit', label: 'Audit' },
-  { id: 'remediation', label: 'Remédiation' },
-  { id: 'validation', label: 'Validation' },
-  { id: 'report', label: 'Rapport' },
+  { id: 'overview', label: 'Overview' },
+  { id: 'inventory', label: 'Discovery' },
+  { id: 'audit', label: 'Finding analysis' },
+  { id: 'remediation', label: 'Change sets' },
+  { id: 'validation', label: 'Controls' },
+  { id: 'report', label: 'Report' },
 ]
 
 export function WorkflowStepper({ state }: WorkflowStepperProps) {
   const progress = selectWorkflowProgress(state)
 
   return (
-    <ol className="workflow-stepper" aria-label="Progression du workflow">
+    <ol className="workflow-stepper" aria-label="Workspace workflow progress">
       {stages.map((stage, index) => {
         const isCurrent = stage.id === progress.currentStage
         const isDone = index < progress.completedStages - 1
@@ -37,9 +37,7 @@ export function WorkflowStepper({ state }: WorkflowStepperProps) {
             <span className="workflow-step-marker">{index + 1}</span>
             <span>
               <strong>{stage.label}</strong>
-              <small>
-                {isCurrent ? 'Étape actuelle' : isDone ? 'Terminée' : 'À venir'}
-              </small>
+              <small>{isCurrent ? 'Current' : isDone ? 'Completed' : 'Pending'}</small>
             </span>
           </li>
         )

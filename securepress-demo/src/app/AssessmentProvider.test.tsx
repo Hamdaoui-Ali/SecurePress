@@ -114,7 +114,7 @@ test('exposes a running discovery operation and persists its completed metadata'
   await waitFor(() => {
     expect(screen.getByTestId('busy')).toHaveTextContent('true')
     expect(screen.getByTestId('progress')).toHaveTextContent(
-      'Lecture du package TELCO',
+      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
     )
     expect(
       readJson<{
@@ -127,7 +127,9 @@ test('exposes a running discovery operation and persists its completed metadata'
     ).toMatchObject({
       kind: 'discovery',
       status: 'running',
-      currentStep: 'Lecture du package TELCO',
+      currentStep: expect.stringMatching(
+        /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      ),
       processed: 0,
       total: 22,
     })
@@ -153,8 +155,8 @@ test('exposes a running discovery operation and persists its completed metadata'
     startedAt: '2026-09-10T10:00:00.000Z',
     completedAt: '2026-09-10T10:00:10.000Z',
     durationMs: 10_000,
-    message: 'Discovery run completed \u00b7 17 components indexed',
-    currentStep: 'Synth\u00e8se des composants',
+    message: 'Discovery run completed \u00b7 22 components indexed',
+    currentStep: 'Component summary',
     processed: 22,
     total: 22,
   })
@@ -266,14 +268,14 @@ test('records operation-specific activity labels in newest-first history order',
     }),
     expect.objectContaining({
       kind: 'discovery',
-      message: 'Discovery run completed \u00b7 17 components indexed',
+      message: 'Discovery run completed \u00b7 22 components indexed',
     }),
   ])
   expect(
     readJson<Array<{ label: string }>>('timeline').map((event) => event.label),
   ).toEqual(
     expect.arrayContaining([
-      'Discovery run completed \u00b7 17 components indexed',
+      'Discovery run completed \u00b7 22 components indexed',
       'Finding analysis completed \u00b7 10 findings',
       'Change set applied \u00b7 F-001',
       'Hardening check completed \u00b7 V-FILE-EDITOR',

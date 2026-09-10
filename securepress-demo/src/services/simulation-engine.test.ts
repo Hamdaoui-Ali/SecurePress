@@ -70,12 +70,12 @@ describe('simulation engine', () => {
     const afterInventory = await engine.runInventory(createInitialAssessment())
 
     expectPhasedProgress(progressUpdates, [
-      'Lecture du package TELCO',
-      'Indexation du noyau WordPress',
-      'Inventaire des thèmes',
-      'Inventaire des extensions',
-      'Contrôle de la configuration',
-      'Synthèse des composants',
+      'Read TELCO source package',
+      'Index WordPress core',
+      'Inventory themes',
+      'Inventory plugins',
+      'Review configuration',
+      'Component summary',
     ])
     expect(progressUpdates.map((update) => update.processed)).toEqual([
       0,
@@ -111,10 +111,10 @@ describe('simulation engine', () => {
     const afterAudit = await analysisEngine.runStaticAudit(afterInventory)
 
     expectPhasedProgress(analysisUpdates, [
-      'Chargement des constats',
-      'Analyse des preuves',
-      'Corrélation risque/remédiation',
-      'Finalisation de l’analyse',
+      'Load findings',
+      'Analyze evidence',
+      'Correlate risk and remediation',
+      'Complete finding analysis',
     ])
     expect(analysisUpdates.map((update) => update.processed)).toEqual([0, 5, 10, 10])
     expect(analysisUpdates.map((update) => update.total)).toEqual([10, 10, 10, 10])

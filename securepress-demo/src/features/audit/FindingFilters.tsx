@@ -86,8 +86,8 @@ export function FindingFilters({
           }
         >
           <option value="all">Tous</option>
-          <option value="applied">Appliquée en simulation</option>
-          <option value="pending">Non appliquée</option>
+          <option value="applied">Change set applied</option>
+          <option value="pending">Change set pending</option>
         </select>
       </label>
       <button type="button" className="filter-clear" onClick={onClear}>

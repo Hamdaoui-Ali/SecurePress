@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
@@ -11,9 +11,9 @@ beforeEach(() => {
   localStorage.clear()
 })
 
-function renderAudit() {
+function renderAudit(delayMs = 0) {
   return render(
-    <AssessmentProvider delayMs={0}>
+    <AssessmentProvider delayMs={delayMs}>
       <AuditPage />
     </AssessmentProvider>,
   )
@@ -36,58 +36,60 @@ function completedAuditState() {
   }
 }
 
-test('bloque l’audit tant que l’inventaire n’est pas terminé', () => {
+test('requires discovery before finding analysis', () => {
   renderAudit()
 
-  expect(
-    screen.getByRole('button', { name: /Lancer l’audit statique simulé/i }),
-  ).toBeDisabled()
-  expect(
-    screen.getByText('Terminez d’abord l’inventaire simulé'),
-  ).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Analyze findings' })).toBeDisabled()
+  expect(screen.getByText('Run discovery before analyzing findings')).toBeVisible()
 })
 
-test('génère les dix constats après inventaire', async () => {
+test('runs finding analysis with phase progress before exposing findings', async () => {
   const user = userEvent.setup()
   saveAssessment(completedInventoryState())
-  renderAudit()
+  renderAudit(500)
 
-  await user.click(
-    screen.getByRole('button', { name: /Lancer l’audit statique simulé/i }),
+  await user.click(screen.getByRole('button', { name: 'Analyze findings' }))
+
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Finding analysis in progress' })).toBeDisabled()
+    expect(screen.getByText('Load findings')).toBeVisible()
+  })
+  expect(screen.queryByRole('table')).not.toBeInTheDocument()
+
+  await waitFor(
+    () => {
+      expect(screen.getByText('Finding analysis completed')).toBeVisible()
+    },
+    { timeout: 3_000 },
   )
-
-  expect(screen.getByText('Audit simulé terminé')).toBeVisible()
-  expect(screen.getByText('2 critiques')).toBeVisible()
-  expect(screen.getByText('3 élevés')).toBeVisible()
-  expect(screen.getByText('3 moyens')).toBeVisible()
-  expect(screen.getByText('1 faible')).toBeVisible()
+  expect(screen.getByText('2 critical')).toBeVisible()
+  expect(screen.getByText('3 high')).toBeVisible()
+  expect(screen.getByText('3 medium')).toBeVisible()
+  expect(screen.getByText('1 low')).toBeVisible()
   expect(screen.getByText('1 variable')).toBeVisible()
   expect(screen.getAllByRole('row')).toHaveLength(11)
+  expect(document.body.textContent).not.toMatch(/demo|simul/i)
 })
 
-test('explique F-001 et F-006 dans le panneau de preuve', async () => {
+test('explains F-001 and F-006 in the evidence drawer', async () => {
   const user = userEvent.setup()
   saveAssessment(completedAuditState())
   renderAudit()
 
-  await user.click(screen.getByRole('button', { name: /Ouvrir F-001/i }))
+  await user.click(screen.getByRole('button', { name: /Open F-001/i }))
   const firstDialog = screen.getByRole('dialog')
   expect(firstDialog).toBeVisible()
   expect(within(firstDialog).getByText('Critique')).toBeVisible()
-  expect(
-    within(firstDialog).getByText('Constaté dans l’instantané'),
-  ).toBeVisible()
+  expect(within(firstDialog).getByText('Observed in package')).toBeVisible()
 
-  await user.click(screen.getByRole('button', { name: /Fermer/i }))
-  await user.click(screen.getByRole('button', { name: /Ouvrir F-006/i }))
+  await user.click(screen.getByRole('button', { name: 'Close' }))
+  await user.click(screen.getByRole('button', { name: /Open F-006/i }))
   const secondDialog = screen.getByRole('dialog')
-  expect(within(secondDialog).getByText('Sévérité variable')).toBeVisible()
-  expect(
-    within(secondDialog).getAllByText(/Exploitabilité inconnue/i)[0],
-  ).toBeVisible()
+  expect(secondDialog).toBeVisible()
+  expect(within(secondDialog).getAllByText(/Exploitability is unknown/i)[0]).toBeVisible()
 })
 
-test('filtre les constats critiques puis restaure toutes les lignes', async () => {
+test('filters critical findings and restores all rows', async () => {
   const user = userEvent.setup()
   saveAssessment(completedAuditState())
   renderAudit()

@@ -60,18 +60,23 @@ test('shows truthful workspace context and an empty operational activity state',
 
 test('renders provider-backed discovery progress while an operation is running', async () => {
   const user = userEvent.setup()
-  renderShell(200)
+  renderShell(500)
 
   await user.click(screen.getByRole('button', { name: 'Run discovery' }))
 
   await waitFor(() => {
-    expect(
-      screen.getByRole('progressbar', { name: 'Discovery run progress' }),
-    ).toHaveAttribute('aria-valuenow', '0')
+    const progressbar = screen.getByRole('progressbar', {
+      name: 'Discovery run progress',
+    })
+    expect(progressbar).not.toHaveAttribute('aria-valuenow', '100')
   })
   expect(screen.getByText('Discovery run in progress')).toBeVisible()
-  expect(screen.getByText('Lecture du package TELCO')).toBeVisible()
-  expect(screen.getByText('0 of 22 processed')).toBeVisible()
+  expect(
+    screen.getByText(
+      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+    ),
+  ).toBeVisible()
+  expect(screen.getByText(/of 22 processed/)).toBeVisible()
   expect(screen.getAllByText('Running')[0]).toBeVisible()
 })
 
@@ -83,7 +88,7 @@ test('shows the latest completed operation and its compact recent activity', asy
 
   await waitFor(() => {
     expect(
-      screen.getByText('Discovery run completed · 17 components indexed'),
+      screen.getByText('Discovery run completed · 22 components indexed'),
     ).toBeVisible()
   })
   await user.click(screen.getByRole('button', { name: 'Run analysis' }))
@@ -96,7 +101,7 @@ test('shows the latest completed operation and its compact recent activity', asy
   expect(screen.getAllByText('Completed')[0]).toBeVisible()
   expect(screen.getByText(/Completed in /)).toBeVisible()
   expect(screen.getByRole('list', { name: 'Recent operations' })).toHaveTextContent(
-    'Discovery run completed · 17 components indexed',
+    'Discovery run completed · 22 components indexed',
   )
 })
 

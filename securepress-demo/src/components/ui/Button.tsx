@@ -29,7 +29,7 @@ export const Button = forwardRef<
       type={props.type ?? 'button'}
       className={clsx('button', `button-${variant}`, className)}
       disabled={disabled || busy}
-      aria-busy={busy || undefined}
+      aria-busy={busy || props['aria-busy'] || undefined}
     >
       {busy ? 'En cours…' : children}
     </button>

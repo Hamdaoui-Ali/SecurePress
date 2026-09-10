@@ -122,29 +122,29 @@ export function createSimulationEngine(
 
     return runPhases(
       [
-        { step: 'Lecture du package TELCO', processed: 0, total: componentTotal },
+        { step: 'Read TELCO source package', processed: 0, total: componentTotal },
         {
-          step: 'Indexation du noyau WordPress',
+          step: 'Index WordPress core',
           processed: coreCount,
           total: componentTotal,
         },
         {
-          step: 'Inventaire des thèmes',
+          step: 'Inventory themes',
           processed: coreCount + themeCount,
           total: componentTotal,
         },
         {
-          step: 'Inventaire des extensions',
+          step: 'Inventory plugins',
           processed: componentTotal,
           total: componentTotal,
         },
         {
-          step: 'Contrôle de la configuration',
+          step: 'Review configuration',
           processed: componentTotal,
           total: componentTotal,
         },
         {
-          step: 'Synthèse des composants',
+          step: 'Component summary',
           processed: componentTotal,
           total: componentTotal,
         },
@@ -160,7 +160,7 @@ export function createSimulationEngine(
           },
           options.now,
           'inventory',
-          'Inventaire simulé terminé',
+          'Workspace ready',
         ),
     )
   }
@@ -183,19 +183,19 @@ export function createSimulationEngine(
 
     return runPhases(
       [
-        { step: 'Chargement des constats', processed: 0, total: findingTotal },
+        { step: 'Load findings', processed: 0, total: findingTotal },
         {
-          step: 'Analyse des preuves',
+          step: 'Analyze evidence',
           processed: observedEvidenceCount,
           total: findingTotal,
         },
         {
-          step: 'Corrélation risque/remédiation',
+          step: 'Correlate risk and remediation',
           processed: correlatedFindingCount,
           total: findingTotal,
         },
         {
-          step: 'Finalisation de l’analyse',
+          step: 'Complete finding analysis',
           processed: findingTotal,
           total: findingTotal,
         },
@@ -212,7 +212,7 @@ export function createSimulationEngine(
           },
           options.now,
           'static-audit',
-          `Audit statique simulé terminé : ${findingTotal} constats qualifiés`,
+          `Finding analysis completed · ${findingTotal} findings`,
         ),
     )
   }

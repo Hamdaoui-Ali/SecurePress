@@ -1,44 +1,44 @@
 import type { ProgressUpdate } from '../../services/simulation-engine'
 
 const steps = [
-  'Lecture de l’instantané',
-  'Détection du noyau',
-  'Inspection des thèmes',
-  'Inspection des extensions',
-  'Inspection de la configuration',
-  'Construction de l’inventaire',
+  'Read TELCO source package',
+  'Index WordPress core',
+  'Inventory themes',
+  'Inventory plugins',
+  'Review configuration',
+  'Component summary',
 ]
 
 interface InventoryProgressProps {
   completed: boolean
-  busy: boolean
+  running: boolean
   progress: ProgressUpdate | null
 }
 
 export function InventoryProgress({
   completed,
-  busy,
+  running,
   progress,
 }: InventoryProgressProps) {
-  const liveMessage = busy
-    ? progress?.message ?? 'Préparation de l’inventaire simulé'
+  const liveMessage = running
+    ? progress?.step ?? 'Discovery queued'
     : completed
-      ? 'Inventaire terminé'
-      : 'Prêt à lancer l’inventaire simulé'
+      ? 'Workspace ready'
+      : 'Ready to run discovery'
 
   return (
     <div className="inventory-progress">
       <div className="inventory-progress-live" aria-live="polite">
         <span className="progress-pulse" aria-hidden="true" />
         <strong>{liveMessage}</strong>
-        {progress && busy ? <span>{progress.percent}%</span> : null}
+        {progress && running ? <span>{progress.percent}%</span> : null}
       </div>
       <ol className="inventory-step-list">
         {steps.map((step, index) => (
           <li
             key={step}
             className={
-              completed || (!busy && progress && progress.percent >= (index + 1) * 15)
+              completed || (running && (progress?.percent ?? 0) >= (index + 1) * 15)
                 ? 'inventory-step inventory-step-done'
                 : 'inventory-step'
             }

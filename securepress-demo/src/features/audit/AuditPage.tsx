@@ -1,11 +1,11 @@
-import { FileSearch, Play, RotateCcw } from 'lucide-react'
+import { FileSearch, LoaderCircle, Play, RotateCcw } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useAssessment } from '../../app/AssessmentProvider'
+import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
 import { telcoScenario } from '../../data/scenario'
 import type { Finding } from '../../domain/models'
 import { selectSeverityCounts } from '../../domain/selectors'
-import { Button } from '../../components/ui/Button'
-import { Card } from '../../components/ui/Card'
 import { AuditProgress } from './AuditProgress'
 import {
   FindingFilters,
@@ -16,7 +16,7 @@ import { FindingDrawer } from './FindingDrawer'
 import { FindingTable } from './FindingTable'
 
 export function AuditPage() {
-  const { state, busy, progress, runStaticAudit } = useAssessment()
+  const { state, busy, progress, activeOperation, runStaticAudit } = useAssessment()
   const [filters, setFilters] = useState<FindingFilterState>(initialFindingFilters)
   const [selectedFindingId, setSelectedFindingId] = useState<Finding['id'] | null>(null)
   const returnFocusRef = useRef<HTMLElement | null>(null)
@@ -60,61 +60,67 @@ export function AuditPage() {
     : []
 
   const canAudit = state.inventoryCompleted
+  const isAnalyzing = busy && activeOperation?.kind === 'analysis'
 
   return (
     <div className="page-stack">
       <div className="page-heading page-heading-with-action">
         <div>
-          <p className="eyebrow">ÉTAPE 3 · QUALIFICATION</p>
-          <h2>Qualifier sans surinterpréter</h2>
+          <p className="eyebrow">FINDING ANALYSIS</p>
+          <h2>Analyze findings without overclaiming</h2>
           <p>
-            Dix constats issus du scénario local, chacun séparant preuve, risque,
-            remédiation et validation.
+            Findings retain their evidence, risk, recommended change set, and
+            required target verification.
           </p>
         </div>
         <Button
-          busy={busy}
-          disabled={!canAudit}
+          busy={false}
+          disabled={busy || !canAudit}
+          aria-busy={isAnalyzing || undefined}
           onClick={() => void runStaticAudit()}
           data-guide-id="run-audit"
         >
-          {state.auditCompleted ? (
+          {isAnalyzing ? (
+            <LoaderCircle aria-hidden="true" size={17} />
+          ) : state.auditCompleted ? (
             <RotateCcw aria-hidden="true" size={17} />
           ) : (
             <Play aria-hidden="true" size={17} />
           )}
-          {state.auditCompleted
-            ? 'Relancer l’audit simulé'
-            : 'Lancer l’audit statique simulé'}
+          {isAnalyzing
+            ? 'Finding analysis in progress'
+            : state.auditCompleted
+              ? 'Analyze findings again'
+              : 'Analyze findings'}
         </Button>
       </div>
 
       {!canAudit ? (
         <div className="prerequisite-banner" role="status">
           <FileSearch aria-hidden="true" size={19} />
-          <span>Terminez d’abord l’inventaire simulé</span>
+          <span>Run discovery before analyzing findings</span>
         </div>
       ) : null}
 
-      <Card title="Progression de l’audit" eyebrow="QUALIFICATION LOCALE">
+      <Card title="Finding analysis progress" eyebrow="EVIDENCE CORRELATION">
         <AuditProgress
           completed={state.auditCompleted}
-          busy={busy}
+          running={isAnalyzing}
           progress={progress}
         />
       </Card>
 
       {state.auditCompleted ? (
         <>
-          <div className="finding-count-grid" aria-label="Répartition des sévérités">
-            <div><strong>{counts.critical} critiques</strong></div>
-            <div><strong>{counts.high} élevés</strong></div>
-            <div><strong>{counts.medium} moyens</strong></div>
-            <div><strong>{counts.low} faible</strong></div>
+          <div className="finding-count-grid" aria-label="Finding severity distribution">
+            <div><strong>{counts.critical} critical</strong></div>
+            <div><strong>{counts.high} high</strong></div>
+            <div><strong>{counts.medium} medium</strong></div>
+            <div><strong>{counts.low} low</strong></div>
             <div><strong>{counts.variable} variable</strong></div>
           </div>
 
-          <Card title="Constats qualifiés" eyebrow="FILTRES CONTRÔLÉS">
+          <Card title="Qualified findings" eyebrow="FILTERS">
             <FindingFilters
               value={filters}
               onChange={setFilters}
@@ -129,15 +135,15 @@ export function AuditPage() {
               }}
             />
             {findings.length === 0 ? (
-              <p className="empty-state">Aucun constat ne correspond à ces filtres.</p>
+              <p className="empty-state">No findings match these filters.</p>
             ) : null}
           </Card>
         </>
       ) : (
-        <Card title="Constats en attente" eyebrow="PROCHAINE PREUVE">
+        <Card title="Findings pending" eyebrow="NEXT ACTION">
           <p className="muted-copy">
-            L’audit sera disponible après l’inventaire. Les sévérités et les textes
-            ci-dessous proviennent uniquement du scénario local.
+            Finding analysis is available after discovery. Findings are exposed
+            only after the analysis operation completes.
           </p>
         </Card>
       )}

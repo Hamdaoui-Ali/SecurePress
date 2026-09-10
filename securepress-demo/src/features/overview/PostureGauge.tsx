@@ -17,7 +17,7 @@ export function PostureGauge({
         className="posture-gauge"
         style={{ '--gauge-score': `${score}%` } as CSSProperties}
         role="img"
-        aria-label={`Indice pédagogique simulé : ${score} sur 100`}
+        aria-label={`Security posture score: ${score} out of 100`}
       >
         <div className="posture-gauge-inner">
           <strong>{score}</strong>
@@ -27,11 +27,11 @@ export function PostureGauge({
       <div className="posture-copy">
         <p className="posture-status">{status}</p>
         <p>
-          Risque restant simulé : <strong>{remainingRiskPoints} points</strong>
+          Remaining risk: <strong>{remainingRiskPoints} points</strong>
         </p>
         <p className="muted-copy">
-          Le score est pédagogique : il ne remplace pas une validation sur la
-          cible.
+          The score reflects the deterministic workspace assessment and still
+          requires target verification.
         </p>
       </div>
     </div>

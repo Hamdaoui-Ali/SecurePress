@@ -1,6 +1,6 @@
-import type { Finding } from '../../domain/models'
 import { SeverityBadge } from '../../components/ui/SeverityBadge'
 import { StatusBadge } from '../../components/ui/StatusBadge'
+import type { Finding } from '../../domain/models'
 
 interface FindingTableProps {
   findings: Finding[]
@@ -11,11 +11,11 @@ interface FindingTableProps {
 function evidenceLabel(status: Finding['evidenceStatus']) {
   switch (status) {
     case 'observed_in_snapshot':
-      return 'Constatée dans l’instantané'
+      return 'Observed in package'
     case 'documented_in_audit':
-      return 'Mentionnée dans le rapport'
+      return 'Documented finding'
     case 'not_observable_offline':
-      return 'Non observable hors ligne'
+      return 'Not observable locally'
   }
 }
 
@@ -27,15 +27,15 @@ export function FindingTable({
   return (
     <div className="table-scroll">
       <table className="finding-table">
-        <caption className="sr-only">Constats qualifiés dans l’audit</caption>
+        <caption className="sr-only">Qualified workspace findings</caption>
         <thead>
           <tr>
             <th scope="col">ID</th>
-            <th scope="col">Constat</th>
-            <th scope="col">Sévérité</th>
-            <th scope="col">Preuve</th>
-            <th scope="col">Remédiation</th>
-            <th scope="col">Détail</th>
+            <th scope="col">Finding</th>
+            <th scope="col">Severity</th>
+            <th scope="col">Evidence</th>
+            <th scope="col">Change set</th>
+            <th scope="col">Details</th>
           </tr>
         </thead>
         <tbody>
@@ -53,7 +53,7 @@ export function FindingTable({
                     onClick={(event) => onSelect(finding, event.currentTarget)}
                   >
                     {finding.title}
-                    <span>Ouvrir {finding.id}</span>
+                    <span>Open {finding.id}</span>
                   </button>
                 </td>
                 <td>
@@ -71,7 +71,7 @@ export function FindingTable({
                 </td>
                 <td>
                   <StatusBadge
-                    label={applied ? 'Appliquée en simulation' : 'À traiter'}
+                    label={applied ? 'Change set applied' : 'Change set pending'}
                     tone={applied ? 'success' : 'prepared'}
                   />
                 </td>
@@ -81,7 +81,7 @@ export function FindingTable({
                     className="table-detail-link"
                     onClick={(event) => onSelect(finding, event.currentTarget)}
                   >
-                    Preuve et décision
+                    Evidence and decision
                   </button>
                 </td>
               </tr>

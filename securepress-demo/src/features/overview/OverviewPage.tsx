@@ -1,5 +1,6 @@
 import { AlertTriangle, CheckCircle2, Info } from 'lucide-react'
 import { useAssessment } from '../../app/AssessmentProvider'
+import { Card } from '../../components/ui/Card'
 import { telcoScenario } from '../../data/scenario'
 import {
   selectAppliedCount,
@@ -7,113 +8,152 @@ import {
   selectRemainingRiskPoints,
   selectSeverityCounts,
 } from '../../domain/selectors'
-import { Card } from '../../components/ui/Card'
 import { MetricCard } from './MetricCard'
 import { PostureGauge } from './PostureGauge'
 import { WorkflowStepper } from './WorkflowStepper'
 
+function formatDuration(durationMs: number | undefined): string {
+  const seconds = Math.max(0, Math.round((durationMs ?? 0) / 1000))
+  const minutes = Math.floor(seconds / 60)
+
+  return minutes > 0 ? `${minutes}m ${seconds % 60}s` : `${seconds}s`
+}
+
+function nextAction(inventoryCompleted: boolean, auditCompleted: boolean): string {
+  if (!inventoryCompleted) return 'Run discovery'
+  if (!auditCompleted) return 'Analyze findings'
+  return 'Review change sets'
+}
+
 export function OverviewPage() {
-  const { state } = useAssessment()
+  const { state, lastRun } = useAssessment()
   const severityCounts = selectSeverityCounts(telcoScenario)
   const appliedCount = selectAppliedCount(state)
   const postureScore = selectPostureScore(telcoScenario, state)
   const remainingRiskPoints = selectRemainingRiskPoints(telcoScenario, state)
   const postureStatus =
-    appliedCount > 0 ? 'Projeté, non vérifié sur cible' : 'État initial simulé'
+    appliedCount > 0
+      ? 'Projected, target verification required'
+      : 'Assessment baseline'
+  const componentCount = telcoScenario.inventory.components.length
 
   return (
     <div className="page-stack" data-guide-id="overview">
       <div className="page-heading">
-        <p className="eyebrow">PÉRIMÈTRE & POSTURE</p>
-        <h2>Comprendre la copie avant de corriger</h2>
+        <p className="eyebrow">WORKSPACE OVERVIEW</p>
+        <h2>Assess workspace posture</h2>
         <p>
-          Une lecture rapide de l’audit statique TELCO : ce qui est présent dans
-          les fichiers, ce qui est qualifié et ce qui reste à vérifier sur cible.
+          Review the indexed TELCO package, qualified findings, and required
+          target verification before making a change.
         </p>
       </div>
 
       <div className="metric-grid">
         <MetricCard
-          label="Extensions identifiées"
-          value={telcoScenario.inventory.pluginCount}
-          detail="Présence confirmée dans les fichiers"
+          label="Indexed components"
+          value={componentCount}
+          detail="Source package inventory"
           tone="blue"
         />
         <MetricCard
-          label="Thèmes inventoriés"
-          value={telcoScenario.inventory.themeCount}
-          detail="Activation non déduite hors base"
+          label="TELCO source package"
+          value="Indexed"
+          detail={`WordPress ${telcoScenario.project.wordpressVersion}`}
           tone="blue"
         />
         <MetricCard
-          label="Constats qualifiés"
+          label="Findings available"
           value={telcoScenario.findings.length}
-          detail={`${appliedCount} remédiation${appliedCount > 1 ? 's' : ''} simulée${appliedCount > 1 ? 's' : ''}`}
+          detail={`${appliedCount} change set${appliedCount === 1 ? '' : 's'} applied`}
           tone="orange"
         />
         <MetricCard
-          label="Constats critiques"
+          label="Critical findings"
           value={severityCounts.critical}
-          detail="Priorité de la démonstration"
+          detail="Prioritize for change review"
           tone="red"
         />
       </div>
 
       <div className="overview-grid">
-        <Card title="Indice pédagogique simulé" eyebrow="POSTURE">
+        <Card title="Security posture score" eyebrow="POSTURE">
           <PostureGauge
             score={postureScore}
             remainingRiskPoints={remainingRiskPoints}
             status={postureStatus}
           />
         </Card>
-        <Card title="Progression du workflow" eyebrow="SOUTENANCE">
+        <Card title="Workspace workflow" eyebrow="OPERATIONS">
           <WorkflowStepper state={state} />
         </Card>
       </div>
 
       <div className="overview-grid overview-grid-bottom">
-        <Card title="Répartition des constats" eyebrow="QUALIFICATION">
-          <div className="severity-strip" aria-label="Répartition par sévérité">
+        <Card title="Finding distribution" eyebrow="ANALYSIS">
+          <div className="severity-strip" aria-label="Finding severity distribution">
             <div className="severity-item severity-item-critical">
-              <span>Critiques</span>
+              <span>Critical</span>
               <strong>{severityCounts.critical}</strong>
             </div>
             <div className="severity-item severity-item-high">
-              <span>Élevés</span>
+              <span>High</span>
               <strong>{severityCounts.high}</strong>
             </div>
             <div className="severity-item severity-item-medium">
-              <span>Moyens</span>
+              <span>Medium</span>
               <strong>{severityCounts.medium}</strong>
             </div>
             <div className="severity-item severity-item-neutral">
-              <span>Faible / variable</span>
+              <span>Low / variable</span>
               <strong>{severityCounts.low + severityCounts.variable}</strong>
             </div>
           </div>
           <p className="card-note">
-            Les sévérités décrivent le scénario pédagogique, pas une exploitabilité
-            démontrée sur un serveur réel.
+            Severity describes the workspace evidence and does not establish
+            exploitability on a target.
           </p>
         </Card>
-        <Card title="Limites à garder visibles" eyebrow="VÉRITÉ DE LA PREUVE">
+        <Card title="Workspace activity" eyebrow="NEXT ACTION">
+          {lastRun ? (
+            <div className="posture-copy">
+              <p className="posture-status">{lastRun.message}</p>
+              <p>
+                Last run{' '}
+                <time dateTime={lastRun.completedAt ?? lastRun.startedAt}>
+                  {new Intl.DateTimeFormat('en-GB', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  }).format(new Date(lastRun.completedAt ?? lastRun.startedAt))}
+                </time>
+              </p>
+              {lastRun.completedAt ? (
+                <p>Completed in {formatDuration(lastRun.durationMs)}</p>
+              ) : null}
+            </div>
+          ) : (
+            <p className="muted-copy">No workspace operation has completed yet.</p>
+          )}
+          <p className="card-note">
+            Next action: <strong>{nextAction(state.inventoryCompleted, state.auditCompleted)}</strong>
+          </p>
+        </Card>
+        <Card title="Evidence limits" eyebrow="TARGET VERIFICATION">
           <ul className="limit-list">
             <li>
               <CheckCircle2 aria-hidden="true" size={17} />
-              <span>Audit statique</span>
+              <span>Static package analysis</span>
             </li>
             <li>
               <CheckCircle2 aria-hidden="true" size={17} />
-              <span>Copie hors production</span>
+              <span>Indexed source package</span>
             </li>
             <li>
               <Info aria-hidden="true" size={17} />
-              <span>Activation des extensions inconnue</span>
+              <span>Plugin activation is unknown</span>
             </li>
             <li>
               <AlertTriangle aria-hidden="true" size={17} />
-              <span>Contre-audit dynamique non exécuté</span>
+              <span>Dynamic target retest not executed</span>
             </li>
           </ul>
         </Card>
