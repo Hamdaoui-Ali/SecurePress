@@ -29,6 +29,27 @@ export type WorkflowStage =
   | 'validation'
   | 'report'
 
+export type OperationKind =
+  | 'discovery'
+  | 'analysis'
+  | 'change-set'
+  | 'controls'
+
+export type OperationStatus = 'idle' | 'running' | 'completed' | 'failed'
+
+export interface OperationRun {
+  id: string
+  kind: OperationKind
+  status: OperationStatus
+  startedAt: string
+  completedAt?: string
+  message: string
+  currentStep?: string
+  processed?: number
+  total?: number
+  durationMs?: number
+}
+
 export interface Finding {
   id: `F-${string}`
   title: string
@@ -108,6 +129,8 @@ export interface AssessmentState {
   validationResults: Record<string, ValidationStatus>
   timeline: TimelineEvent[]
   guidedStep: number | null
+  lastRun: OperationRun | null
+  operationHistory: OperationRun[]
 }
 
 export function createInitialAssessment(): AssessmentState {
@@ -121,5 +144,7 @@ export function createInitialAssessment(): AssessmentState {
     validationResults: {},
     timeline: [],
     guidedStep: null,
+    lastRun: null,
+    operationHistory: [],
   }
 }

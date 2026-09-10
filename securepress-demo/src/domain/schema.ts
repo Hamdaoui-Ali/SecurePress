@@ -1,5 +1,51 @@
 import { z } from 'zod'
 
+const OPERATION_HISTORY_LIMIT = 20
+
+export const OperationKindSchema = z.enum([
+  'discovery',
+  'analysis',
+  'change-set',
+  'controls',
+])
+
+export const OperationStatusSchema = z.enum([
+  'idle',
+  'running',
+  'completed',
+  'failed',
+])
+
+export const OperationRunSchema = z.object({
+  id: z.string().min(1),
+  kind: OperationKindSchema,
+  status: OperationStatusSchema,
+  startedAt: z.string().min(1),
+  completedAt: z.string().min(1).optional(),
+  message: z.string().min(1),
+  currentStep: z.string().min(1).optional(),
+  processed: z.number().int().nonnegative().optional(),
+  total: z.number().int().nonnegative().optional(),
+  durationMs: z.number().nonnegative().optional(),
+})
+
+const PersistedOperationRunSchema = OperationRunSchema.extend({
+  status: z.enum(['completed', 'failed']),
+})
+
+const OperationHistorySchema = z
+  .array(z.unknown())
+  .catch([])
+  .transform((entries) =>
+    entries
+      .flatMap((entry) => {
+        const parsed = PersistedOperationRunSchema.safeParse(entry)
+        return parsed.success ? [parsed.data] : []
+      })
+      .sort((left, right) => right.startedAt.localeCompare(left.startedAt))
+      .slice(0, OPERATION_HISTORY_LIMIT),
+  )
+
 export const FindingSchema = z.object({
   id: z.string().regex(/^F-\d{3}$/),
   title: z.string().min(1),
@@ -99,6 +145,8 @@ export const AssessmentStateSchema = z.object({
     }),
   ),
   guidedStep: z.number().int().min(0).max(7).nullable(),
+  lastRun: PersistedOperationRunSchema.nullable().catch(null).default(null),
+  operationHistory: OperationHistorySchema.default([]),
 })
 
 export const ScenarioSchema = z.object({
