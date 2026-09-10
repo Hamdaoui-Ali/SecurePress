@@ -3,13 +3,15 @@ import { expect, test } from 'vitest'
 import App from '../App'
 
 test('keeps the workspace context and removes the legacy disclaimer', () => {
-  render(<App />)
+  const { container } = render(<App />)
 
   expect(
     screen.getByRole('heading', { name: /SecurePress Operations/i }),
   ).toBeInTheDocument()
-  expect(screen.getByText('TELCO workspace')).toBeInTheDocument()
   expect(
-    screen.queryByText(/Aucune configuration r.elle n.?a .t. modifi.e/i),
-  ).not.toBeInTheDocument()
+    screen.getByRole('complementary', { name: 'Workspace context' }),
+  ).toHaveTextContent('TELCO workspace')
+  expect(container).not.toHaveTextContent(
+    /Aucune configuration r.elle n.?a .t. modifi.e/i,
+  )
 })
