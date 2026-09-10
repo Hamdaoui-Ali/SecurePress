@@ -1,7 +1,9 @@
 import type { PropsWithChildren } from 'react'
-import { DemoBanner } from './DemoBanner'
+import { OperationActivity } from '../operations/OperationActivity'
+import { OperationProgress } from '../operations/OperationProgress'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
+import { WorkspaceContextBar } from './WorkspaceContextBar'
 
 interface AppShellProps {
   onReset: () => void
@@ -22,7 +24,11 @@ export function AppShell({
         <Sidebar onStartGuidedDemo={onStartGuidedDemo} />
         <div className="app-content">
           <TopBar onReset={onReset} />
-          <DemoBanner />
+          <WorkspaceContextBar />
+          <div className="operations-status" aria-label="Operations status">
+            <OperationProgress />
+            <OperationActivity />
+          </div>
           <main id="main-content" className="main-content" tabIndex={-1}>
             {children}
           </main>

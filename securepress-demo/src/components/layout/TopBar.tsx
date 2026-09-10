@@ -1,5 +1,5 @@
-import { useLocation } from 'react-router'
 import { useState } from 'react'
+import { useLocation } from 'react-router'
 import { ResetDemoDialog } from '../workflow/ResetDemoDialog'
 
 interface TopBarProps {
@@ -24,26 +24,26 @@ export function TopBar({ onReset }: TopBarProps) {
       <div>
         <p className="topbar-kicker">TELCO · AUDIT STATIQUE</p>
         <h1 id="page-title">
-          SecurePress Audit Lab · {titles[pathname] ?? 'Vue d’ensemble'}
+          SecurePress Operations · {titles[pathname] ?? 'Vue d’ensemble'}
         </h1>
       </div>
       <div className="topbar-actions">
         <span className="topbar-status">
           <span className="status-dot" aria-hidden="true" />
-          Session locale
+          Local workspace
         </span>
         <button
           type="button"
           className="button button-ghost"
           onClick={() => setResetOpen(true)}
         >
-          Réinitialiser la démo
+          Reset workspace
         </button>
       </div>
       <ResetDemoDialog
         open={resetOpen}
-        title="Réinitialiser la démo ?"
-        description="Toutes les actions locales, remédiations et validations seront effacées."
+        title="Reset workspace?"
+        description="All local actions, remediations, validations, and operation history will be cleared."
         onCancel={() => setResetOpen(false)}
         onConfirm={() => {
           setResetOpen(false)

@@ -7,7 +7,6 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { NavLink } from 'react-router'
-import { Badge } from '../ui/Badge'
 import { Button } from '../ui/Button'
 
 interface SidebarProps {
@@ -36,19 +35,18 @@ export function Sidebar({ onStartGuidedDemo }: SidebarProps) {
         </div>
         <div>
           <p className="brand-name">SecurePress</p>
-          <p className="brand-subtitle">Audit Lab</p>
+          <p className="brand-subtitle">Operations</p>
         </div>
       </div>
 
       <div className="project-block">
         <p className="sidebar-label">Projet</p>
         <p className="project-name">TELCO</p>
-        <Badge tone="demo">MODE DÉMO</Badge>
       </div>
 
       <nav className="sidebar-nav" aria-labelledby="sidebar-nav-title">
         <h2 id="sidebar-nav-title" className="sr-only">
-          Étapes de la démonstration
+          Étapes de l’espace de travail
         </h2>
         {navigation.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -73,7 +71,7 @@ export function Sidebar({ onStartGuidedDemo }: SidebarProps) {
           onClick={onStartGuidedDemo}
         >
           <Sparkles aria-hidden="true" size={16} />
-          Démarrer la démo guidée
+          Démarrer le parcours guidé
         </Button>
       </div>
     </aside>

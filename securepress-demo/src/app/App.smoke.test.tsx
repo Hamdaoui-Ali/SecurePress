@@ -1,10 +1,11 @@
 import { render, screen } from '@testing-library/react'
-import { test, expect } from 'vitest'
+import { expect, test } from 'vitest'
 import App from '../App'
 
-test('affiche le nom du laboratoire', () => {
+test('shows the operations workspace name', () => {
   render(<App />)
+
   expect(
-    screen.getByRole('heading', { name: /SecurePress Audit Lab/i }),
+    screen.getByRole('heading', { name: /SecurePress Operations/i }),
   ).toBeInTheDocument()
 })
