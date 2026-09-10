@@ -4,44 +4,19 @@ import { telcoScenario } from '../../data/scenario'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { StatusBadge } from '../../components/ui/StatusBadge'
-import {
-  HardeningControl,
-  type HardeningControlDefinition,
-} from './HardeningControl'
+import { HardeningControl } from './HardeningControl'
 import { LoginAttemptsDemo } from './LoginAttemptsDemo'
 import { UploadPolicyDemo } from './UploadPolicyDemo'
 import { TestGroup } from './TestGroup'
 
-const hardeningControls: HardeningControlDefinition[] = [
-  {
-    id: 'author-enumeration',
-    title: 'Énumération par auteur',
-    description:
-      'Vérifier que les identifiants d’auteur ne sont pas exposés par les routes publiques.',
-    expectedResult: 'Aucun identifiant administrateur n’est divulgué.',
-  },
-  {
-    id: 'rest-users',
-    title: 'Routes REST utilisateurs',
-    description:
-      'Contrôler la visibilité de la collection utilisateurs dans l’API WordPress.',
-    expectedResult: 'La collection utilisateurs n’est pas publiquement énumérable.',
-  },
-  {
-    id: 'version-disclosure',
-    title: 'Divulgation de version',
-    description:
-      'Rechercher les marqueurs de version dans les réponses et métadonnées locales.',
-    expectedResult: 'Les marqueurs inutiles sont masqués ou documentés.',
-  },
-  {
-    id: 'file-editor',
-    title: 'Éditeur de fichiers',
-    description:
-      'Vérifier la présence de la mesure DISALLOW_FILE_EDIT préparée.',
-    expectedResult: 'L’éditeur de fichiers WordPress est indisponible.',
-  },
-]
+const hardeningControls = telcoScenario.validationChecks
+  .filter((check) => check.category === 'hardening')
+  .map((check) => ({
+    id: check.id,
+    title: check.title,
+    description: 'Contrôle de durcissement préparé pour le workspace TELCO.',
+    expectedResult: check.expectedResult,
+  }))
 
 const groupDefinitions = [
   {

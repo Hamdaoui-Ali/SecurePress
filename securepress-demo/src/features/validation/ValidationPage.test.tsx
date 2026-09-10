@@ -65,24 +65,23 @@ test('présente la politique d’upload et les contrôles de durcissement', asyn
   expect(screen.getByText('BLOQUÉ')).toBeVisible()
   expect(screen.getAllByText('AUTORISÉ')).toHaveLength(2)
 
-  for (const label of [
-    'Énumération par auteur',
-    'Routes REST utilisateurs',
-    'Divulgation de version',
-    'Éditeur de fichiers',
-  ]) {
-    expect(screen.getByText(label)).toBeVisible()
+  for (const controlId of ['V-FILE-EDITOR', 'V-XMLRPC-TARGET']) {
+    expect(screen.getByText(controlId)).toBeVisible()
   }
+  expect(screen.queryByText('Énumération par auteur')).not.toBeInTheDocument()
 
   const hardeningCard = screen.getByRole('article', {
-    name: /Éditeur de fichiers/i,
+    name: /Éditeur de fichiers désactivé/i,
   })
   await user.click(
     within(hardeningCard).getByRole('button', {
       name: /Exécuter le contrôle/i,
     }),
   )
-  expect(within(hardeningCard).getByText('PASS simulé')).toBeVisible()
+  expect(await within(hardeningCard).findByText('PASS simulé')).toBeVisible()
+
+  const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
+  expect(saved.completedHardeningCheckIds).toEqual(['V-FILE-EDITOR'])
 })
 
 test('lance la campagne et conserve les limites de preuve', async () => {
