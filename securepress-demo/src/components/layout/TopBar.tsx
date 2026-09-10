@@ -3,6 +3,7 @@ import { useLocation } from 'react-router'
 import { ResetDemoDialog } from '../workflow/ResetDemoDialog'
 
 interface TopBarProps {
+  busy: boolean
   onReset: () => void
 }
 
@@ -15,7 +16,7 @@ const titles: Record<string, string> = {
   '/rapport': 'Comparaison et rapport',
 }
 
-export function TopBar({ onReset }: TopBarProps) {
+export function TopBar({ busy, onReset }: TopBarProps) {
   const { pathname } = useLocation()
   const [resetOpen, setResetOpen] = useState(false)
 
@@ -35,6 +36,7 @@ export function TopBar({ onReset }: TopBarProps) {
         <button
           type="button"
           className="button button-ghost"
+          disabled={busy}
           onClick={() => setResetOpen(true)}
         >
           Reset workspace
@@ -42,10 +44,12 @@ export function TopBar({ onReset }: TopBarProps) {
       </div>
       <ResetDemoDialog
         open={resetOpen}
+        busy={busy}
         title="Reset workspace?"
         description="All local actions, remediations, validations, and operation history will be cleared."
         onCancel={() => setResetOpen(false)}
         onConfirm={() => {
+          if (busy) return
           setResetOpen(false)
           onReset()
         }}

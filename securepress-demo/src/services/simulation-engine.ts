@@ -279,6 +279,12 @@ export function createSimulationEngine(
           ...state.completedHardeningCheckIds,
           control.id,
         ],
+        validationResults: {
+          ...state.validationResults,
+          [control.id]: control.initialStatus === 'target_validation_required'
+            ? 'target_validation_required'
+            : 'simulated_pass',
+        },
       }),
     )
   }
@@ -287,7 +293,6 @@ export function createSimulationEngine(
     state: AssessmentState,
   ): Promise<AssessmentState> {
     if (!state.auditCompleted) throw new Error('AUDIT_REQUIRED')
-    if (state.validationResults[EXTERNAL_RETEST_ID]) return state
 
     const validationTotal = telcoScenario.validationChecks.length
     const functionalCount = telcoScenario.validationChecks.filter(

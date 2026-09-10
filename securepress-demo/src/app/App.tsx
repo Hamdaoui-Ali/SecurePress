@@ -7,7 +7,7 @@ import { GuidedDemo } from '../components/workflow/GuidedDemo'
 import { ResetDemoDialog } from '../components/workflow/ResetDemoDialog'
 
 function AppContent() {
-  const { resetDemo, startGuidedDemo } = useAssessment()
+  const { busy, resetDemo, startGuidedDemo } = useAssessment()
   const navigate = useNavigate()
   const [guidedStartOpen, setGuidedStartOpen] = useState(false)
 
@@ -15,6 +15,7 @@ function AppContent() {
     <>
       <AppRoutes
         onReset={() => {
+          if (busy) return
           resetDemo()
           navigate('/')
         }}
@@ -23,10 +24,12 @@ function AppContent() {
       <GuidedDemo />
       <ResetDemoDialog
         open={guidedStartOpen}
+        busy={busy}
         title="Démarrer le parcours guidé ?"
         description="Le parcours local sera remis à zéro et commencera par la vue d’ensemble."
         onCancel={() => setGuidedStartOpen(false)}
         onConfirm={() => {
+          if (busy) return
           setGuidedStartOpen(false)
           startGuidedDemo()
           navigate('/')

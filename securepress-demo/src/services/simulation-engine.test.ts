@@ -34,6 +34,32 @@ function expectPhasedProgress(
 }
 
 describe('simulation engine', () => {
+  test('repeats every campaign phase and retains target-only outcomes', async () => {
+    const updates: ProgressUpdate[] = []
+    const engine = createEngine(updates)
+    const initial = { ...createInitialAssessment(), auditCompleted: true }
+    const first = await engine.runValidation(initial)
+    const firstUpdates = [...updates]
+    updates.length = 0
+    const second = await engine.runValidation(first)
+    expect(updates).toEqual(firstUpdates)
+    expect(updates).toHaveLength(5)
+    expect(second.validationResults).toEqual(first.validationResults)
+    expect(second.validationResults['V-XMLRPC-TARGET']).toBe('target_validation_required')
+  })
+
+  test.each([
+    ['V-FILE-EDITOR', 'simulated_pass'],
+    ['V-XMLRPC-TARGET', 'target_validation_required'],
+  ])('records the canonical result for individual control %s', async (id, status) => {
+    const engine = createEngine()
+    const state = await engine.runHardeningCheck(
+      { ...createInitialAssessment(), auditCompleted: true }, id,
+    )
+    expect(state.completedHardeningCheckIds).toEqual([id])
+    expect(state.validationResults[id]).toBe(status)
+  })
+
   test('refuse la validation avant l’audit', async () => {
     const engine = createSimulationEngine({
       delayMs: 0,

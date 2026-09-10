@@ -1,6 +1,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
+import * as engineModule from '../../services/simulation-engine'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
 import { createInitialAssessment, type AssessmentState } from '../../domain/models'
 import { telcoScenario } from '../../data/scenario'
@@ -56,6 +57,48 @@ test('shows a staged local change set with before and after evidence', () => {
   ).toBeEnabled()
 })
 
+test('associates a real dependency-phase failure through later activity, reload, and retry', async () => {
+  const user = userEvent.setup()
+  saveAssessment(completedAuditState())
+  const createEngine = engineModule.createSimulationEngine
+  let failOnce = true
+  const factory = vi.spyOn(engineModule, 'createSimulationEngine').mockImplementation(options =>
+    createEngine({ ...options, onProgress: update => {
+      options.onProgress?.(update)
+      if (failOnce && update.step === 'Vérification des dépendances') {
+        failOnce = false
+        throw new Error('DEPENDENCY_UNAVAILABLE')
+      }
+    } }),
+  )
+  try {
+    const view = renderRemediation()
+    await user.click(screen.getByRole('button', { name: 'Apply change set · F-001' }))
+    expect(await screen.findByText('Change set failed · F-001')).toBeVisible()
+    const failed = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
+    expect(failed.appliedFindingIds).toEqual([])
+    expect(failed.lastRun).toMatchObject({
+      findingId: 'F-001', status: 'failed', currentStep: 'Vérification des dépendances',
+      message: 'Change set failed: an unexpected operation error occurred.',
+    })
+    await user.click(screen.getByRole('button', { name: 'Apply change set · F-002' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Change set applied · F-002' })).toBeDisabled())
+    expect(screen.getByText('Change set failed · F-001')).toBeVisible()
+    view.unmount()
+    renderRemediation()
+    expect(screen.getByText('Change set failed · F-001')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Apply change set · F-001' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Change set applied · F-001' })).toBeDisabled())
+    expect(screen.queryByText('Change set failed · F-001')).not.toBeInTheDocument()
+    const retried = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
+    expect(retried.appliedFindingIds).toEqual(['F-002', 'F-001'])
+    expect(retried.operationHistory).toHaveLength(3)
+    expect(retried.operationHistory.filter((run: { findingId: string }) => run.findingId === 'F-001').map((run: { status: string }) => run.status)).toEqual(['completed', 'failed'])
+  } finally {
+    factory.mockRestore()
+  }
+})
+
 test('shows the provider change-set phase without updating score or findings early', async () => {
   const user = userEvent.setup()
   saveAssessment(completedAuditState())
@@ -76,6 +119,9 @@ test('shows the provider change-set phase without updating score or findings ear
   expect(
     screen.getByRole('button', { name: 'Applying change set · F-001' }),
   ).toBeDisabled()
+  await waitFor(() => expect(
+    screen.getByRole('button', { name: 'Change set applied · F-001' }),
+  ).toBeDisabled(), { timeout: 3_000 })
 })
 
 test('records a completed change set and persists its activity after the final phase', async () => {

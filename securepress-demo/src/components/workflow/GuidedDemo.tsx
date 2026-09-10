@@ -7,6 +7,7 @@ import { GuidedDemoOverlay } from './GuidedDemoOverlay'
 export function GuidedDemo() {
   const {
     state,
+    busy,
     applyRemediation,
     runValidation,
     nextGuidedStep,
@@ -17,6 +18,12 @@ export function GuidedDemo() {
   const navigate = useNavigate()
   const previousStepRef = useRef<number | null>(null)
   const [advancing, setAdvancing] = useState(false)
+  const navigationRevision = useRef(0)
+  const latestStep = useRef(state.guidedStep)
+
+  useEffect(() => {
+    latestStep.current = state.guidedStep
+  }, [state.guidedStep])
 
   const stepIndex = state.guidedStep
   const active = stepIndex !== null
@@ -53,8 +60,11 @@ export function GuidedDemo() {
   if (!active || !detail || stepIndex === null) return null
 
   const handleNext = async () => {
-    if (advancing) return
+    if (advancing || busy) return
     setAdvancing(true)
+    const revision = navigationRevision.current
+    const stillCurrent = () =>
+      navigationRevision.current === revision && latestStep.current === stepIndex
 
     try {
       if (stepIndex === guidedSteps.length - 1) {
@@ -73,15 +83,17 @@ export function GuidedDemo() {
         ] as const
 
         for (const findingId of guidedFindingIds) {
-          await applyRemediation(findingId)
+          const succeeded = await applyRemediation(findingId)
+          if (!succeeded || !stillCurrent()) return
         }
       }
 
-      if (stepKey === 'run-validation') {
-        await runValidation()
+      if (stepKey === 'run-validation' && !state.validationResults['external-dynamic-retest']) {
+        const succeeded = await runValidation()
+        if (!succeeded || !stillCurrent()) return
       }
 
-      nextGuidedStep()
+      if (stillCurrent()) nextGuidedStep(stepIndex)
     } finally {
       setAdvancing(false)
     }
@@ -95,10 +107,16 @@ export function GuidedDemo() {
       description={detail.description}
       isFirst={stepIndex === 0}
       isLast={stepIndex === guidedSteps.length - 1}
-      busy={advancing}
-      onPrevious={previousGuidedStep}
+      busy={advancing || busy}
+      onPrevious={() => {
+        navigationRevision.current += 1
+        previousGuidedStep()
+      }}
       onNext={() => void handleNext()}
-      onExit={exitGuidedDemo}
+      onExit={() => {
+        navigationRevision.current += 1
+        exitGuidedDemo()
+      }}
     />
   )
 }

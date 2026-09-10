@@ -39,6 +39,7 @@ export type OperationStatus = 'idle' | 'running' | 'completed' | 'failed'
 
 export interface OperationRun {
   id: string
+  findingId?: Finding['id']
   kind: OperationKind
   status: OperationStatus
   startedAt: string

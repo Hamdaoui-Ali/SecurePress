@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react'
+import { useAssessment } from '../../app/AssessmentProvider'
 import { OperationActivity } from '../operations/OperationActivity'
 import { OperationProgress } from '../operations/OperationProgress'
 import { Sidebar } from './Sidebar'
@@ -15,15 +16,16 @@ export function AppShell({
   onStartGuidedDemo,
   children,
 }: PropsWithChildren<AppShellProps>) {
+  const { busy } = useAssessment()
   return (
     <>
       <a className="skip-link" href="#main-content">
         Aller au contenu
       </a>
       <div className="app-shell">
-        <Sidebar onStartGuidedDemo={onStartGuidedDemo} />
+        <Sidebar busy={busy} onStartGuidedDemo={onStartGuidedDemo} />
         <div className="app-content">
-          <TopBar onReset={onReset} />
+          <TopBar busy={busy} onReset={onReset} />
           <WorkspaceContextBar />
           <div className="operations-status" aria-label="Operations status">
             <OperationProgress />

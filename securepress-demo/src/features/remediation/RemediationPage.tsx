@@ -10,7 +10,10 @@ function isChangeSetForFinding(
   operation: OperationRun | null,
   findingId: string,
 ) {
-  return operation?.kind === 'change-set' && operation.message.includes(findingId)
+  if (operation?.kind !== 'change-set') return false
+  return operation.findingId !== undefined
+    ? operation.findingId === findingId
+    : operation.message.match(/\bF-\d{3}\b/)?.[0] === findingId
 }
 
 function findLatestChangeSetRun(

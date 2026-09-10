@@ -33,13 +33,13 @@ export interface AssessmentContextValue {
   activeOperation: OperationRun | null
   lastRun: OperationRun | null
   operationHistory: OperationRun[]
-  runInventory(): Promise<void>
-  runStaticAudit(): Promise<void>
-  applyRemediation(findingId: Finding['id']): Promise<void>
-  runHardeningCheck(controlId: string): Promise<void>
-  runValidation(): Promise<void>
+  runInventory(): Promise<boolean>
+  runStaticAudit(): Promise<boolean>
+  applyRemediation(findingId: Finding['id']): Promise<boolean>
+  runHardeningCheck(controlId: string): Promise<boolean>
+  runValidation(): Promise<boolean>
   startGuidedDemo(): void
-  nextGuidedStep(): void
+  nextGuidedStep(expectedStep?: number): void
   previousGuidedStep(): void
   exitGuidedDemo(): void
   resetDemo(): void
@@ -52,6 +52,8 @@ interface AssessmentProviderProps {
 
 interface OperationDefinition {
   kind: OperationKind
+  findingId?: Finding['id']
+  isSatisfied?: (state: AssessmentState) => boolean
   runningMessage: string
   failurePrefix: string
   getCompletedMessage: (state: AssessmentState) => string
@@ -168,13 +170,15 @@ export function AssessmentProvider({
       definition: OperationDefinition,
       operation: (current: AssessmentState) => Promise<AssessmentState>,
     ) => {
-      if (busyRef.current) return
+      if (busyRef.current) return false
+      if (definition.isSatisfied?.(stateRef.current)) return true
 
       const startedAt = now().toISOString()
       operationSequenceRef.current += 1
       const runningOperation: OperationRun = {
         id: `${definition.kind}-${startedAt}-${operationSequenceRef.current}`,
         kind: definition.kind,
+        findingId: definition.findingId,
         status: 'running',
         startedAt,
         message: definition.runningMessage,
@@ -204,6 +208,8 @@ export function AssessmentProvider({
         }
         const completedState: AssessmentState = {
           ...nextState,
+          // Navigation can change while the engine processes its input snapshot.
+          guidedStep: stateRef.current.guidedStep,
           lastRun: completedOperation,
           operationHistory: newestFirstHistory(
             completedOperation,
@@ -219,6 +225,7 @@ export function AssessmentProvider({
           ],
         }
         commitAssessmentTransition(completedState)
+        return true
       } catch (error) {
         const completedAt = now().toISOString()
         const latestProgress = getLatestProgress()
@@ -240,6 +247,7 @@ export function AssessmentProvider({
             stateRef.current.operationHistory,
           ),
         })
+        return false
       } finally {
         busyRef.current = false
         setBusy(false)
@@ -285,6 +293,8 @@ export function AssessmentProvider({
       runOperation(
         {
           kind: 'change-set',
+          findingId,
+          isSatisfied: current => current.appliedFindingIds.includes(findingId),
           runningMessage: `Change set in progress \u00b7 ${findingId}`,
           failurePrefix: 'Change set failed',
           getCompletedMessage: () => `Change set applied \u00b7 ${findingId}`,
@@ -300,6 +310,7 @@ export function AssessmentProvider({
         {
           kind: 'controls',
           runningMessage: `Hardening check in progress \u00b7 ${controlId}`,
+          isSatisfied: current => current.completedHardeningCheckIds.includes(controlId),
           failurePrefix: 'Hardening check failed',
           getCompletedMessage: () =>
             `Hardening check completed \u00b7 ${controlId}`,
@@ -337,9 +348,10 @@ export function AssessmentProvider({
     })
   }, [commitAssessmentTransition])
 
-  const nextGuidedStep = useCallback(() => {
+  const nextGuidedStep = useCallback((expectedStep?: number) => {
     const currentStep = stateRef.current.guidedStep
     if (currentStep === null) return
+    if (expectedStep !== undefined && currentStep !== expectedStep) return
 
     const nextState = {
       ...stateRef.current,

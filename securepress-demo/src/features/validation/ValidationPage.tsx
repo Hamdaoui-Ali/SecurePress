@@ -16,6 +16,7 @@ const hardeningControls = telcoScenario.validationChecks
     title: check.title,
     description: 'Contrôle de durcissement préparé pour le workspace TELCO.',
     expectedResult: check.expectedResult,
+    initialStatus: check.initialStatus,
   }))
 
 const groupDefinitions = [
@@ -139,6 +140,9 @@ export function ValidationPage() {
               key={control.id}
               control={control}
               completed={state.completedHardeningCheckIds.includes(control.id)}
+              status={control.initialStatus === 'target_validation_required'
+                ? control.initialStatus
+                : state.validationResults[control.id] ?? control.initialStatus}
               busy={busy}
               auditCompleted={state.auditCompleted}
               onRun={() => void runHardeningCheck(control.id)}

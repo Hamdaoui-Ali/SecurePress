@@ -5,6 +5,7 @@ import { AssessmentProvider } from '../../app/AssessmentProvider'
 import { createInitialAssessment } from '../../domain/models'
 import { saveAssessment, STORAGE_KEY } from '../../services/storage'
 import { ValidationPage } from './ValidationPage'
+import { ReportPage } from '../report/ReportPage'
 
 beforeEach(() => {
   localStorage.clear()
@@ -26,6 +27,42 @@ function renderValidation(delayMs = 0) {
     </AssessmentProvider>,
   )
 }
+
+test('individual hardening executions keep card and persisted report outcomes consistent', async () => {
+  const user = userEvent.setup()
+  saveAssessment(completedAuditState())
+  const view = renderValidation()
+  const editor = screen.getByRole('article', { name: /Éditeur de fichiers désactivé/i })
+  const xmlrpc = screen.getByRole('article', { name: /XML-RPC/i })
+  await user.click(within(editor).getByRole('button'))
+  expect(await within(editor).findByText('PASS')).toBeVisible()
+  await user.click(within(xmlrpc).getByRole('button'))
+  await waitFor(() => expect(within(xmlrpc).getByRole('button')).toHaveTextContent('Control completed'))
+  expect(within(xmlrpc).getByText('Target verification required')).toBeVisible()
+  expect(within(xmlrpc).queryByText('PASS')).not.toBeInTheDocument()
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).validationResults).toMatchObject({
+    'V-FILE-EDITOR': 'simulated_pass', 'V-XMLRPC-TARGET': 'target_validation_required',
+  })
+  view.unmount()
+  render(<AssessmentProvider delayMs={0}><ReportPage /></AssessmentProvider>)
+  expect(screen.getByRole('row', { name: /F-004/ })).toHaveTextContent('PASS')
+  const xmlrpcRow = screen.getByRole('row', { name: /XML-RPC/i })
+  expect(xmlrpcRow).toHaveTextContent('Validation cible requise')
+  expect(xmlrpcRow).not.toHaveTextContent('PASS')
+})
+
+test('restores the completed canonical card from a serialized legacy payload', () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    stage: 'validation', inventoryCompleted: true, auditCompleted: true,
+    visibleFindingIds: [], appliedFindingIds: [], completedHardeningCheckIds: ['file-editor'],
+    validationResults: {}, timeline: [], guidedStep: null,
+  }))
+  renderValidation()
+  const editor = screen.getByRole('article', { name: /Éditeur de fichiers désactivé/i })
+  expect(within(editor).getByText('PASS')).toBeVisible()
+  expect(within(editor).getByRole('button')).toBeDisabled()
+  expect(within(editor).getByRole('button')).toHaveTextContent('Control completed')
+})
 
 test('blocks the control campaign until finding analysis is complete', () => {
   renderValidation()
@@ -104,7 +141,7 @@ test('runs the multi-phase control campaign with PASS results and target verific
       { timeout: 3_000 },
     ),
   ).toBeVisible()
-  expect(screen.getAllByText('PASS')).toHaveLength(6)
+  expect(screen.getAllByText('PASS')).toHaveLength(7)
   expect(screen.getAllByText('Validation cible requise')).toHaveLength(4)
   expect(
     screen.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),

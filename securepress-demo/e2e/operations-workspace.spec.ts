@@ -80,6 +80,22 @@ test('runs local workspace operations, preserves their activity, and clears them
     'Target verification required',
   )
 
+  const firstCampaignId = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('securepress.audit-lab.v1')!).lastRun.id,
+  )
+  await controlCampaign.click()
+  await expect(controlProgress).toBeVisible()
+  await expect(controlCampaign).toBeDisabled()
+  await expect(page.locator('.operation-progress-running')).toBeVisible()
+  await expect(controlCampaign).toBeEnabled()
+  const repeatedCampaign = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('securepress.audit-lab.v1')!).lastRun,
+  )
+  expect(repeatedCampaign.id).not.toBe(firstCampaignId)
+  expect(repeatedCampaign).toMatchObject({
+    status: 'completed', currentStep: 'Clôture de la campagne', processed: 10, total: 10,
+  })
+
   await page.reload()
   const activity = page.getByRole('region', { name: 'Latest operation' })
   await expect(activity).toContainText('Control campaign')
@@ -106,3 +122,30 @@ test('runs local workspace operations, preserves their activity, and clears them
   await page.goto('/#/inventaire')
   await expect(page.locator('[data-guide-id="run-inventory"]')).toBeEnabled()
 })
+
+for (const viewport of [
+  { width: 1440, height: 900 },
+  { width: 1024, height: 768 },
+  { width: 390, height: 844 },
+]) {
+  test(`keeps active and applied change sets readable at ${viewport.width}px`, async ({ page }) => {
+    await page.setViewportSize(viewport)
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+    await page.goto('/#/inventaire')
+    await page.locator('[data-guide-id="run-inventory"]').click()
+    await expect(page.getByText('Workspace ready', { exact: true })).toBeVisible()
+    await page.goto('/#/audit')
+    await page.locator('[data-guide-id="run-audit"]').click()
+    await expect(page.getByText('Finding analysis completed', { exact: true })).toBeVisible()
+    await page.goto('/#/remediation')
+    const card = page.locator('#remediation-F-001')
+    await card.getByRole('button', { name: 'Apply change set · F-001' }).click()
+    await expect(card.getByRole('button', { name: 'Applying change set · F-001' })).toBeDisabled()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width)
+    await expect(card.getByText('Change set applied', { exact: true })).toBeVisible()
+    await expect(card.getByText('Target verification required')).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width)
+    expect(errors).toEqual([])
+  })
+}

@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button'
 
 interface ResetDemoDialogProps {
   open: boolean
+  busy?: boolean
   title: string
   description: string
   onCancel: () => void
@@ -12,6 +13,7 @@ interface ResetDemoDialogProps {
 
 export function ResetDemoDialog({
   open,
+  busy = false,
   title,
   description,
   onCancel,
@@ -22,6 +24,11 @@ export function ResetDemoDialog({
   const dialogRef = useRef<HTMLElement>(null)
   const cancelButtonRef = useRef<HTMLButtonElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  const onCancelRef = useRef(onCancel)
+
+  useEffect(() => {
+    onCancelRef.current = onCancel
+  }, [onCancel])
 
   useEffect(() => {
     if (!open) {
@@ -39,7 +46,7 @@ export function ResetDemoDialog({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
-        onCancel()
+        onCancelRef.current()
         return
       }
 
@@ -68,7 +75,7 @@ export function ResetDemoDialog({
       window.cancelAnimationFrame(focusFrame)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [onCancel, open])
+  }, [open])
 
   if (!open) return null
 
@@ -101,7 +108,7 @@ export function ResetDemoDialog({
           <Button ref={cancelButtonRef} variant="ghost" onClick={onCancel}>
             Annuler
           </Button>
-          <Button variant="danger" onClick={onConfirm}>
+          <Button variant="danger" disabled={busy} onClick={onConfirm}>
             Confirmer la réinitialisation
           </Button>
         </div>

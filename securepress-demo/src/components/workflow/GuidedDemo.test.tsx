@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, expect, test } from 'vitest'
@@ -163,6 +163,39 @@ test('confirme un reset via la boîte de dialogue', async () => {
     within(dialog).getByRole('button', { name: 'Confirmer la réinitialisation' }),
   )
   expect(confirmed).toEqual([true])
+})
+
+test('restores focus to the opener after the dialog stays open through a busy transition', async () => {
+  const dialog = (open: boolean, busy: boolean) => (
+    <>
+      <button type="button">Open reset dialog</button>
+      <ResetDemoDialog
+        open={open}
+        busy={busy}
+        title="Reset workspace?"
+        description="Le parcours local sera remis à zéro."
+        onCancel={() => undefined}
+        onConfirm={() => undefined}
+      />
+    </>
+  )
+  const view = render(dialog(false, false))
+  const opener = screen.getByRole('button', { name: 'Open reset dialog' })
+  opener.focus()
+
+  view.rerender(dialog(true, false))
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Annuler' })).toHaveFocus()
+  })
+
+  view.rerender(dialog(true, true))
+  expect(
+    screen.getByRole('button', { name: 'Confirmer la réinitialisation' }),
+  ).toBeDisabled()
+  view.rerender(dialog(true, false))
+  view.rerender(dialog(false, false))
+
+  await waitFor(() => expect(opener).toHaveFocus())
 })
 
 test('uses workspace update and target-verification language in guided steps', () => {

@@ -59,7 +59,7 @@ function AssessmentProbe() {
       <button type="button" onClick={startGuidedDemo}>
         start guided
       </button>
-      <button type="button" onClick={nextGuidedStep}>
+      <button type="button" onClick={() => nextGuidedStep()}>
         next guided
       </button>
       <button type="button" onClick={previousGuidedStep}>

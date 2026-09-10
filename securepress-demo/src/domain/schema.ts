@@ -27,6 +27,7 @@ export const OperationStatusSchema = z.enum([
 
 export const OperationRunSchema = z.object({
   id: z.string().min(1),
+  findingId: z.string().regex(/^F-\d{3}$/).optional(),
   kind: OperationKindSchema,
   status: OperationStatusSchema,
   startedAt: IsoDateTimeSchema,

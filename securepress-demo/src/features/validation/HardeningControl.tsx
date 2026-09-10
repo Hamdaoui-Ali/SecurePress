@@ -1,6 +1,7 @@
 import { Check, Play } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { StatusBadge } from '../../components/ui/StatusBadge'
+import type { ValidationStatus } from '../../domain/models'
 
 export interface HardeningControlDefinition {
   id: string
@@ -12,6 +13,7 @@ export interface HardeningControlDefinition {
 interface HardeningControlProps {
   control: HardeningControlDefinition
   completed: boolean
+  status: ValidationStatus
   busy: boolean
   auditCompleted: boolean
   onRun: () => void
@@ -20,6 +22,7 @@ interface HardeningControlProps {
 export function HardeningControl({
   control,
   completed,
+  status,
   busy,
   auditCompleted,
   onRun,
@@ -35,8 +38,11 @@ export function HardeningControl({
           <h3 id={`hardening-title-${control.id}`}>{control.title}</h3>
         </div>
         <StatusBadge
-          label={completed ? 'PASS' : 'Prêt à exécuter'}
-          tone={completed ? 'success' : 'prepared'}
+          label={status === 'target_validation_required'
+            ? 'Target verification required'
+            : status === 'simulated_pass' ? 'PASS'
+              : status === 'simulated_fail' ? 'FAIL' : 'Prêt à exécuter'}
+          tone={status === 'simulated_pass' ? 'success' : status === 'simulated_fail' ? 'critical' : 'prepared'}
         />
       </div>
       <p>{control.description}</p>

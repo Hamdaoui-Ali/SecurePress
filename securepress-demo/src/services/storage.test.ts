@@ -8,6 +8,34 @@ import {
 } from './storage'
 
 describe('assessment storage', () => {
+  test('migrates populated legacy storage and retains retired or unknown controls', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      stage: 'validation', inventoryCompleted: true, auditCompleted: true,
+      visibleFindingIds: ['F-004'], appliedFindingIds: ['F-004'],
+      completedHardeningCheckIds: ['file-editor', 'V-FILE-EDITOR', 'author-enumeration', 'rest-users', 'version-disclosure', 'future-control'],
+      validationResults: {}, timeline: [], guidedStep: null,
+    }))
+    const restored = loadAssessment()
+    expect(restored).toMatchObject({ status: 'restored', state: {
+      completedHardeningCheckIds: ['V-FILE-EDITOR', 'author-enumeration', 'rest-users', 'version-disclosure', 'future-control'],
+      validationResults: { 'V-FILE-EDITOR': 'simulated_pass' },
+      appliedFindingIds: ['F-004'], lastRun: null, operationHistory: [],
+    } })
+    saveAssessment(restored.state)
+    expect(loadAssessment()).toEqual(restored)
+  })
+
+  test('round-trips typed change-set association without relying on message text', () => {
+    const run = {
+      id: 'failed-change', kind: 'change-set' as const, status: 'failed' as const,
+      findingId: 'F-001' as const, startedAt: '2026-09-10T10:00:00.000Z',
+      message: 'Change set failed: an unexpected operation error occurred.',
+    }
+    const state = { ...createInitialAssessment(), lastRun: run, operationHistory: [run] }
+    saveAssessment(state)
+    expect(loadAssessment()).toEqual({ status: 'restored', state })
+  })
+
   beforeEach(() => {
     localStorage.clear()
   })

@@ -25,9 +25,24 @@ export function loadAssessment(): LoadResult {
       return { status: 'recovered', state: createInitialAssessment() }
     }
 
+    // Only file-editor has an equivalent in the canonical TELCO control set.
+    // Retired and unknown IDs remain historical records; do not reinterpret them.
+    const completedHardeningCheckIds = [...new Set(
+      parsed.data.completedHardeningCheckIds.map(id =>
+        id === 'file-editor' ? 'V-FILE-EDITOR' : id,
+      ),
+    )]
+    const validationResults = { ...parsed.data.validationResults }
+    if (completedHardeningCheckIds.includes('V-FILE-EDITOR')) {
+      validationResults['V-FILE-EDITOR'] ??= 'simulated_pass'
+    }
+    if (completedHardeningCheckIds.includes('V-XMLRPC-TARGET')) {
+      validationResults['V-XMLRPC-TARGET'] = 'target_validation_required'
+    }
+
     return {
       status: 'restored',
-      state: parsed.data as AssessmentState,
+      state: { ...parsed.data, completedHardeningCheckIds, validationResults } as AssessmentState,
     }
   } catch {
     return { status: 'recovered', state: createInitialAssessment() }

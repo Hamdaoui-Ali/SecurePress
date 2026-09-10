@@ -10,6 +10,7 @@ import { NavLink } from 'react-router'
 import { Button } from '../ui/Button'
 
 interface SidebarProps {
+  busy: boolean
   onStartGuidedDemo: () => void
 }
 
@@ -26,7 +27,7 @@ const navigation = [
   { to: '/rapport', label: 'Comparaison & rapport', icon: Sparkles },
 ] as const
 
-export function Sidebar({ onStartGuidedDemo }: SidebarProps) {
+export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="brand-block">
@@ -67,6 +68,7 @@ export function Sidebar({ onStartGuidedDemo }: SidebarProps) {
         <p className="sidebar-footnote">Copie hors production</p>
         <Button
           className="guided-button"
+          disabled={busy}
           variant="secondary"
           onClick={onStartGuidedDemo}
         >
