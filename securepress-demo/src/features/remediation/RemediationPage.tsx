@@ -13,6 +13,13 @@ function isChangeSetForFinding(
   return operation?.kind === 'change-set' && operation.message.includes(findingId)
 }
 
+function findLatestChangeSetRun(
+  operations: Array<OperationRun | null>,
+  findingId: string,
+) {
+  return operations.find((operation) => isChangeSetForFinding(operation, findingId))
+}
+
 export function RemediationPage() {
   const { state, busy, progress, activeOperation, lastRun, applyRemediation } = useAssessment()
   const score = selectPostureScore(telcoScenario, state)
@@ -60,12 +67,15 @@ export function RemediationPage() {
 
           const isApplying = isChangeSetForFinding(activeOperation, finding.id)
           const isApplied = state.appliedFindingIds.includes(finding.id)
-          const failedRun = isChangeSetForFinding(lastRun, finding.id) && lastRun?.status === 'failed'
-          const completedRun = [lastRun, ...state.operationHistory].find(
-            (operation) =>
-              isChangeSetForFinding(operation, finding.id) &&
-              operation?.status === 'completed',
+          const latestChangeSetRun = findLatestChangeSetRun(
+            [lastRun, ...state.operationHistory],
+            finding.id,
           )
+          const failedRun = latestChangeSetRun?.status === 'failed'
+          const completedRun =
+            latestChangeSetRun?.status === 'completed'
+              ? latestChangeSetRun
+              : undefined
           const changeSetState = isApplied
             ? 'applied'
             : isApplying

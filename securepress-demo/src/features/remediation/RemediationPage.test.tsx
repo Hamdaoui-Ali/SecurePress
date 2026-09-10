@@ -144,6 +144,38 @@ test('shows a failed change set as retryable provider state', () => {
   ).toBeEnabled()
 })
 
+test('retains a failed change set after a later provider operation completes', () => {
+  const failedRun = {
+    id: 'change-set-2026-09-10T11:00:00.000Z-1',
+    kind: 'change-set' as const,
+    status: 'failed' as const,
+    startedAt: '2026-09-10T11:00:00.000Z',
+    completedAt: '2026-09-10T11:00:02.000Z',
+    durationMs: 2000,
+    message: 'Change set failed · F-001: the requested finding could not be found.',
+  }
+  const laterRun = {
+    id: 'discovery-2026-09-10T11:10:00.000Z-1',
+    kind: 'discovery' as const,
+    status: 'completed' as const,
+    startedAt: '2026-09-10T11:10:00.000Z',
+    completedAt: '2026-09-10T11:10:04.000Z',
+    durationMs: 4000,
+    message: 'Discovery run completed · 22 components indexed',
+  }
+  saveAssessment({
+    ...completedAuditState(),
+    lastRun: laterRun,
+    operationHistory: [laterRun, failedRun],
+  })
+  renderRemediation()
+
+  expect(screen.getByText('Change set failed · F-001')).toBeVisible()
+  expect(
+    screen.getByRole('button', { name: 'Apply change set · F-001' }),
+  ).toBeEnabled()
+})
+
 test('keeps artifact previews scoped to generated workspace artifacts', () => {
   saveAssessment(completedAuditState())
   renderRemediation()
