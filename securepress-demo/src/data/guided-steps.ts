@@ -46,8 +46,8 @@ export const guidedStepDetails: Record<GuidedStep, GuidedStepDetail> = {
   'apply-remediation': {
     route: '/remediation',
     targetId: 'apply-F-001',
-    title: 'Préparer la correction',
-    description: 'Appliquez F-001 dans la simulation : aucune configuration réelle ne sera modifiée.',
+    title: 'Prepare the priority change set',
+    description: 'Apply the F-001 change set as a local workspace update. Target verification required.',
   },
   'run-validation': {
     route: '/validation',
@@ -64,7 +64,7 @@ export const guidedStepDetails: Record<GuidedStep, GuidedStepDetail> = {
   'finish-report': {
     route: '/rapport',
     targetId: 'finish-report',
-    title: 'Terminer avec le rapport',
-    description: 'Le rapport peut être imprimé pour la soutenance, avec ses disclaimers de simulation locale.',
+    title: 'Finish with the report',
+    description: 'Print the report with source package provenance and Target verification required status.',
   },
 }

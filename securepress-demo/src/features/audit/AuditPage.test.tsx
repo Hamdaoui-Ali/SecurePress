@@ -71,6 +71,23 @@ test('runs finding analysis with phase progress before exposing findings', async
   expect(document.body.textContent).not.toMatch(/demo|simul/i)
 })
 
+test('keeps qualified findings available while repeated analysis shows progress', async () => {
+  const user = userEvent.setup()
+  saveAssessment(completedAuditState())
+  renderAudit(100)
+
+  await user.click(screen.getByRole('button', { name: 'Analyze findings again' }))
+
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Finding analysis in progress' })).toBeDisabled()
+    expect(screen.getByText('Load findings')).toBeVisible()
+  })
+  expect(screen.getByRole('table')).toBeVisible()
+  await waitFor(() => {
+    expect(screen.getByText('Finding analysis completed')).toBeVisible()
+  })
+})
+
 test('explains F-001 and F-006 in the evidence drawer', async () => {
   const user = userEvent.setup()
   saveAssessment(completedAuditState())

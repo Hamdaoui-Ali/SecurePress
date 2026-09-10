@@ -45,15 +45,24 @@ test('runs discovery with phase progress and waits to expose the indexed table',
   expect(document.body.textContent).not.toMatch(/demo|simul/i)
 })
 
-test('keeps indexed components available and offers another discovery run', () => {
+test('keeps indexed components available while a repeated discovery shows progress', async () => {
+  const user = userEvent.setup()
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'inventory',
     inventoryCompleted: true,
   })
 
-  renderInventory()
+  renderInventory(25)
 
-  expect(screen.getByRole('button', { name: 'Run discovery again' })).toBeVisible()
+  await user.click(screen.getByRole('button', { name: 'Run discovery again' }))
+
+  await waitFor(() => {
+    expect(screen.getByRole('button', { name: 'Discovery in progress' })).toBeDisabled()
+    expect(screen.getByText('Read TELCO source package')).toBeVisible()
+  })
   expect(screen.getByRole('table')).toBeVisible()
+  await waitFor(() => {
+    expect(screen.getByText('Workspace ready')).toBeVisible()
+  })
 })

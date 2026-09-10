@@ -114,8 +114,6 @@ export function createSimulationEngine(
   const onProgress = options.onProgress ?? (() => undefined)
 
   async function runInventory(state: AssessmentState): Promise<AssessmentState> {
-    if (state.inventoryCompleted) return state
-
     const coreCount = countComponents('core')
     const themeCount = countComponents('theme')
     const componentTotal = telcoScenario.inventory.components.length
@@ -168,7 +166,6 @@ export function createSimulationEngine(
   async function runStaticAudit(
     state: AssessmentState,
   ): Promise<AssessmentState> {
-    if (state.auditCompleted) return state
     if (!state.inventoryCompleted) throw new Error('INVENTORY_REQUIRED')
 
     const findingTotal = telcoScenario.findings.length

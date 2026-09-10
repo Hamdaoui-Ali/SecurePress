@@ -169,6 +169,32 @@ test('exposes a running discovery operation and persists its completed metadata'
   })
 })
 
+test('reruns completed discovery with progress and records a new completed operation', async () => {
+  const user = userEvent.setup()
+  render(
+    <AssessmentProvider delayMs={25} now={() => new Date('2026-09-10T10:00:00.000Z')}>
+      <AssessmentProbe />
+    </AssessmentProvider>,
+  )
+
+  await user.click(screen.getByRole('button', { name: 'lancer inventaire' }))
+  await waitForStage('inventory')
+  const firstOperationId = readJson<{ id: string }>('last-run').id
+
+  await user.click(screen.getByRole('button', { name: 'lancer inventaire' }))
+
+  await waitFor(() => {
+    expect(screen.getByTestId('busy')).toHaveTextContent('true')
+    expect(screen.getByTestId('progress')).toHaveTextContent('Read TELCO source package')
+  })
+  await waitFor(() => {
+    const lastRun = readJson<{ id: string; status: string }>('last-run')
+    expect(lastRun).toMatchObject({ status: 'completed' })
+    expect(lastRun.id).not.toBe(firstOperationId)
+    expect(readJson<unknown[]>('history')).toHaveLength(2)
+  })
+})
+
 test('records failed analysis metadata without changing the prior assessment state', async () => {
   const user = userEvent.setup()
   const now = createNow(

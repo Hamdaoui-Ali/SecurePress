@@ -127,3 +127,23 @@ test('confirme un reset via la boîte de dialogue', async () => {
   )
   expect(confirmed).toEqual([true])
 })
+
+test('uses workspace update and target-verification language in guided steps', () => {
+  saveAssessment({ ...createInitialAssessment(), guidedStep: 4 })
+  const changeSetGuide = renderGuide()
+
+  expect(screen.getByText('Prepare the priority change set')).toBeVisible()
+  expect(
+    screen.getByText(/Apply the F-001 change set as a local workspace update/i),
+  ).toBeVisible()
+  expect(screen.getByText(/Target verification required/i)).toBeVisible()
+  expect(screen.getByRole('region')).not.toHaveTextContent(/simulation|configuration r.elle/i)
+
+  changeSetGuide.unmount()
+  saveAssessment({ ...createInitialAssessment(), guidedStep: 7 })
+  renderGuide()
+
+  expect(screen.getByText('Finish with the report')).toBeVisible()
+  expect(screen.getByText(/source package provenance/i)).toBeVisible()
+  expect(screen.getByText(/Target verification required/i)).toBeVisible()
+})

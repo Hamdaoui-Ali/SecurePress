@@ -141,6 +141,50 @@ describe('simulation engine', () => {
     expect(afterChangeSet.appliedFindingIds).toEqual(['F-001'])
   })
 
+  test('reruns completed discovery and analysis through their deterministic phases', async () => {
+    const progressUpdates: ProgressUpdate[] = []
+    const engine = createEngine(progressUpdates)
+    const inventory = await engine.runInventory(createInitialAssessment())
+    const audit = await engine.runStaticAudit(inventory)
+    const remediated = await engine.applyRemediation(audit, 'F-001')
+
+    progressUpdates.length = 0
+    const afterDiscoveryRerun = await engine.runInventory(remediated)
+
+    expectPhasedProgress(progressUpdates, [
+      'Read TELCO source package',
+      'Index WordPress core',
+      'Inventory themes',
+      'Inventory plugins',
+      'Review configuration',
+      'Component summary',
+    ])
+    expect(afterDiscoveryRerun).not.toBe(remediated)
+    expect(afterDiscoveryRerun).toMatchObject({
+      inventoryCompleted: true,
+      auditCompleted: true,
+      appliedFindingIds: ['F-001'],
+    })
+
+    progressUpdates.length = 0
+    const afterAnalysisRerun = await engine.runStaticAudit(afterDiscoveryRerun)
+
+    expectPhasedProgress(progressUpdates, [
+      'Load findings',
+      'Analyze evidence',
+      'Correlate risk and remediation',
+      'Complete finding analysis',
+    ])
+    expect(afterAnalysisRerun).not.toBe(afterDiscoveryRerun)
+    expect(afterAnalysisRerun).toMatchObject({
+      inventoryCompleted: true,
+      auditCompleted: true,
+      appliedFindingIds: ['F-001'],
+      visibleFindingIds: telcoScenario.findings.map((finding) => finding.id),
+    })
+    expect(afterAnalysisRerun.timeline).toHaveLength(remediated.timeline.length + 2)
+  })
+
   test('emits controls phases for a TELCO hardening check and the validation campaign', async () => {
     const setupEngine = createEngine()
     const inventory = await setupEngine.runInventory(createInitialAssessment())
