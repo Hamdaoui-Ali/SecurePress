@@ -1477,7 +1477,7 @@ textarea:focus-visible {
   align-items: flex-end;
 }
 
-.simulation-applied-note {
+.workspace-update-note {
   display: flex;
   align-items: center;
   gap: 7px;

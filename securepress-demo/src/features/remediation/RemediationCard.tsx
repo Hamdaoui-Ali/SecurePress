@@ -72,9 +72,9 @@ export function RemediationCard({
 
       <div className="remediation-card-footer">
         {applied ? (
-          <div className="simulation-applied-note">
+          <div className="workspace-update-note">
             <Check aria-hidden="true" size={17} />
-            <span>Aucune configuration réelle n’a été modifiée</span>
+            <span>Workspace update recorded · Target verification required</span>
           </div>
         ) : null}
         <Button

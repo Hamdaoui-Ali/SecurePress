@@ -38,7 +38,7 @@ test('montre le diff F-001 et sa remédiation préparée', () => {
   expect(screen.getAllByText('Remédiation préparée')[0]).toBeVisible()
 })
 
-test('applique F-001 uniquement dans la simulation', async () => {
+test('records a local workspace update that requires target verification', async () => {
   const user = userEvent.setup()
   saveAssessment(completedAuditState())
   renderRemediation()
@@ -49,8 +49,11 @@ test('applique F-001 uniquement dans la simulation', async () => {
 
   expect(screen.getByText('Appliqué dans la simulation')).toBeVisible()
   expect(
-    screen.getByText('Aucune configuration réelle n’a été modifiée'),
+    screen.getByText('Workspace update recorded · Target verification required'),
   ).toBeVisible()
+  expect(
+    screen.queryByText('Aucune configuration réelle n’a été modifiée'),
+  ).not.toBeInTheDocument()
 })
 
 test('conserve les limites particulières et les aperçus non exécutés', () => {
@@ -83,5 +86,5 @@ test('rend l’application idempotente', async () => {
 
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
   expect(saved.appliedFindingIds).toEqual(['F-001'])
-  expect(saved.timeline).toHaveLength(1)
+  expect(saved.timeline).toHaveLength(2)
 })
