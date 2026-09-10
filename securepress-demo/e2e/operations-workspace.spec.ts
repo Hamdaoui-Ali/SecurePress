@@ -9,9 +9,13 @@ test('runs local workspace operations, preserves their activity, and clears them
   await expect(discovery).toBeEnabled()
   await discovery.click()
   await expect(discovery).toBeDisabled()
-  await expect(
-    page.getByRole('progressbar', { name: 'Discovery run progress' }),
-  ).toHaveAttribute('aria-valuenow', /\d+/)
+  const discoveryProgress = page.getByRole('progressbar', { name: 'Discovery run progress' })
+  await expect(discoveryProgress).toBeVisible()
+  await expect(discoveryProgress).toHaveAttribute(
+    'aria-valuetext',
+    /^(?!100% complete$)\d+% complete$/,
+  )
+  await expect(page.locator('.operation-progress-running')).toBeVisible()
   await expect(page.getByText('Workspace ready', { exact: true })).toBeVisible()
   await expect(discovery).toBeEnabled()
 
@@ -20,9 +24,13 @@ test('runs local workspace operations, preserves their activity, and clears them
   await expect(analysis).toBeEnabled()
   await analysis.click()
   await expect(analysis).toBeDisabled()
-  await expect(
-    page.getByRole('progressbar', { name: 'Finding analysis progress' }),
-  ).toHaveAttribute('aria-valuenow', /\d+/)
+  const analysisProgress = page.getByRole('progressbar', { name: 'Finding analysis progress' })
+  await expect(analysisProgress).toBeVisible()
+  await expect(analysisProgress).toHaveAttribute(
+    'aria-valuetext',
+    /^(?!100% complete$)\d+% complete$/,
+  )
+  await expect(page.locator('.operation-progress-running')).toBeVisible()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
   ).toBeVisible()
@@ -33,9 +41,13 @@ test('runs local workspace operations, preserves their activity, and clears them
   await expect(changeSet).toBeEnabled()
   await changeSet.click()
   await expect(changeSet).toBeDisabled()
-  await expect(
-    page.getByRole('progressbar', { name: 'Change set progress' }),
-  ).toHaveAttribute('aria-valuenow', /\d+/)
+  const changeSetProgress = page.getByRole('progressbar', { name: 'Change set progress' })
+  await expect(changeSetProgress).toBeVisible()
+  await expect(changeSetProgress).toHaveAttribute(
+    'aria-valuetext',
+    /^(?!100% complete$)\d+% complete$/,
+  )
+  await expect(page.locator('.operation-progress-running')).toBeVisible()
   await expect(
     page.locator('#remediation-F-001').getByText('Change set applied', { exact: true }),
   ).toBeVisible()
@@ -50,9 +62,13 @@ test('runs local workspace operations, preserves their activity, and clears them
   await expect(controlCampaign).toBeEnabled()
   await controlCampaign.click()
   await expect(controlCampaign).toBeDisabled()
-  await expect(
-    page.getByRole('progressbar', { name: 'Control campaign progress' }),
-  ).toHaveAttribute('aria-valuenow', /\d+/)
+  const controlProgress = page.getByRole('progressbar', { name: 'Control campaign progress' })
+  await expect(controlProgress).toBeVisible()
+  await expect(controlProgress).toHaveAttribute(
+    'aria-valuetext',
+    /^(?!100% complete$)\d+% complete$/,
+  )
+  await expect(page.locator('.operation-progress-running')).toBeVisible()
   await expect(page.getByText('PASS', { exact: true }).first()).toBeVisible()
   await expect(
     page.locator('#main-content').getByText(

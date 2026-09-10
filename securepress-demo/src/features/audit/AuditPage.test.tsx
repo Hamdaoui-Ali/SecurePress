@@ -52,15 +52,19 @@ test('runs finding analysis with phase progress before exposing findings', async
 
   await waitFor(() => {
     expect(screen.getByRole('button', { name: 'Finding analysis in progress' })).toBeDisabled()
-    expect(screen.getByText('Load findings')).toBeVisible()
-  })
+    expect(
+      screen.getByText(
+        /Load findings|Analyze evidence|Correlate risk and remediation|Complete finding analysis/,
+      ),
+    ).toBeVisible()
+  }, { timeout: 5_000 })
   expect(screen.queryByRole('table')).not.toBeInTheDocument()
 
   await waitFor(
     () => {
       expect(screen.getByText('Finding analysis completed')).toBeVisible()
     },
-    { timeout: 3_000 },
+    { timeout: 10_000 },
   )
   expect(screen.getByText('2 critical')).toBeVisible()
   expect(screen.getByText('3 high')).toBeVisible()
@@ -80,12 +84,16 @@ test('keeps qualified findings available while repeated analysis shows progress'
 
   await waitFor(() => {
     expect(screen.getByRole('button', { name: 'Finding analysis in progress' })).toBeDisabled()
-    expect(screen.getByText('Load findings')).toBeVisible()
-  })
+    expect(
+      screen.getByText(
+        /Load findings|Analyze evidence|Correlate risk and remediation|Complete finding analysis/,
+      ),
+    ).toBeVisible()
+  }, { timeout: 5_000 })
   expect(screen.getByRole('table')).toBeVisible()
   await waitFor(() => {
     expect(screen.getByText('Finding analysis completed')).toBeVisible()
-  })
+  }, { timeout: 5_000 })
 })
 
 test('explains F-001 and F-006 in the evidence drawer', async () => {

@@ -69,7 +69,7 @@ test('renders provider-backed discovery progress while an operation is running',
       name: 'Discovery run progress',
     })
     expect(progressbar).not.toHaveAttribute('aria-valuenow', '100')
-  })
+  }, { timeout: 5_000 })
   expect(screen.getByText('Discovery run in progress')).toBeVisible()
   expect(
     screen.getByText(

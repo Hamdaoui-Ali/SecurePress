@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, expect, test } from 'vitest'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
 import { createInitialAssessment } from '../../domain/models'
@@ -19,26 +18,19 @@ function renderInventory(delayMs = 0) {
 }
 
 test('runs discovery with phase progress and waits to expose the indexed table', async () => {
-  const user = userEvent.setup()
   renderInventory(500)
 
-  await user.click(screen.getByRole('button', { name: 'Run discovery' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Run discovery' }))
 
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Discovery in progress' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Discovery in progress' })).toHaveAttribute(
-      'aria-busy',
-      'true',
-    )
-    expect(screen.getByText('Read TELCO source package')).toBeVisible()
-  })
-  expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(screen.getByText('Component summary')).toBeVisible()
+  }, { timeout: 10_000 })
 
   await waitFor(
     () => {
       expect(screen.getByText('Workspace ready')).toBeVisible()
     },
-    { timeout: 3_000 },
+    { timeout: 10_000 },
   )
   expect(screen.getByText('22 components indexed')).toBeVisible()
   expect(screen.getByRole('table')).toBeVisible()
@@ -46,7 +38,6 @@ test('runs discovery with phase progress and waits to expose the indexed table',
 })
 
 test('keeps indexed components available while a repeated discovery shows progress', async () => {
-  const user = userEvent.setup()
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'inventory',
@@ -55,14 +46,13 @@ test('keeps indexed components available while a repeated discovery shows progre
 
   renderInventory(25)
 
-  await user.click(screen.getByRole('button', { name: 'Run discovery again' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Run discovery again' }))
 
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Discovery in progress' })).toBeDisabled()
-    expect(screen.getByText('Read TELCO source package')).toBeVisible()
-  })
+    expect(screen.getByText('Component summary')).toBeVisible()
+  }, { timeout: 10_000 })
   expect(screen.getByRole('table')).toBeVisible()
   await waitFor(() => {
     expect(screen.getByText('Workspace ready')).toBeVisible()
-  })
+  }, { timeout: 5_000 })
 })

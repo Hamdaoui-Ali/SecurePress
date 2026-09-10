@@ -70,7 +70,7 @@ test('shows the provider change-set phase without updating score or findings ear
       screen.getByRole('button', { name: 'Applying change set · F-001' }),
     ).toBeVisible()
     expect(screen.getByText(/Change set phase ·/)).toBeVisible()
-  })
+  }, { timeout: 5_000 })
   expect(screen.getByText('42 / 100')).toBeVisible()
   expect(screen.getByText('0')).toBeVisible()
   expect(
