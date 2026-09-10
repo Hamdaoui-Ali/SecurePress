@@ -127,6 +127,81 @@ describe('assessment storage', () => {
     })
   })
 
+  test('discard runs with malformed timestamps without preventing restoration', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        ...createInitialAssessment(),
+        lastRun: {
+          id: 'run-invalid-last',
+          kind: 'analysis',
+          status: 'completed',
+          startedAt: 'not-a-timestamp',
+          message: 'Invalid last run',
+        },
+        operationHistory: [
+          {
+            id: 'run-invalid-history',
+            kind: 'analysis',
+            status: 'completed',
+            startedAt: '2026-99-99T99:99:99Z',
+            message: 'Invalid history run',
+          },
+          {
+            id: 'run-valid-history',
+            kind: 'analysis',
+            status: 'completed',
+            startedAt: '2026-09-10T10:10:00.000Z',
+            message: 'Valid history run',
+          },
+        ],
+      }),
+    )
+
+    expect(loadAssessment()).toMatchObject({
+      status: 'restored',
+      state: {
+        lastRun: null,
+        operationHistory: [{ id: 'run-valid-history' }],
+      },
+    })
+  })
+
+  test('orders valid ISO history by timestamp instant', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        ...createInitialAssessment(),
+        operationHistory: [
+          {
+            id: 'run-offset-earlier',
+            kind: 'discovery',
+            status: 'completed',
+            startedAt: '2026-09-10T11:00:00+02:00',
+            message: 'Occurred at 09:00 UTC',
+          },
+          {
+            id: 'run-utc-later',
+            kind: 'discovery',
+            status: 'completed',
+            startedAt: '2026-09-10T10:00:00Z',
+            message: 'Occurred at 10:00 UTC',
+          },
+        ],
+      }),
+    )
+
+    const result = loadAssessment()
+
+    expect(result).toMatchObject({ status: 'restored' })
+    if (result.status === 'restored') {
+      expect(result.state.operationHistory.map((run) => run.id)).toEqual([
+        'run-utc-later',
+        'run-offset-earlier',
+      ])
+    }
+  })
+
   test('réinitialise uniquement la clé de la démo', () => {
     localStorage.setItem('unrelated', 'keep')
     saveAssessment(createInitialAssessment())

@@ -2,6 +2,15 @@ import { z } from 'zod'
 
 const OPERATION_HISTORY_LIMIT = 20
 
+const IsoDateTimeSchema = z.iso
+  .datetime({ offset: true })
+  .refine((value) => {
+    const [year, month, day] = value.slice(0, 10).split('-').map(Number)
+    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate()
+
+    return !Number.isNaN(Date.parse(value)) && day <= daysInMonth
+  })
+
 export const OperationKindSchema = z.enum([
   'discovery',
   'analysis',
@@ -20,8 +29,8 @@ export const OperationRunSchema = z.object({
   id: z.string().min(1),
   kind: OperationKindSchema,
   status: OperationStatusSchema,
-  startedAt: z.string().min(1),
-  completedAt: z.string().min(1).optional(),
+  startedAt: IsoDateTimeSchema,
+  completedAt: IsoDateTimeSchema.optional(),
   message: z.string().min(1),
   currentStep: z.string().min(1).optional(),
   processed: z.number().int().nonnegative().optional(),
@@ -42,7 +51,11 @@ const OperationHistorySchema = z
         const parsed = PersistedOperationRunSchema.safeParse(entry)
         return parsed.success ? [parsed.data] : []
       })
-      .sort((left, right) => right.startedAt.localeCompare(left.startedAt))
+      .sort(
+        (left, right) =>
+          Date.parse(right.startedAt) - Date.parse(left.startedAt) ||
+          left.id.localeCompare(right.id),
+      )
       .slice(0, OPERATION_HISTORY_LIMIT),
   )
 
