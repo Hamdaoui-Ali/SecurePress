@@ -87,8 +87,7 @@ function newestFirstHistory(
     )
     .sort(
       (left, right) =>
-        Date.parse(right.startedAt) - Date.parse(left.startedAt) ||
-        left.id.localeCompare(right.id),
+        Date.parse(right.startedAt) - Date.parse(left.startedAt),
     )
     .slice(0, 20)
 }
@@ -138,17 +137,29 @@ export function AssessmentProvider({
     })
   }
 
-  const commitState = useCallback(
+  const clearTransientOperationState = useCallback(() => {
+    activeOperationRef.current = null
+    setActiveOperation(null)
+    progressRef.current = null
+    setProgress(null)
+  }, [])
+
+  const commitAssessmentTransition = useCallback(
     (
       nextState: AssessmentState,
-      options: { clearFirst?: boolean; persist?: boolean } = {},
+      options: {
+        clearStoredState?: boolean
+        persist?: boolean
+        resetTransientOperation?: boolean
+      } = {},
     ) => {
-      if (options.clearFirst) clearAssessment()
+      if (options.resetTransientOperation) clearTransientOperationState()
+      if (options.clearStoredState) clearAssessment()
       stateRef.current = nextState
       setState(nextState)
       if (options.persist !== false) saveAssessment(nextState)
     },
-    [],
+    [clearTransientOperationState],
   )
 
   const runOperation = useCallback(
@@ -206,7 +217,7 @@ export function AssessmentProvider({
             },
           ],
         }
-        commitState(completedState)
+        commitAssessmentTransition(completedState)
       } catch (error) {
         const completedAt = now().toISOString()
         const latestProgress = getLatestProgress()
@@ -220,7 +231,7 @@ export function AssessmentProvider({
           processed: latestProgress?.processed,
           total: latestProgress?.total,
         }
-        commitState({
+        commitAssessmentTransition({
           ...stateRef.current,
           lastRun: failedOperation,
           operationHistory: newestFirstHistory(
@@ -235,7 +246,7 @@ export function AssessmentProvider({
         setActiveOperation(null)
       }
     },
-    [commitState, now],
+    [commitAssessmentTransition, now],
   )
 
   const runInventory = useCallback(
@@ -319,12 +330,11 @@ export function AssessmentProvider({
       ...createInitialAssessment(),
       guidedStep: 0,
     }
-    activeOperationRef.current = null
-    setActiveOperation(null)
-    progressRef.current = null
-    setProgress(null)
-    commitState(nextState, { clearFirst: true })
-  }, [commitState])
+    commitAssessmentTransition(nextState, {
+      clearStoredState: true,
+      resetTransientOperation: true,
+    })
+  }, [commitAssessmentTransition])
 
   const nextGuidedStep = useCallback(() => {
     const currentStep = stateRef.current.guidedStep
@@ -334,8 +344,8 @@ export function AssessmentProvider({
       ...stateRef.current,
       guidedStep: Math.min(7, currentStep + 1),
     }
-    commitState(nextState)
-  }, [commitState])
+    commitAssessmentTransition(nextState)
+  }, [commitAssessmentTransition])
 
   const previousGuidedStep = useCallback(() => {
     const currentStep = stateRef.current.guidedStep
@@ -345,8 +355,8 @@ export function AssessmentProvider({
       ...stateRef.current,
       guidedStep: Math.max(0, currentStep - 1),
     }
-    commitState(nextState)
-  }, [commitState])
+    commitAssessmentTransition(nextState)
+  }, [commitAssessmentTransition])
 
   const exitGuidedDemo = useCallback(() => {
     if (stateRef.current.guidedStep === null) return
@@ -355,19 +365,19 @@ export function AssessmentProvider({
       ...stateRef.current,
       guidedStep: null,
     }
-    commitState(nextState)
-  }, [commitState])
+    commitAssessmentTransition(nextState)
+  }, [commitAssessmentTransition])
 
   const resetDemo = useCallback(() => {
     if (busyRef.current) return
 
     const nextState = createInitialAssessment()
-    activeOperationRef.current = null
-    setActiveOperation(null)
-    progressRef.current = null
-    setProgress(null)
-    commitState(nextState, { clearFirst: true, persist: false })
-  }, [commitState])
+    commitAssessmentTransition(nextState, {
+      clearStoredState: true,
+      persist: false,
+      resetTransientOperation: true,
+    })
+  }, [commitAssessmentTransition])
 
   const value = useMemo<AssessmentContextValue>(
     () => ({

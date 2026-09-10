@@ -17,12 +17,17 @@ function AssessmentProbe() {
     applyRemediation,
     runHardeningCheck,
     runValidation,
+    startGuidedDemo,
+    nextGuidedStep,
+    previousGuidedStep,
+    exitGuidedDemo,
     resetDemo,
   } = useAssessment()
 
   return (
     <div>
       <output data-testid="stage">{state.stage}</output>
+      <output data-testid="guided-step">{state.guidedStep ?? 'none'}</output>
       <output data-testid="busy">{String(busy)}</output>
       <output data-testid="progress">{progress?.message ?? 'idle'}</output>
       <output data-testid="active-operation">
@@ -50,6 +55,18 @@ function AssessmentProbe() {
       </button>
       <button type="button" onClick={() => void runValidation()}>
         lancer campagne
+      </button>
+      <button type="button" onClick={startGuidedDemo}>
+        start guided
+      </button>
+      <button type="button" onClick={nextGuidedStep}>
+        next guided
+      </button>
+      <button type="button" onClick={previousGuidedStep}>
+        previous guided
+      </button>
+      <button type="button" onClick={exitGuidedDemo}>
+        exit guided
       </button>
       <button type="button" onClick={resetDemo}>
         reset
@@ -263,6 +280,93 @@ test('records operation-specific activity labels in newest-first history order',
       'Control campaign completed \u00b7 target verification pending',
     ]),
   )
+})
+
+test('keeps the later equal-time operation first after persistence is restored', async () => {
+  const user = userEvent.setup()
+  const now = () => new Date('2026-09-10T12:30:00.000Z')
+  const view = render(
+    <AssessmentProvider delayMs={0} now={now}>
+      <AssessmentProbe />
+    </AssessmentProvider>,
+  )
+
+  await user.click(screen.getByRole('button', { name: 'lancer analyse' }))
+  await waitFor(() => {
+    expect(readJson<{ status: string }>('last-run')).toMatchObject({
+      status: 'failed',
+    })
+  })
+  await user.click(screen.getByRole('button', { name: 'lancer inventaire' }))
+  await waitForStage('inventory')
+
+  expect(readJson<Array<{ kind: string }>>('history').map((run) => run.kind)).toEqual([
+    'discovery',
+    'analysis',
+  ])
+
+  view.unmount()
+  render(
+    <AssessmentProvider delayMs={0} now={now}>
+      <AssessmentProbe />
+    </AssessmentProvider>,
+  )
+
+  expect(readJson<Array<{ kind: string }>>('history').map((run) => run.kind)).toEqual([
+    'discovery',
+    'analysis',
+  ])
+})
+
+test('persists guided start, navigation, and exit without retaining operation activity', async () => {
+  const user = userEvent.setup()
+  render(
+    <AssessmentProvider
+      delayMs={0}
+      now={() => new Date('2026-09-10T12:45:00.000Z')}
+    >
+      <AssessmentProbe />
+    </AssessmentProvider>,
+  )
+
+  await user.click(screen.getByRole('button', { name: 'lancer inventaire' }))
+  await waitForStage('inventory')
+  await user.click(screen.getByRole('button', { name: 'start guided' }))
+
+  expect(screen.getByTestId('guided-step')).toHaveTextContent('0')
+  expect(screen.getByTestId('active-operation')).toHaveTextContent('idle')
+  expect(screen.getByTestId('progress')).toHaveTextContent('idle')
+  expect(screen.getByTestId('last-run')).toHaveTextContent('none')
+  expect(readJson<unknown[]>('history')).toEqual([])
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
+    guidedStep: 0,
+    lastRun: null,
+    operationHistory: [],
+  })
+
+  await user.click(screen.getByRole('button', { name: 'next guided' }))
+  await user.click(screen.getByRole('button', { name: 'next guided' }))
+  await user.click(screen.getByRole('button', { name: 'previous guided' }))
+
+  expect(screen.getByTestId('guided-step')).toHaveTextContent('1')
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
+    guidedStep: 1,
+    operationHistory: [],
+  })
+
+  await user.click(screen.getByRole('button', { name: 'exit guided' }))
+
+  expect(screen.getByTestId('guided-step')).toHaveTextContent('none')
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
+    guidedStep: null,
+    operationHistory: [],
+  })
+
+  await user.click(screen.getByRole('button', { name: 'reset' }))
+
+  expect(screen.getByTestId('active-operation')).toHaveTextContent('idle')
+  expect(screen.getByTestId('progress')).toHaveTextContent('idle')
+  expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
 })
 
 test('reset clears transient and persisted activity', async () => {

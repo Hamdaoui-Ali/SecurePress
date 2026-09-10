@@ -53,8 +53,7 @@ const OperationHistorySchema = z
       })
       .sort(
         (left, right) =>
-          Date.parse(right.startedAt) - Date.parse(left.startedAt) ||
-          left.id.localeCompare(right.id),
+          Date.parse(right.startedAt) - Date.parse(left.startedAt),
       )
       .slice(0, OPERATION_HISTORY_LIMIT),
   )
