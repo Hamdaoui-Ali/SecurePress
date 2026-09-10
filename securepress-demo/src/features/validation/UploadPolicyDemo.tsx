@@ -12,7 +12,7 @@ export function UploadPolicyDemo() {
     <section className="validation-demo-card" aria-labelledby="upload-demo-title">
       <div className="validation-demo-header">
         <div>
-          <p className="card-eyebrow">DÉMONSTRATION LOCALE</p>
+          <p className="card-eyebrow">LOCAL POLICY CONTROL</p>
           <h3 id="upload-demo-title">Politique de téléversement</h3>
         </div>
         <FileCheck2 aria-hidden="true" size={20} />

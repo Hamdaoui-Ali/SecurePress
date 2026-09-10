@@ -55,9 +55,38 @@ test('démarre le guide en réinitialisant l’assessment', async () => {
   const user = userEvent.setup()
   saveAssessment({
     ...createInitialAssessment(),
-    stage: 'remediation',
+    stage: 'validation',
     inventoryCompleted: true,
-    appliedFindingIds: ['F-001'],
+    auditCompleted: true,
+    validationResults: {
+      'V-COMMENTS': 'simulated_pass',
+      'external-dynamic-retest': 'dynamic_retest_not_executed',
+    },
+    timeline: [
+      {
+        id: 'campaign',
+        timestamp: '2026-09-10T12:00:00.000Z',
+        label: 'Control campaign completed · target verification pending',
+      },
+    ],
+    lastRun: {
+      id: 'controls-campaign',
+      kind: 'controls',
+      status: 'completed',
+      startedAt: '2026-09-10T12:00:00.000Z',
+      completedAt: '2026-09-10T12:00:01.000Z',
+      message: 'Control campaign completed · target verification pending',
+    },
+    operationHistory: [
+      {
+        id: 'controls-campaign',
+        kind: 'controls',
+        status: 'completed',
+        startedAt: '2026-09-10T12:00:00.000Z',
+        completedAt: '2026-09-10T12:00:01.000Z',
+        message: 'Control campaign completed · target verification pending',
+      },
+    ],
   })
 
   render(
@@ -70,7 +99,13 @@ test('démarre le guide en réinitialisant l’assessment', async () => {
 
   expect(screen.getByTestId('guided-step')).toHaveTextContent('0')
   expect(screen.getByTestId('inventory')).toHaveTextContent('false')
-  expect(localStorage.getItem(STORAGE_KEY)).toContain('"guidedStep":0')
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
+    guidedStep: 0,
+    validationResults: {},
+    timeline: [],
+    lastRun: null,
+    operationHistory: [],
+  })
 })
 
 test('affiche un overlay non bloquant et avance d’une étape', async () => {
@@ -78,9 +113,11 @@ test('affiche un overlay non bloquant et avance d’une étape', async () => {
   saveAssessment({ ...createInitialAssessment(), guidedStep: 0 })
   renderGuide()
 
-  const overlay = screen.getByRole('region', { name: /guide de démonstration/i })
+  const overlay = screen.getByRole('region', { name: /guided workspace workflow/i })
   expect(within(overlay).getByText('Étape 1 sur 8')).toBeVisible()
-  expect(within(overlay).getByText(/Commencez par la vue d’ensemble/i)).toBeVisible()
+  expect(
+    within(overlay).getByText(/Start from the indexed TELCO evidence/i),
+  ).toBeVisible()
   expect(within(overlay).getByRole('button', { name: 'Précédent' })).toBeDisabled()
 
   await user.click(within(overlay).getByRole('button', { name: 'Suivant' }))
@@ -134,18 +171,18 @@ test('uses workspace update and target-verification language in guided steps', (
 
   expect(screen.getByText('Prepare the priority change set')).toBeVisible()
   expect(
-    screen.getByText(/Apply the F-001 change set as a local workspace update/i),
+    screen.getByText(/Apply the F-001 change set as a workspace operation/i),
   ).toBeVisible()
-  expect(screen.getByText(/Target verification required/i)).toBeVisible()
+  expect(screen.getByText(/Target verification remains pending/i)).toBeVisible()
   expect(screen.getByRole('region')).not.toHaveTextContent(/simulation|configuration r.elle/i)
 
   changeSetGuide.unmount()
   saveAssessment({ ...createInitialAssessment(), guidedStep: 7 })
   renderGuide()
 
-  expect(screen.getByText('Finish with the report')).toBeVisible()
-  expect(screen.getByText(/source package provenance/i)).toBeVisible()
-  expect(screen.getByText(/Target verification required/i)).toBeVisible()
+  expect(screen.getByText('Print provenance report')).toBeVisible()
+  expect(screen.getByText(/source-package provenance/i)).toBeVisible()
+  expect(screen.getByText(/target verification pending/i)).toBeVisible()
 })
 
 test('uses operational control-campaign language in the validation guided step', () => {
@@ -154,6 +191,34 @@ test('uses operational control-campaign language in the validation guided step',
 
   expect(screen.getByText('Run control campaign')).toBeVisible()
   expect(
-    screen.getByText(/Run local control checks; target verification remains pending\./i),
+    screen.getByText(/Run the provider-backed multi-phase control campaign/i),
   ).toBeVisible()
+})
+
+test('runs the provider-backed control campaign before advancing from the controls step', async () => {
+  const user = userEvent.setup()
+  saveAssessment({
+    ...createInitialAssessment(),
+    stage: 'audit',
+    inventoryCompleted: true,
+    auditCompleted: true,
+    guidedStep: 5,
+  })
+  renderGuide()
+
+  await user.click(screen.getByRole('button', { name: 'Suivant' }))
+
+  expect(await screen.findByText('Étape 7 sur 8')).toBeVisible()
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
+    guidedStep: 6,
+    validationResults: {
+      'V-COMMENTS': 'simulated_pass',
+      'external-dynamic-retest': 'dynamic_retest_not_executed',
+    },
+    lastRun: {
+      kind: 'controls',
+      status: 'completed',
+      message: 'Control campaign completed · target verification pending',
+    },
+  })
 })

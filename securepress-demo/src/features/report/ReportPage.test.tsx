@@ -24,8 +24,8 @@ test('affiche le rapport initial avec posture 42 et risque élevé', () => {
 
   expect(screen.getByText('42 / 100')).toBeVisible()
   expect(screen.getByText('10 constats qualifiés')).toBeVisible()
-  expect(screen.getByText('Aucune remédiation appliquée')).toBeVisible()
-  expect(screen.getByText('Risque élevé simulé')).toBeVisible()
+  expect(screen.getByText('Aucun change set appliqué')).toBeVisible()
+  expect(screen.getByText('Risque élevé depuis les preuves indexées')).toBeVisible()
   expect(screen.getAllByRole('row')).toHaveLength(11)
 })
 
@@ -43,7 +43,7 @@ test('reflète le scénario projeté à 82 et quatre risques restants', () => {
   renderReport()
 
   expect(screen.getByText('82 / 100')).toBeVisible()
-  expect(screen.getByText('6 remédiations simulées')).toBeVisible()
+  expect(screen.getByText('6 change sets appliqués')).toBeVisible()
   expect(screen.getByText('4 risques restent à confirmer')).toBeVisible()
   expect(screen.getByText('18 points de risque résiduel')).toBeVisible()
   expect(screen.getAllByText('Risque résiduel non nul').at(-1)).toBeVisible()
@@ -69,7 +69,7 @@ test('relie chaque constat à son état renforcé, sa validation et sa limite', 
   ).toBeVisible()
 })
 
-test('affiche uniquement les événements réels triés par timestamp', () => {
+test('shows ordered operation activity without implying target verification', () => {
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'report',
@@ -77,7 +77,7 @@ test('affiche uniquement les événements réels triés par timestamp', () => {
       {
         id: 'second',
         timestamp: '2026-09-09T10:02:00.000Z',
-        label: 'Deuxième action',
+        label: 'Control campaign completed · target verification pending',
       },
       {
         id: 'first',
@@ -91,20 +91,27 @@ test('affiche uniquement les événements réels triés par timestamp', () => {
   const timeline = screen.getByRole('list', { name: 'Chronologie de session' })
   const entries = within(timeline).getAllByRole('listitem')
   expect(entries[0]).toHaveTextContent('Première action')
-  expect(entries[1]).toHaveTextContent('Deuxième action')
+  expect(entries[1]).toHaveTextContent(
+    'Control campaign completed · target verification pending',
+  )
   expect(within(timeline).queryByText(/Aucun événement/i)).not.toBeInTheDocument()
 })
 
-test('conserve le disclaimer et appelle l’impression navigateur', async () => {
+test('states indexed evidence, generated change sets, and pending target verification in the printable report', async () => {
   const user = userEvent.setup()
   const printSpy = vi.spyOn(window, 'print').mockImplementation(() => undefined)
   renderReport()
 
   expect(
-    screen.getByText('Rapport généré depuis un environnement local simulé'),
+    screen.getByText('Rapport fondé sur les preuves locales indexées'),
   ).toBeVisible()
   expect(
-    screen.getByText('Aucun serveur réel n’a été évalué par cette application'),
+    screen.getByText(
+      'Constats issus du package source TELCO indexé ; change sets générés par le workspace ; vérification cible en attente.',
+    ),
+  ).toBeVisible()
+  expect(
+    screen.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),
   ).toBeVisible()
 
   await user.click(screen.getByRole('button', { name: /Imprimer le rapport/i }))

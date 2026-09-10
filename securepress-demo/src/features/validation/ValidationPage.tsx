@@ -54,7 +54,7 @@ const groupDefinitions = [
     description: 'Parcours locaux à rejouer après correction.',
     checkIds: [],
     emptyMessage:
-      'Les démonstrations de connexion et de téléversement restent rejouables ci-dessus.',
+      'Les contrôles locaux de connexion et de téléversement restent rejouables ci-dessus.',
   },
 ]
 
@@ -70,26 +70,27 @@ export function ValidationPage() {
     <div className="page-stack">
       <div className="page-heading">
         <p className="eyebrow">ÉTAPE 5 · VALIDATION</p>
-        <h2>Tester la correction sans sur-promettre la preuve</h2>
+        <h2>Run controls with explicit provenance</h2>
         <p>
-          Les contrôles ci-dessous sont déterministes et locaux. Une réussite simulée
-          reste distincte d’une vérification sur l’environnement cible.
+          Les contrôles sont des opérations locales déterministes fondées sur les
+          preuves TELCO indexées. Un résultat PASS ne remplace pas la vérification
+          de la cible.
         </p>
       </div>
 
       {!state.auditCompleted ? (
         <div className="prerequisite-banner" role="status">
           <ShieldCheck aria-hidden="true" size={19} />
-          <span>Terminez d’abord l’audit statique simulé</span>
+          <span>Complete finding analysis before running controls</span>
         </div>
       ) : null}
 
-      <Card title="Campagne de validation" eyebrow="LANCEMENT CONTRÔLÉ">
+      <Card title="Control campaign" eyebrow="CONTROLS OPERATION">
         <div className="validation-launch">
           <div>
             <p>
-              Lancez les contrôles de non-régression et associez chaque résultat à
-              sa limite de preuve.
+              Run the multi-phase control campaign. Results retain their local
+              evidence boundary while target verification remains pending.
             </p>
             {progress && busy ? (
               <div className="validation-progress" aria-live="polite">
@@ -106,18 +107,21 @@ export function ValidationPage() {
             data-guide-id="run-validation"
           >
             <ClipboardCheck aria-hidden="true" size={16} />
-            Lancer la validation simulée
+            Run control campaign
           </Button>
         </div>
         {state.validationResults['external-dynamic-retest'] ? (
           <div className="validation-result-banner">
-            <StatusBadge label="Validation simulée terminée" tone="success" />
+            <StatusBadge
+              label="Control campaign completed · target verification pending"
+              tone="success"
+            />
             <div className="external-retest-banner">
             <StatusBadge
               label="Contre-audit dynamique externe — NON EXÉCUTÉ"
               tone="prepared"
             />
-            <span>Une campagne externe reste à planifier sur la cible autorisée.</span>
+            <span>Plan the external campaign only for the authorized target.</span>
             </div>
           </div>
         ) : null}
@@ -150,7 +154,7 @@ export function ValidationPage() {
             <h2 id="validation-groups-title">Résultats et limites</h2>
           </div>
           <StatusBadge
-            label={externalStatus ? 'Campagne exécutée' : 'En attente'}
+            label={externalStatus ? 'Control campaign completed' : 'En attente'}
             tone={externalStatus ? 'success' : 'prepared'}
           />
         </div>

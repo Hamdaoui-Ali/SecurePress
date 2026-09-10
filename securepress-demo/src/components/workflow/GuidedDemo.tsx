@@ -8,6 +8,7 @@ export function GuidedDemo() {
   const {
     state,
     applyRemediation,
+    runValidation,
     nextGuidedStep,
     previousGuidedStep,
     exitGuidedDemo,
@@ -74,6 +75,10 @@ export function GuidedDemo() {
         for (const findingId of guidedFindingIds) {
           await applyRemediation(findingId)
         }
+      }
+
+      if (stepKey === 'run-validation') {
+        await runValidation()
       }
 
       nextGuidedStep()

@@ -9,9 +9,9 @@ interface ComparisonTableProps {
 function validationLabel(status: ValidationStatus | undefined) {
   switch (status) {
     case 'simulated_pass':
-      return 'PASS simulé'
+      return 'PASS'
     case 'simulated_fail':
-      return 'ÉCHEC simulé'
+      return 'FAIL'
     case 'target_validation_required':
       return 'Validation cible requise'
     case 'dynamic_retest_not_executed':

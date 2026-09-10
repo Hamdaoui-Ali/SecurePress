@@ -28,7 +28,7 @@ export function ReportPage() {
   )
   const riskLabel =
     remainingRiskPoints === totalRiskPoints
-      ? 'Risque élevé simulé'
+      ? 'Risque élevé depuis les preuves indexées'
       : remainingRiskPoints > 0
         ? 'Risque résiduel non nul'
         : 'Risque résiduel nul'
@@ -40,8 +40,8 @@ export function ReportPage() {
           <p className="eyebrow">ÉTAPE 6 · RAPPORT</p>
           <h2>Comparer, expliquer et laisser une trace</h2>
           <p>
-            La synthèse est recalculée depuis le scénario TELCO et l’état courant
-            de la démonstration.
+            La synthèse est recalculée depuis le package source TELCO indexé et les
+            opérations courantes du workspace.
           </p>
         </div>
         <div className="report-actions">
@@ -59,8 +59,11 @@ export function ReportPage() {
       <div className="report-disclaimer" role="note">
         <ShieldCheck aria-hidden="true" size={19} />
         <div>
-          <strong>Rapport généré depuis un environnement local simulé</strong>
-          <span>Aucun serveur réel n’a été évalué par cette application</span>
+          <strong>Rapport fondé sur les preuves locales indexées</strong>
+          <span>
+            Constats issus du package source TELCO indexé ; change sets générés par
+            le workspace ; vérification cible en attente.
+          </span>
         </div>
         <StatusBadge
           label="Contre-audit dynamique externe — NON EXÉCUTÉ"
@@ -71,7 +74,7 @@ export function ReportPage() {
       <Card title="Synthèse de posture" eyebrow="RÉSUMÉ CALCULÉ">
         <div className="report-summary-grid">
           <div>
-            <span>Posture pédagogique</span>
+            <span>Posture calculée</span>
             <strong>{postureScore} / 100</strong>
           </div>
           <div>
@@ -82,8 +85,8 @@ export function ReportPage() {
             <span>Remédiations</span>
             <strong>
               {appliedCount === 0
-                ? 'Aucune remédiation appliquée'
-                : `${appliedCount} remédiations simulées`}
+                ? 'Aucun change set appliqué'
+                : `${appliedCount} change sets appliqués`}
             </strong>
           </div>
           <div>

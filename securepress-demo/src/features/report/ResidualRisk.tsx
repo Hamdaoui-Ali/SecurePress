@@ -16,7 +16,7 @@ export function ResidualRisk({ findings, riskPoints }: ResidualRiskProps) {
           <h2 id="residual-risk-title">Risque résiduel à confirmer</h2>
         </div>
         <StatusBadge
-          label={riskPoints > 0 ? 'Risque résiduel non nul' : 'Aucun risque résiduel simulé'}
+          label={riskPoints > 0 ? 'Risque résiduel non nul' : 'Aucun risque résiduel dans le change set'}
           tone={riskPoints > 0 ? 'prepared' : 'success'}
         />
       </div>
@@ -40,7 +40,7 @@ export function ResidualRisk({ findings, riskPoints }: ResidualRiskProps) {
           ))}
         </ul>
       ) : (
-        <p className="timeline-empty">Aucun constat ne reste dans cette simulation.</p>
+        <p className="timeline-empty">Aucun constat ne reste dans le change set proposé.</p>
       )}
     </section>
   )

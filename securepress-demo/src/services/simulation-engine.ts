@@ -396,7 +396,7 @@ export function createSimulationEngine(
           },
           options.now,
           'validation',
-          'Validation simulée terminée ; contre-audit dynamique externe non exécuté',
+          'Control campaign completed · target verification pending',
         )
       },
     )

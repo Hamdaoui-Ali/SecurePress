@@ -40,7 +40,7 @@ export function GuidedDemoOverlay({
       aria-describedby={descriptionId}
     >
       <span id={guideLabelId} className="sr-only">
-        Guide de démonstration
+        Guided workspace workflow
       </span>
       <div className="guided-demo-overlay-header">
         <div className="guided-demo-icon" aria-hidden="true">

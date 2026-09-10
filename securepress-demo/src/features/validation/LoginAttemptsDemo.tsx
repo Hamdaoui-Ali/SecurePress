@@ -13,7 +13,7 @@ export function LoginAttemptsDemo() {
     <section className="validation-demo-card" aria-labelledby="login-demo-title">
       <div className="validation-demo-header">
         <div>
-          <p className="card-eyebrow">DÉMONSTRATION LOCALE</p>
+          <p className="card-eyebrow">LOCAL BROWSER CONTROL</p>
           <h3 id="login-demo-title">Limitation des tentatives de connexion</h3>
         </div>
         <ShieldAlert aria-hidden="true" size={20} />
@@ -24,7 +24,7 @@ export function LoginAttemptsDemo() {
       </p>
       <div className="login-attempt-meter" aria-live="polite">
         <strong>
-          {attempts} / {MAX_ATTEMPTS} échecs simulés
+          {attempts} / {MAX_ATTEMPTS} failed attempts recorded locally
         </strong>
         <div className="login-attempt-track" aria-hidden="true">
           <span style={{ width: `${(attempts / MAX_ATTEMPTS) * 100}%` }} />
@@ -32,18 +32,18 @@ export function LoginAttemptsDemo() {
       </div>
       {blocked ? (
         <StatusBadge
-          label="Blocage temporaire simulé : 15 minutes"
+          label="Temporary block expected: 15 minutes"
           tone="success"
         />
       ) : (
-        <StatusBadge label="Aucun blocage simulé" tone="prepared" />
+        <StatusBadge label="No block reached" tone="prepared" />
       )}
       <div className="validation-demo-actions">
         <Button
           disabled={blocked}
           onClick={() => setAttempts((current) => Math.min(MAX_ATTEMPTS, current + 1))}
         >
-          Simuler un échec de connexion
+          Record a failed login attempt
         </Button>
         <Button
           variant="ghost"

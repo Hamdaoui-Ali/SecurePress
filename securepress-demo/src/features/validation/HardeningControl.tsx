@@ -35,7 +35,7 @@ export function HardeningControl({
           <h3 id={`hardening-title-${control.id}`}>{control.title}</h3>
         </div>
         <StatusBadge
-          label={completed ? 'PASS simulé' : 'Prêt à exécuter'}
+          label={completed ? 'PASS' : 'Prêt à exécuter'}
           tone={completed ? 'success' : 'prepared'}
         />
       </div>
@@ -55,8 +55,8 @@ export function HardeningControl({
         >
           <Play aria-hidden="true" size={15} />
           {completed
-            ? `Contrôle terminé · ${control.title}`
-            : `Exécuter le contrôle · ${control.title}`}
+            ? `Control completed · ${control.title}`
+            : `Run control · ${control.title}`}
         </Button>
       </div>
     </article>

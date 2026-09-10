@@ -28,8 +28,8 @@ export function AssessmentTimeline({ events }: AssessmentTimelineProps) {
     <section className="timeline-panel" aria-labelledby="timeline-title">
       <div className="report-section-heading">
         <div>
-          <p className="eyebrow">TRACE DE SESSION</p>
-          <h2 id="timeline-title">Chronologie des actions déclenchées</h2>
+          <p className="eyebrow">ACTIVITÉ DES OPÉRATIONS</p>
+          <h2 id="timeline-title">Chronologie des opérations exécutées</h2>
         </div>
         <span className="timeline-count">{orderedEvents.length} événement{orderedEvents.length > 1 ? 's' : ''}</span>
       </div>
@@ -46,7 +46,7 @@ export function AssessmentTimeline({ events }: AssessmentTimelineProps) {
           ))}
         </ol>
       ) : (
-        <p className="timeline-empty">Aucun événement déclenché dans cette session.</p>
+        <p className="timeline-empty">Aucune opération exécutée dans cette session.</p>
       )}
     </section>
   )

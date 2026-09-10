@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
@@ -19,40 +19,40 @@ function completedAuditState() {
   }
 }
 
-function renderValidation() {
+function renderValidation(delayMs = 0) {
   return render(
-    <AssessmentProvider delayMs={0}>
+    <AssessmentProvider delayMs={delayMs}>
       <ValidationPage />
     </AssessmentProvider>,
   )
 }
 
-test('bloque le lancement global avant la fin de l’audit', () => {
+test('blocks the control campaign until finding analysis is complete', () => {
   renderValidation()
 
   expect(
-    screen.getByRole('button', { name: /Lancer la validation simulée/i }),
+    screen.getByRole('button', { name: 'Run control campaign' }),
   ).toBeDisabled()
   expect(
-    screen.getByText('Terminez d’abord l’audit statique simulé'),
+    screen.getByText('Complete finding analysis before running controls'),
   ).toBeVisible()
 })
 
-test('simule le blocage après cinq échecs de connexion', async () => {
+test('records the browser-only login control after five failed attempts', async () => {
   const user = userEvent.setup()
   saveAssessment(completedAuditState())
   renderValidation()
 
   const button = screen.getByRole('button', {
-    name: /Simuler un échec de connexion/i,
+    name: /Record a failed login attempt/i,
   })
   for (let attempt = 0; attempt < 5; attempt += 1) {
     await user.click(button)
   }
 
-  expect(screen.getByText('5 / 5 échecs simulés')).toBeVisible()
+  expect(screen.getByText('5 / 5 failed attempts recorded locally')).toBeVisible()
   expect(
-    screen.getByText('Blocage temporaire simulé : 15 minutes'),
+    screen.getByText('Temporary block expected: 15 minutes'),
   ).toBeVisible()
 })
 
@@ -75,26 +75,36 @@ test('présente la politique d’upload et les contrôles de durcissement', asyn
   })
   await user.click(
     within(hardeningCard).getByRole('button', {
-      name: /Exécuter le contrôle/i,
+      name: /Run control/i,
     }),
   )
-  expect(await within(hardeningCard).findByText('PASS simulé')).toBeVisible()
+  expect(await within(hardeningCard).findByText('PASS')).toBeVisible()
 
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
   expect(saved.completedHardeningCheckIds).toEqual(['V-FILE-EDITOR'])
 })
 
-test('lance la campagne et conserve les limites de preuve', async () => {
+test('runs the multi-phase control campaign with PASS results and target verification pending', async () => {
   const user = userEvent.setup()
   saveAssessment(completedAuditState())
-  renderValidation()
+  renderValidation(250)
 
   await user.click(
-    screen.getByRole('button', { name: /Lancer la validation simulée/i }),
+    screen.getByRole('button', { name: 'Run control campaign' }),
   )
 
-  expect(screen.getByText('Validation simulée terminée')).toBeVisible()
-  expect(screen.getAllByText('PASS simulé')).toHaveLength(6)
+  await waitFor(() => {
+    expect(screen.getByText('Initialisation de la campagne de contrôles')).toBeVisible()
+  })
+
+  expect(
+    await screen.findByText(
+      'Control campaign completed · target verification pending',
+      {},
+      { timeout: 3_000 },
+    ),
+  ).toBeVisible()
+  expect(screen.getAllByText('PASS')).toHaveLength(6)
   expect(screen.getAllByText('Validation cible requise')).toHaveLength(4)
   expect(
     screen.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),
@@ -102,8 +112,25 @@ test('lance la campagne et conserve les limites de preuve', async () => {
   expect(screen.queryByText('Vérifié sur cible')).not.toBeInTheDocument()
 
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
-  expect(saved.timeline).toHaveLength(1)
-  expect(saved.timeline[0].label).toMatch(/Validation simulée terminée/i)
+  expect(saved.lastRun).toMatchObject({
+    kind: 'controls',
+    status: 'completed',
+    message: 'Control campaign completed · target verification pending',
+    currentStep: 'Clôture de la campagne',
+    processed: 10,
+    total: 10,
+  })
+  expect(saved.operationHistory).toEqual([
+    expect.objectContaining({
+      kind: 'controls',
+      message: 'Control campaign completed · target verification pending',
+    }),
+  ])
+  expect(saved.timeline.map((event: { label: string }) => event.label)).toEqual(
+    expect.arrayContaining([
+      'Control campaign completed · target verification pending',
+    ]),
+  )
 })
 
 test('affiche les huit groupes de validation', () => {
