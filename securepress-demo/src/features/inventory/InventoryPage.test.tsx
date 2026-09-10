@@ -18,12 +18,19 @@ function renderInventory(delayMs = 0) {
 }
 
 test('runs discovery with phase progress and waits to expose the indexed table', async () => {
-  renderInventory(500)
+  const { container } = renderInventory(500)
+  const liveProgress = container.querySelector('.inventory-progress-live')
 
   fireEvent.click(screen.getByRole('button', { name: 'Run discovery' }))
 
   await waitFor(() => {
-    expect(screen.getByText('Component summary')).toBeVisible()
+    const discoveryButton = screen.getByRole('button', { name: 'Discovery in progress' })
+    expect(discoveryButton).toBeDisabled()
+    expect(discoveryButton).toHaveAttribute('aria-busy', 'true')
+    expect(liveProgress).toBeVisible()
+    expect(liveProgress).toHaveTextContent(
+      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+    )
   }, { timeout: 10_000 })
 
   await waitFor(
@@ -44,12 +51,19 @@ test('keeps indexed components available while a repeated discovery shows progre
     inventoryCompleted: true,
   })
 
-  renderInventory(25)
+  const { container } = renderInventory(25)
+  const liveProgress = container.querySelector('.inventory-progress-live')
 
   fireEvent.click(screen.getByRole('button', { name: 'Run discovery again' }))
 
   await waitFor(() => {
-    expect(screen.getByText('Component summary')).toBeVisible()
+    const discoveryButton = screen.getByRole('button', { name: 'Discovery in progress' })
+    expect(discoveryButton).toBeDisabled()
+    expect(discoveryButton).toHaveAttribute('aria-busy', 'true')
+    expect(liveProgress).toBeVisible()
+    expect(liveProgress).toHaveTextContent(
+      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+    )
   }, { timeout: 10_000 })
   expect(screen.getByRole('table')).toBeVisible()
   await waitFor(() => {
