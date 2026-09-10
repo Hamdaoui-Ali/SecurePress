@@ -153,8 +153,8 @@ test('exposes a running discovery operation and persists its completed metadata'
   ).toMatchObject({
     status: 'completed',
     startedAt: '2026-09-10T10:00:00.000Z',
-    completedAt: '2026-09-10T10:00:10.000Z',
-    durationMs: 10_000,
+    completedAt: '2026-09-10T10:00:05.000Z',
+    durationMs: 5_000,
     message: 'Discovery run completed \u00b7 22 components indexed',
     currentStep: 'Component summary',
     processed: 22,
@@ -299,15 +299,13 @@ test('records operation-specific activity labels in newest-first history order',
   ])
   expect(
     readJson<Array<{ label: string }>>('timeline').map((event) => event.label),
-  ).toEqual(
-    expect.arrayContaining([
+  ).toEqual([
       'Discovery run completed \u00b7 22 components indexed',
       'Finding analysis completed \u00b7 10 findings',
       'Change set applied \u00b7 F-001',
       'Hardening check completed \u00b7 V-FILE-EDITOR',
       'Control campaign completed \u00b7 target verification pending',
-    ]),
-  )
+  ])
 })
 
 test('keeps the later equal-time operation first after persistence is restored', async () => {

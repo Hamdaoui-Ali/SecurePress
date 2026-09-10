@@ -1,7 +1,7 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test, vi } from 'vitest'
-import { AssessmentProvider } from '../../app/AssessmentProvider'
+import { AssessmentProvider, useAssessment } from '../../app/AssessmentProvider'
 import { createInitialAssessment } from '../../domain/models'
 import { saveAssessment } from '../../services/storage'
 import { ReportPage } from './ReportPage'
@@ -14,6 +14,33 @@ beforeEach(() => {
 function renderReport() {
   return render(
     <AssessmentProvider delayMs={0}>
+      <ReportPage />
+    </AssessmentProvider>,
+  )
+}
+
+function ReportOperationControls() {
+  const { runInventory, runStaticAudit, runValidation } = useAssessment()
+
+  return (
+    <div>
+      <button type="button" onClick={() => void runInventory()}>
+        run discovery
+      </button>
+      <button type="button" onClick={() => void runStaticAudit()}>
+        run analysis
+      </button>
+      <button type="button" onClick={() => void runValidation()}>
+        run controls
+      </button>
+    </div>
+  )
+}
+
+function renderReportWithOperations() {
+  return render(
+    <AssessmentProvider delayMs={0}>
+      <ReportOperationControls />
       <ReportPage />
     </AssessmentProvider>,
   )
@@ -95,6 +122,36 @@ test('shows ordered operation activity without implying target verification', ()
     'Control campaign completed · target verification pending',
   )
   expect(within(timeline).queryByText(/Aucun événement/i)).not.toBeInTheDocument()
+})
+
+test('shows one provider-owned control completion from a real workflow', async () => {
+  const user = userEvent.setup()
+  renderReportWithOperations()
+
+  await user.click(screen.getByRole('button', { name: 'run discovery' }))
+  await waitFor(() => {
+    expect(screen.getByText('Discovery run completed \u00b7 22 components indexed')).toBeVisible()
+  })
+  await user.click(screen.getByRole('button', { name: 'run analysis' }))
+  await waitFor(() => {
+    expect(screen.getByText('Finding analysis completed \u00b7 10 findings')).toBeVisible()
+  })
+  await user.click(screen.getByRole('button', { name: 'run controls' }))
+
+  await waitFor(() => {
+    const timeline = screen.getByRole('list', { name: 'Chronologie de session' })
+    expect(
+      within(timeline).getAllByText(
+        'Control campaign completed \u00b7 target verification pending',
+      ),
+    ).toHaveLength(1)
+  })
+
+  const timeline = screen.getByRole('list', { name: 'Chronologie de session' })
+  expect(timeline).not.toHaveTextContent(/simulée|simulé/i)
+  expect(
+    screen.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),
+  ).toBeVisible()
 })
 
 test('states indexed evidence, generated change sets, and pending target verification in the printable report', async () => {

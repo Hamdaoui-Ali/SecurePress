@@ -88,25 +88,6 @@ function countComponents(type: 'core' | 'theme' | 'plugin'): number {
   ).length
 }
 
-function appendTimelineEvent(
-  state: AssessmentState,
-  now: () => Date,
-  id: string,
-  label: string,
-): AssessmentState {
-  return {
-    ...state,
-    timeline: [
-      ...state.timeline,
-      {
-        id: `${id}-${state.timeline.length + 1}`,
-        timestamp: now().toISOString(),
-        label,
-      },
-    ],
-  }
-}
-
 export function createSimulationEngine(
   options: SimulationOptions,
 ): SimulationEngine {
@@ -149,17 +130,11 @@ export function createSimulationEngine(
       ],
       delayMs,
       onProgress,
-      () =>
-        appendTimelineEvent(
-          {
-            ...state,
-            stage: 'inventory',
-            inventoryCompleted: true,
-          },
-          options.now,
-          'inventory',
-          'Workspace ready',
-        ),
+      () => ({
+        ...state,
+        stage: 'inventory',
+        inventoryCompleted: true,
+      }),
     )
   }
 
@@ -199,18 +174,12 @@ export function createSimulationEngine(
       ],
       delayMs,
       onProgress,
-      () =>
-        appendTimelineEvent(
-          {
-            ...state,
-            stage: 'audit',
-            auditCompleted: true,
-            visibleFindingIds: telcoScenario.findings.map((finding) => finding.id),
-          },
-          options.now,
-          'static-audit',
-          `Finding analysis completed · ${findingTotal} findings`,
-        ),
+      () => ({
+        ...state,
+        stage: 'audit',
+        auditCompleted: true,
+        visibleFindingIds: telcoScenario.findings.map((finding) => finding.id),
+      }),
     )
   }
 
@@ -251,17 +220,11 @@ export function createSimulationEngine(
       ],
       delayMs,
       onProgress,
-      () =>
-        appendTimelineEvent(
-          {
-            ...state,
-            stage: 'remediation',
-            appliedFindingIds: [...state.appliedFindingIds, findingId],
-          },
-          options.now,
-          `remediation-${findingId}`,
-          `Remédiation simulée appliquée : ${findingId}`,
-        ),
+      () => ({
+        ...state,
+        stage: 'remediation',
+        appliedFindingIds: [...state.appliedFindingIds, findingId],
+      }),
     )
   }
 
@@ -309,20 +272,14 @@ export function createSimulationEngine(
       ],
       delayMs,
       onProgress,
-      () =>
-        appendTimelineEvent(
-          {
-            ...state,
-            stage: 'validation',
-            completedHardeningCheckIds: [
-              ...state.completedHardeningCheckIds,
-              control.id,
-            ],
-          },
-          options.now,
-          `hardening-${control.id}`,
-          `Contrôle de durcissement simulé : ${control.id}`,
-        ),
+      () => ({
+        ...state,
+        stage: 'validation',
+        completedHardeningCheckIds: [
+          ...state.completedHardeningCheckIds,
+          control.id,
+        ],
+      }),
     )
   }
 
@@ -385,19 +342,14 @@ export function createSimulationEngine(
 
         results[EXTERNAL_RETEST_ID] = 'dynamic_retest_not_executed'
 
-        return appendTimelineEvent(
-          {
-            ...state,
-            stage: 'validation',
-            validationResults: {
-              ...state.validationResults,
-              ...results,
-            },
+        return {
+          ...state,
+          stage: 'validation',
+          validationResults: {
+            ...state.validationResults,
+            ...results,
           },
-          options.now,
-          'validation',
-          'Control campaign completed · target verification pending',
-        )
+        }
       },
     )
   }

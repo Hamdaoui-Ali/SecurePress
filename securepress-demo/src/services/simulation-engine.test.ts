@@ -60,7 +60,7 @@ describe('simulation engine', () => {
     expect(afterAudit.stage).toBe('audit')
     expect(afterAudit.auditCompleted).toBe(true)
     expect(afterAudit.visibleFindingIds).toHaveLength(10)
-    expect(afterAudit.timeline).toHaveLength(2)
+    expect(afterAudit.timeline).toEqual([])
   })
 
   test('emits deterministic discovery phases with indexed component counts', async () => {
@@ -182,7 +182,7 @@ describe('simulation engine', () => {
       appliedFindingIds: ['F-001'],
       visibleFindingIds: telcoScenario.findings.map((finding) => finding.id),
     })
-    expect(afterAnalysisRerun.timeline).toHaveLength(remediated.timeline.length + 2)
+    expect(afterAnalysisRerun.timeline).toEqual([])
   })
 
   test('emits controls phases for a TELCO hardening check and the validation campaign', async () => {
@@ -205,6 +205,7 @@ describe('simulation engine', () => {
     expect(hardeningUpdates.map((update) => update.processed)).toEqual([0, 1, 1])
     expect(hardeningUpdates.map((update) => update.total)).toEqual([2, 2, 2])
     expect(afterHardening.completedHardeningCheckIds).toEqual(['V-FILE-EDITOR'])
+    expect(afterHardening.timeline).toEqual([])
 
     const campaignUpdates: ProgressUpdate[] = []
     const campaignEngine = createEngine(campaignUpdates)
@@ -228,6 +229,7 @@ describe('simulation engine', () => {
     expect(Object.keys(afterValidation.validationResults)).toHaveLength(
       telcoScenario.validationChecks.length + 1,
     )
+    expect(afterValidation.timeline).toEqual([])
   })
 
   test('completes zero-delay runs deterministically', async () => {
