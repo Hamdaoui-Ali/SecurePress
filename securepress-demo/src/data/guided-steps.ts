@@ -52,8 +52,8 @@ export const guidedStepDetails: Record<GuidedStep, GuidedStepDetail> = {
   'run-validation': {
     route: '/validation',
     targetId: 'run-validation',
-    title: 'Lancer la validation simulée',
-    description: 'Exécutez les contrôles locaux et gardez le contre-audit dynamique externe hors périmètre.',
+    title: 'Run control campaign',
+    description: 'Run local control checks; target verification remains pending.',
   },
   'review-comparison': {
     route: '/rapport',

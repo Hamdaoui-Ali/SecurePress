@@ -147,3 +147,13 @@ test('uses workspace update and target-verification language in guided steps', (
   expect(screen.getByText(/source package provenance/i)).toBeVisible()
   expect(screen.getByText(/Target verification required/i)).toBeVisible()
 })
+
+test('uses operational control-campaign language in the validation guided step', () => {
+  saveAssessment({ ...createInitialAssessment(), guidedStep: 5 })
+  renderGuide()
+
+  expect(screen.getByText('Run control campaign')).toBeVisible()
+  expect(
+    screen.getByText(/Run local control checks; target verification remains pending\./i),
+  ).toBeVisible()
+})
