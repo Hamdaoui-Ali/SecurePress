@@ -9,6 +9,9 @@ import {
 export interface ProgressUpdate {
   percent: number
   message: string
+  step: string
+  processed: number
+  total: number
 }
 
 export interface SimulationOptions {
@@ -34,18 +37,55 @@ export interface SimulationEngine {
 
 const EXTERNAL_RETEST_ID = 'external-dynamic-retest'
 
-const inventoryProgress: ProgressUpdate[] = [
-  { percent: 15, message: 'Lecture de l’instantané simulé' },
-  { percent: 30, message: 'Détection du noyau WordPress' },
-  { percent: 45, message: 'Inspection des thèmes' },
-  { percent: 60, message: 'Inspection des extensions' },
-  { percent: 75, message: 'Inspection de la configuration' },
-  { percent: 100, message: 'Construction de l’inventaire' },
-]
+interface ProgressPhase {
+  step: string
+  processed: number
+  total: number
+}
 
 function sleep(delayMs: number): Promise<void> {
   if (delayMs <= 0) return Promise.resolve()
   return new Promise((resolve) => window.setTimeout(resolve, delayMs))
+}
+
+function createProgressUpdate(
+  phase: ProgressPhase,
+  index: number,
+  phaseCount: number,
+): ProgressUpdate {
+  return {
+    percent: Math.round((index / (phaseCount - 1)) * 100),
+    message: phase.step,
+    step: phase.step,
+    processed: phase.processed,
+    total: phase.total,
+  }
+}
+
+async function runPhases<T>(
+  phases: ProgressPhase[],
+  delayMs: number,
+  onProgress: (update: ProgressUpdate) => void,
+  complete: () => T,
+): Promise<T> {
+  for (const [index, phase] of phases.entries()) {
+    if (index === phases.length - 1) {
+      const result = complete()
+      onProgress(createProgressUpdate(phase, index, phases.length))
+      return result
+    }
+
+    onProgress(createProgressUpdate(phase, index, phases.length))
+    await sleep(delayMs)
+  }
+
+  throw new Error('PHASES_REQUIRED')
+}
+
+function countComponents(type: 'core' | 'theme' | 'plugin'): number {
+  return telcoScenario.inventory.components.filter(
+    (component) => component.type === type,
+  ).length
 }
 
 function appendTimelineEvent(
@@ -76,20 +116,52 @@ export function createSimulationEngine(
   async function runInventory(state: AssessmentState): Promise<AssessmentState> {
     if (state.inventoryCompleted) return state
 
-    for (const update of inventoryProgress) {
-      onProgress(update)
-      await sleep(delayMs)
-    }
+    const coreCount = countComponents('core')
+    const themeCount = countComponents('theme')
+    const componentTotal = telcoScenario.inventory.components.length
 
-    return appendTimelineEvent(
-      {
-        ...state,
-        stage: 'inventory',
-        inventoryCompleted: true,
-      },
-      options.now,
-      'inventory',
-      'Inventaire simulé terminé',
+    return runPhases(
+      [
+        { step: 'Lecture du package TELCO', processed: 0, total: componentTotal },
+        {
+          step: 'Indexation du noyau WordPress',
+          processed: coreCount,
+          total: componentTotal,
+        },
+        {
+          step: 'Inventaire des thèmes',
+          processed: coreCount + themeCount,
+          total: componentTotal,
+        },
+        {
+          step: 'Inventaire des extensions',
+          processed: componentTotal,
+          total: componentTotal,
+        },
+        {
+          step: 'Contrôle de la configuration',
+          processed: componentTotal,
+          total: componentTotal,
+        },
+        {
+          step: 'Synthèse des composants',
+          processed: componentTotal,
+          total: componentTotal,
+        },
+      ],
+      delayMs,
+      onProgress,
+      () =>
+        appendTimelineEvent(
+          {
+            ...state,
+            stage: 'inventory',
+            inventoryCompleted: true,
+          },
+          options.now,
+          'inventory',
+          'Inventaire simulé terminé',
+        ),
     )
   }
 
@@ -99,20 +171,49 @@ export function createSimulationEngine(
     if (state.auditCompleted) return state
     if (!state.inventoryCompleted) throw new Error('INVENTORY_REQUIRED')
 
-    onProgress({ percent: 50, message: 'Lecture des preuves locales' })
-    await sleep(delayMs)
-    onProgress({ percent: 100, message: 'Audit statique simulé terminé' })
+    const findingTotal = telcoScenario.findings.length
+    const observedEvidenceCount = telcoScenario.findings.filter(
+      (finding) => finding.evidenceStatus === 'observed_in_snapshot',
+    ).length
+    const correlatedFindingCount = telcoScenario.findings.filter((finding) =>
+      telcoScenario.remediations.some(
+        (remediation) => remediation.findingId === finding.id,
+      ),
+    ).length
 
-    return appendTimelineEvent(
-      {
-        ...state,
-        stage: 'audit',
-        auditCompleted: true,
-        visibleFindingIds: telcoScenario.findings.map((finding) => finding.id),
-      },
-      options.now,
-      'static-audit',
-      'Audit statique simulé terminé : 10 constats qualifiés',
+    return runPhases(
+      [
+        { step: 'Chargement des constats', processed: 0, total: findingTotal },
+        {
+          step: 'Analyse des preuves',
+          processed: observedEvidenceCount,
+          total: findingTotal,
+        },
+        {
+          step: 'Corrélation risque/remédiation',
+          processed: correlatedFindingCount,
+          total: findingTotal,
+        },
+        {
+          step: 'Finalisation de l’analyse',
+          processed: findingTotal,
+          total: findingTotal,
+        },
+      ],
+      delayMs,
+      onProgress,
+      () =>
+        appendTimelineEvent(
+          {
+            ...state,
+            stage: 'audit',
+            auditCompleted: true,
+            visibleFindingIds: telcoScenario.findings.map((finding) => finding.id),
+          },
+          options.now,
+          'static-audit',
+          `Audit statique simulé terminé : ${findingTotal} constats qualifiés`,
+        ),
     )
   }
 
@@ -126,17 +227,44 @@ export function createSimulationEngine(
     if (!finding) throw new Error('FINDING_NOT_FOUND')
     if (state.appliedFindingIds.includes(findingId)) return state
 
-    await sleep(delayMs)
+    const dependencyTotal = finding.validationIds.length
 
-    return appendTimelineEvent(
-      {
-        ...state,
-        stage: 'remediation',
-        appliedFindingIds: [...state.appliedFindingIds, findingId],
-      },
-      options.now,
-      `remediation-${findingId}`,
-      `Remédiation simulée appliquée : ${findingId}`,
+    return runPhases(
+      [
+        {
+          step: 'Préparation du change set',
+          processed: 0,
+          total: dependencyTotal,
+        },
+        {
+          step: 'Vérification des dépendances',
+          processed: dependencyTotal,
+          total: dependencyTotal,
+        },
+        {
+          step: 'Enregistrement des changements',
+          processed: dependencyTotal,
+          total: dependencyTotal,
+        },
+        {
+          step: 'Finalisation du change set',
+          processed: dependencyTotal,
+          total: dependencyTotal,
+        },
+      ],
+      delayMs,
+      onProgress,
+      () =>
+        appendTimelineEvent(
+          {
+            ...state,
+            stage: 'remediation',
+            appliedFindingIds: [...state.appliedFindingIds, findingId],
+          },
+          options.now,
+          `remediation-${findingId}`,
+          `Remédiation simulée appliquée : ${findingId}`,
+        ),
     )
   }
 
@@ -148,20 +276,42 @@ export function createSimulationEngine(
     if (!controlId.trim()) throw new Error('HARDENING_CONTROL_REQUIRED')
     if (state.completedHardeningCheckIds.includes(controlId)) return state
 
-    await sleep(delayMs)
+    const controlTotal = 1
 
-    return appendTimelineEvent(
-      {
-        ...state,
-        stage: 'validation',
-        completedHardeningCheckIds: [
-          ...state.completedHardeningCheckIds,
-          controlId,
-        ],
-      },
-      options.now,
-      `hardening-${controlId}`,
-      `Contrôle de durcissement simulé : ${controlId}`,
+    return runPhases(
+      [
+        {
+          step: 'Initialisation de la campagne de contrôles',
+          processed: 0,
+          total: controlTotal,
+        },
+        {
+          step: 'Contrôles de durcissement',
+          processed: controlTotal,
+          total: controlTotal,
+        },
+        {
+          step: 'Clôture de la campagne',
+          processed: controlTotal,
+          total: controlTotal,
+        },
+      ],
+      delayMs,
+      onProgress,
+      () =>
+        appendTimelineEvent(
+          {
+            ...state,
+            stage: 'validation',
+            completedHardeningCheckIds: [
+              ...state.completedHardeningCheckIds,
+              controlId,
+            ],
+          },
+          options.now,
+          `hardening-${controlId}`,
+          `Contrôle de durcissement simulé : ${controlId}`,
+        ),
     )
   }
 
@@ -171,33 +321,73 @@ export function createSimulationEngine(
     if (!state.auditCompleted) throw new Error('AUDIT_REQUIRED')
     if (state.validationResults[EXTERNAL_RETEST_ID]) return state
 
-    onProgress({ percent: 30, message: 'Préparation des validations simulées' })
-    await sleep(delayMs)
-    onProgress({ percent: 100, message: 'Validation simulée terminée' })
+    const validationTotal = telcoScenario.validationChecks.length
+    const functionalCount = telcoScenario.validationChecks.filter(
+      (check) => check.category === 'functional',
+    ).length
+    const hardeningCount = telcoScenario.validationChecks.filter(
+      (check) => check.category === 'hardening',
+    ).length
+    const integrityCount = telcoScenario.validationChecks.filter(
+      (check) => check.category === 'integrity',
+    ).length
 
-    const results: Record<string, ValidationStatus> = Object.fromEntries(
-      telcoScenario.validationChecks.map((check) => [
-        check.id,
-        check.initialStatus === 'target_validation_required'
-          ? 'target_validation_required'
-          : 'simulated_pass',
-      ]),
-    )
-
-    results[EXTERNAL_RETEST_ID] = 'dynamic_retest_not_executed'
-
-    return appendTimelineEvent(
-      {
-        ...state,
-        stage: 'validation',
-        validationResults: {
-          ...state.validationResults,
-          ...results,
+    return runPhases(
+      [
+        {
+          step: 'Initialisation de la campagne de contrôles',
+          processed: 0,
+          total: validationTotal,
         },
+        {
+          step: 'Contrôles fonctionnels',
+          processed: functionalCount,
+          total: validationTotal,
+        },
+        {
+          step: 'Contrôles de durcissement',
+          processed: functionalCount + hardeningCount,
+          total: validationTotal,
+        },
+        {
+          step: 'Contrôles d’intégrité',
+          processed: functionalCount + hardeningCount + integrityCount,
+          total: validationTotal,
+        },
+        {
+          step: 'Clôture de la campagne',
+          processed: validationTotal,
+          total: validationTotal,
+        },
+      ],
+      delayMs,
+      onProgress,
+      () => {
+        const results: Record<string, ValidationStatus> = Object.fromEntries(
+          telcoScenario.validationChecks.map((check) => [
+            check.id,
+            check.initialStatus === 'target_validation_required'
+              ? 'target_validation_required'
+              : 'simulated_pass',
+          ]),
+        )
+
+        results[EXTERNAL_RETEST_ID] = 'dynamic_retest_not_executed'
+
+        return appendTimelineEvent(
+          {
+            ...state,
+            stage: 'validation',
+            validationResults: {
+              ...state.validationResults,
+              ...results,
+            },
+          },
+          options.now,
+          'validation',
+          'Validation simulée terminée ; contre-audit dynamique externe non exécuté',
+        )
       },
-      options.now,
-      'validation',
-      'Validation simulée terminée ; contre-audit dynamique externe non exécuté',
     )
   }
 
