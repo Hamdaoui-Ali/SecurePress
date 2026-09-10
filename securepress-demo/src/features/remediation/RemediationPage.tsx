@@ -1,12 +1,20 @@
 import { ShieldCheck } from 'lucide-react'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { telcoScenario } from '../../data/scenario'
+import type { OperationRun } from '../../domain/models'
 import { selectPostureScore } from '../../domain/selectors'
 import { Card } from '../../components/ui/Card'
 import { RemediationCard } from './RemediationCard'
 
+function isChangeSetForFinding(
+  operation: OperationRun | null,
+  findingId: string,
+) {
+  return operation?.kind === 'change-set' && operation.message.includes(findingId)
+}
+
 export function RemediationPage() {
-  const { state, busy, applyRemediation } = useAssessment()
+  const { state, busy, progress, activeOperation, lastRun, applyRemediation } = useAssessment()
   const score = selectPostureScore(telcoScenario, state)
 
   return (
@@ -27,7 +35,7 @@ export function RemediationPage() {
         </div>
       ) : null}
 
-      <Card title="Posture courante" eyebrow="ÉTAT DE LA SIMULATION">
+      <Card title="Workspace posture" eyebrow="WORKSPACE STATE">
         <div className="remediation-summary">
           <div>
             <span>Indice pédagogique</span>
@@ -38,7 +46,7 @@ export function RemediationPage() {
             <strong>{state.appliedFindingIds.length}</strong>
           </div>
           <p>
-            Les actions ci-dessous modifient uniquement l’état local de la démo.
+            Change sets update this workspace record only. Target verification remains required.
           </p>
         </div>
       </Card>
@@ -50,14 +58,32 @@ export function RemediationPage() {
           )
           if (!finding) return null
 
+          const isApplying = isChangeSetForFinding(activeOperation, finding.id)
+          const isApplied = state.appliedFindingIds.includes(finding.id)
+          const failedRun = isChangeSetForFinding(lastRun, finding.id) && lastRun?.status === 'failed'
+          const completedRun = [lastRun, ...state.operationHistory].find(
+            (operation) =>
+              isChangeSetForFinding(operation, finding.id) &&
+              operation?.status === 'completed',
+          )
+          const changeSetState = isApplied
+            ? 'applied'
+            : isApplying
+              ? 'applying'
+              : failedRun
+                ? 'failed'
+                : 'staged'
+
           return (
             <RemediationCard
               key={remediation.id}
               finding={finding}
               remediation={remediation}
-              applied={state.appliedFindingIds.includes(finding.id)}
+              changeSetState={changeSetState}
               busy={busy}
               auditCompleted={state.auditCompleted}
+              phase={isApplying ? progress?.step : undefined}
+              durationMs={completedRun?.durationMs}
               onApply={() => void applyRemediation(finding.id)}
             />
           )

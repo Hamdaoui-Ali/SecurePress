@@ -13,8 +13,11 @@ export function ArtifactPreview({ remediationId }: { remediationId: string }) {
   return (
     <div className="artifact-preview">
       <div className="artifact-preview-header">
-        <span>Aperçu d’artefact</span>
-        <StatusBadge label="Aperçu uniquement — non exécuté" tone="prepared" />
+        <span>Generated workspace artifact</span>
+        <StatusBadge
+          label="Generated workspace artifact · proposed change set"
+          tone="prepared"
+        />
       </div>
       <pre>
         <code>{snippet}</code>
