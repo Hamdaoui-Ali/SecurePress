@@ -16,16 +16,16 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { to: '/', label: 'Vue d’ensemble', icon: LayoutDashboard },
-  { to: '/inventaire', label: 'Inventaire', icon: ListChecks },
-  { to: '/audit', label: 'Audit & qualification', icon: FileSearch },
-  { to: '/remediation', label: 'Remédiation', icon: Shield },
+  { to: '/', label: 'Overview', icon: LayoutDashboard },
+  { to: '/inventaire', label: 'Discovery', icon: ListChecks },
+  { to: '/audit', label: 'Finding analysis', icon: FileSearch },
+  { to: '/remediation', label: 'Change sets', icon: Shield },
   {
     to: '/validation',
-    label: 'Durcissement & validation',
+    label: 'Controls & validation',
     icon: ClipboardCheck,
   },
-  { to: '/rapport', label: 'Comparaison & rapport', icon: Sparkles },
+  { to: '/rapport', label: 'Comparison & report', icon: Sparkles },
 ] as const
 
 export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
@@ -42,13 +42,13 @@ export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
       </div>
 
       <div className="project-block">
-        <p className="sidebar-label">Projet</p>
+        <p className="sidebar-label">Project</p>
         <p className="project-name">{project.name}</p>
       </div>
 
       <nav className="sidebar-nav" aria-labelledby="sidebar-nav-title">
         <h2 id="sidebar-nav-title" className="sr-only">
-          Étapes de l’espace de travail
+          Workspace workflow
         </h2>
         {navigation.map(({ to, label, icon: Icon }) => (
           <NavLink
@@ -66,7 +66,7 @@ export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
       </nav>
 
       <div className="sidebar-footer">
-        <p className="sidebar-footnote">Copie hors production</p>
+        <p className="sidebar-footnote">Offline demonstration copy</p>
         <Button
           className="guided-button"
           disabled={busy}
@@ -74,7 +74,7 @@ export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
           onClick={onStartGuidedDemo}
         >
           <Sparkles aria-hidden="true" size={16} />
-          Démarrer le parcours guidé
+          Start guided walkthrough
         </Button>
       </div>
     </aside>

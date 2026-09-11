@@ -30,11 +30,11 @@ export function RemediationPage() {
   return (
     <div className="page-stack">
       <div className="page-heading">
-        <p className="eyebrow">ÉTAPE 4 · REMÉDIATION</p>
-        <h2>Relier le constat à une correction</h2>
+        <p className="eyebrow">STEP 4 · REMEDIATION</p>
+        <h2>Connect each finding to a correction</h2>
         <p>
-          Chaque carte sépare l’état initial, la mesure proposée, l’artefact et
-          la validation qui reste à démontrer.
+          Each card separates the baseline, proposed measure, workspace artifact, and validation
+          that still needs to be demonstrated.
         </p>
       </div>
 
@@ -52,7 +52,7 @@ export function RemediationPage() {
             <strong>{score} / 100</strong>
           </div>
           <div>
-            <span>Remédiations appliquées</span>
+            <span>Change sets applied</span>
             <strong>{state.appliedFindingIds.length}</strong>
           </div>
           <p>

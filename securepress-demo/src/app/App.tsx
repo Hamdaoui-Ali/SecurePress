@@ -25,8 +25,8 @@ function AppContent() {
       <ResetDemoDialog
         open={guidedStartOpen}
         busy={busy}
-        title="Démarrer le parcours guidé ?"
-        description="Le parcours local sera remis à zéro et commencera par la vue d’ensemble."
+        title="Start the guided walkthrough?"
+        description="The local workspace will be reset and the walkthrough will begin at the overview."
         onCancel={() => setGuidedStartOpen(false)}
         onConfirm={() => {
           if (busy) return

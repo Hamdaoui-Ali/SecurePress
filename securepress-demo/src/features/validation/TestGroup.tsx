@@ -1,31 +1,38 @@
 import type { ValidationCheck, ValidationStatus } from '../../domain/models'
+import type { CampaignCheckState } from '../../domain/operation-view'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 
 interface TestGroupProps {
   title: string
   description: string
   checks?: ValidationCheck[]
-  results: Record<string, ValidationStatus>
+  results: Record<string, ValidationStatus | CampaignCheckState>
   emptyMessage?: string
 }
 
-function statusLabel(status: ValidationStatus | undefined) {
+function statusLabel(status: ValidationStatus | CampaignCheckState | undefined) {
   switch (status) {
+    case 'pass':
     case 'simulated_pass':
       return 'PASS'
+    case 'target':
+    case 'target_validation_required':
+      return 'Target verification required'
+    case 'running':
+      return 'Running'
+    case 'queued':
+      return 'Queued'
     case 'simulated_fail':
       return 'FAIL'
-    case 'target_validation_required':
-      return 'Validation cible requise'
     case 'dynamic_retest_not_executed':
-      return 'Contre-audit non exécuté'
+      return 'Dynamic retest not executed'
     default:
-      return 'En attente'
+      return 'Not run'
   }
 }
 
-function statusTone(status: ValidationStatus | undefined) {
-  if (status === 'simulated_pass') return 'success' as const
+function statusTone(status: ValidationStatus | CampaignCheckState | undefined) {
+  if (status === 'simulated_pass' || status === 'pass') return 'success' as const
   if (status === 'simulated_fail') return 'critical' as const
   return 'prepared' as const
 }
@@ -47,7 +54,7 @@ export function TestGroup({
         <span className="validation-group-count">
           {checks.length > 0
             ? `${checks.length} test${checks.length > 1 ? 's' : ''}`
-            : 'Repère'}
+            : 'Reference'}
         </span>
       </div>
       {checks.length > 0 ? (
@@ -67,7 +74,7 @@ export function TestGroup({
         </div>
       ) : (
         <p className="validation-empty-group">
-          {emptyMessage ?? 'Aucun contrôle local supplémentaire dans ce workspace.'}
+          {emptyMessage ?? 'No additional local controls are defined for this workspace.'}
         </p>
       )}
     </section>

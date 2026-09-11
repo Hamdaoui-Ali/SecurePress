@@ -14,13 +14,12 @@ export function LoginAttemptsDemo() {
       <div className="validation-demo-header">
         <div>
           <p className="card-eyebrow">LOCAL BROWSER CONTROL</p>
-          <h3 id="login-demo-title">Limitation des tentatives de connexion</h3>
+        <h3 id="login-demo-title">Login attempt throttling</h3>
         </div>
         <ShieldAlert aria-hidden="true" size={20} />
       </div>
       <p>
-        Le compteur reste dans le navigateur et ne tente aucune authentification
-        réelle.
+        The counter stays in the browser and does not attempt real authentication.
       </p>
       <div className="login-attempt-meter" aria-live="polite">
         <strong>
@@ -51,7 +50,7 @@ export function LoginAttemptsDemo() {
           onClick={() => setAttempts(0)}
         >
           <RotateCcw aria-hidden="true" size={15} />
-          Réinitialiser
+          Reset
         </Button>
       </div>
     </section>

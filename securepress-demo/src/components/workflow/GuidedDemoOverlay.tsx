@@ -47,13 +47,13 @@ export function GuidedDemoOverlay({
           <Sparkles size={17} />
         </div>
         <div>
-          <p className="guided-demo-step">Étape {stepNumber} sur {totalSteps}</p>
+          <p className="guided-demo-step">Step {stepNumber} of {totalSteps}</p>
           <h2 id={titleId}>{title}</h2>
         </div>
         <button
           type="button"
           className="icon-button"
-          aria-label="Quitter le guide"
+          aria-label="Exit walkthrough"
           onClick={onExit}
         >
           <X aria-hidden="true" size={17} />
@@ -63,10 +63,10 @@ export function GuidedDemoOverlay({
       <div className="guided-demo-actions">
         <Button variant="ghost" disabled={isFirst} onClick={onPrevious}>
           <ArrowLeft aria-hidden="true" size={15} />
-          Précédent
+          Previous
         </Button>
         <Button busy={busy} onClick={onNext} data-guide-id="guided-next">
-          {isLast ? 'Terminer le guide' : 'Suivant'}
+          {isLast ? 'Finish walkthrough' : 'Next'}
           {!isLast ? <ArrowRight aria-hidden="true" size={15} /> : null}
         </Button>
       </div>

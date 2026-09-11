@@ -13,11 +13,11 @@ function validationLabel(status: ValidationStatus | undefined) {
     case 'simulated_fail':
       return 'FAIL'
     case 'target_validation_required':
-      return 'Validation cible requise'
+      return 'Target verification required'
     case 'dynamic_retest_not_executed':
-      return 'Contre-audit non exécuté'
+      return 'Dynamic retest not executed'
     default:
-      return 'Non exécutée'
+      return 'Not run'
   }
 }
 
@@ -30,26 +30,26 @@ function validationTone(status: ValidationStatus | undefined) {
 function limitationLabel(evidenceStatus: string) {
   switch (evidenceStatus) {
     case 'not_observable_offline':
-      return 'Preuve cible requise ; non observable hors ligne.'
+      return 'Target evidence required; not observable locally.'
     case 'documented_in_audit':
-      return 'Source documentaire ; artefact à confirmer.'
+      return 'Documented source; artifact requires confirmation.'
     default:
-      return 'Preuve locale issue de la copie hors production.'
+      return 'Local evidence from the offline copy.'
   }
 }
 
 export function ComparisonTable({ scenario, state }: ComparisonTableProps) {
   return (
     <div className="table-scroll report-table-scroll">
-      <table className="comparison-table" aria-label="Comparaison avant/après">
+      <table className="comparison-table" aria-label="Before and after comparison">
         <thead>
           <tr>
-            <th scope="col">Contrôle</th>
-            <th scope="col">État initial</th>
-            <th scope="col">État renforcé proposé</th>
-            <th scope="col">Remédiation</th>
+            <th scope="col">Control</th>
+            <th scope="col">Initial state</th>
+            <th scope="col">Proposed hardened state</th>
+            <th scope="col">Change set</th>
             <th scope="col">Validation</th>
-            <th scope="col">Limite</th>
+            <th scope="col">Limit</th>
           </tr>
         </thead>
         <tbody>
@@ -72,8 +72,8 @@ export function ComparisonTable({ scenario, state }: ComparisonTableProps) {
                   <strong>{finding.title}</strong>
                 </th>
                 <td>{remediation?.before ?? finding.evidence}</td>
-                <td>{remediation?.after ?? 'Aucune proposition locale.'}</td>
-                <td>{remediation?.title ?? 'À qualifier'}</td>
+                <td>{remediation?.after ?? 'No local proposal.'}</td>
+                <td>{remediation?.title ?? 'To be qualified'}</td>
                 <td>
                   <StatusBadge
                     label={validationLabel(status)}

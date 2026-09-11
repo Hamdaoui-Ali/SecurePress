@@ -46,17 +46,17 @@ function renderReportWithOperations() {
   )
 }
 
-test('affiche le rapport initial avec posture 42 et risque élevé', () => {
+test('shows the initial report with a 42 posture and high risk', () => {
   renderReport()
 
   expect(screen.getByText('42 / 100')).toBeVisible()
-  expect(screen.getByText('10 constats qualifiés')).toBeVisible()
-  expect(screen.getByText('Aucun change set appliqué')).toBeVisible()
-  expect(screen.getByText('Risque élevé depuis les preuves indexées')).toBeVisible()
+  expect(screen.getByText('10 qualified findings')).toBeVisible()
+  expect(screen.getByText('No change set applied')).toBeVisible()
+  expect(screen.getByText('High risk from indexed evidence')).toBeVisible()
   expect(screen.getAllByRole('row')).toHaveLength(11)
 })
 
-test('reflète le scénario projeté à 82 et quatre risques restants', () => {
+test('shows the projected 82 posture and four residual findings', () => {
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'report',
@@ -70,13 +70,13 @@ test('reflète le scénario projeté à 82 et quatre risques restants', () => {
   renderReport()
 
   expect(screen.getByText('82 / 100')).toBeVisible()
-  expect(screen.getByText('6 change sets appliqués')).toBeVisible()
-  expect(screen.getByText('4 risques restent à confirmer')).toBeVisible()
-  expect(screen.getByText('18 points de risque résiduel')).toBeVisible()
-  expect(screen.getAllByText('Risque résiduel non nul').at(-1)).toBeVisible()
+  expect(screen.getByText('6 change sets applied')).toBeVisible()
+  expect(screen.getByText('4 findings remain to be confirmed')).toBeVisible()
+  expect(screen.getByText('18 residual-risk points')).toBeVisible()
+  expect(screen.getAllByText('Residual risk remains').at(-1)).toBeVisible()
 })
 
-test('relie chaque constat à son état renforcé, sa validation et sa limite', () => {
+test('links each finding to its hardened state, validation, and limit', () => {
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'report',
@@ -88,11 +88,11 @@ test('relie chaque constat à son état renforcé, sa validation et sa limite', 
   })
   renderReport()
 
-  const table = screen.getByRole('table', { name: /Comparaison avant/i })
-  expect(within(table).getByText(/Compte.*telco_app/i)).toBeVisible()
-  expect(within(table).getAllByText('Validation cible requise')).toHaveLength(4)
+  const table = screen.getByRole('table', { name: /Before and after comparison/i })
+  expect(within(table).getByText(/account.*telco_app/i)).toBeVisible()
+  expect(within(table).getAllByText('Target verification required')).toHaveLength(4)
   expect(
-    within(table).getAllByText(/non observable hors ligne|preuve cible/i).at(-1),
+    within(table).getAllByText(/not observable locally|target evidence/i).at(-1),
   ).toBeVisible()
 })
 
@@ -109,19 +109,19 @@ test('shows ordered operation activity without implying target verification', ()
       {
         id: 'first',
         timestamp: '2026-09-09T10:01:00.000Z',
-        label: 'Première action',
+        label: 'First action',
       },
     ],
   })
   renderReport()
 
-  const timeline = screen.getByRole('list', { name: 'Chronologie de session' })
+  const timeline = screen.getByRole('list', { name: 'Session timeline' })
   const entries = within(timeline).getAllByRole('listitem')
-  expect(entries[0]).toHaveTextContent('Première action')
+  expect(entries[0]).toHaveTextContent('First action')
   expect(entries[1]).toHaveTextContent(
     'Control campaign completed · target verification pending',
   )
-  expect(within(timeline).queryByText(/Aucun événement/i)).not.toBeInTheDocument()
+  expect(within(timeline).queryByText(/No operations/i)).not.toBeInTheDocument()
 })
 
 test('shows one provider-owned control completion from a real workflow', async () => {
@@ -139,7 +139,7 @@ test('shows one provider-owned control completion from a real workflow', async (
   await user.click(screen.getByRole('button', { name: 'run controls' }))
 
   await waitFor(() => {
-    const timeline = screen.getByRole('list', { name: 'Chronologie de session' })
+    const timeline = screen.getByRole('list', { name: 'Session timeline' })
     expect(
       within(timeline).getAllByText(
         'Control campaign completed \u00b7 target verification pending',
@@ -147,10 +147,10 @@ test('shows one provider-owned control completion from a real workflow', async (
     ).toHaveLength(1)
   })
 
-  const timeline = screen.getByRole('list', { name: 'Chronologie de session' })
-  expect(timeline).not.toHaveTextContent(/simulée|simulé/i)
+  const timeline = screen.getByRole('list', { name: 'Session timeline' })
+  expect(timeline).not.toHaveTextContent(/simulation/i)
   expect(
-    screen.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),
+    screen.getByText('External dynamic retest — NOT EXECUTED'),
   ).toBeVisible()
 })
 
@@ -160,17 +160,41 @@ test('states indexed evidence, generated change sets, and pending target verific
   renderReport()
 
   expect(
-    screen.getByText('Rapport fondé sur les preuves locales indexées'),
+    screen.getByText('Report grounded in indexed local evidence'),
   ).toBeVisible()
   expect(
     screen.getByText(
-      'Constats issus du package source LNET TELCO indexé ; change sets générés par le workspace ; vérification cible en attente.',
+      'Findings come from the indexed LNET TELCO source package; change sets are generated in the workspace; target verification remains pending.',
     ),
   ).toBeVisible()
   expect(
-    screen.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),
+    screen.getByText('External dynamic retest — NOT EXECUTED'),
   ).toBeVisible()
 
-  await user.click(screen.getByRole('button', { name: /Imprimer le rapport/i }))
+  await user.click(screen.getByRole('button', { name: /Print report/i }))
   expect(printSpy).toHaveBeenCalledOnce()
+})
+
+test('offers the same report as a downloadable PDF', async () => {
+  const user = userEvent.setup()
+  const createObjectUrl = vi.fn(() => 'blob:securepress-report')
+  const revokeObjectUrl = vi.fn()
+  Object.defineProperty(URL, 'createObjectURL', {
+    configurable: true,
+    value: createObjectUrl,
+  })
+  Object.defineProperty(URL, 'revokeObjectURL', {
+    configurable: true,
+    value: revokeObjectUrl,
+  })
+  const click = vi
+    .spyOn(HTMLAnchorElement.prototype, 'click')
+    .mockImplementation(() => undefined)
+  renderReport()
+
+  await user.click(screen.getByRole('button', { name: /Download report/i }))
+
+  expect(createObjectUrl).toHaveBeenCalledOnce()
+  expect(click).toHaveBeenCalledOnce()
+  expect(revokeObjectUrl).toHaveBeenCalledWith('blob:securepress-report')
 })

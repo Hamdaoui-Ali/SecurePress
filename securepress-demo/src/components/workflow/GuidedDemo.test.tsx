@@ -114,15 +114,15 @@ test('affiche un overlay non bloquant et avance d’une étape', async () => {
   renderGuide()
 
   const overlay = screen.getByRole('region', { name: /guided workspace workflow/i })
-  expect(within(overlay).getByText('Étape 1 sur 8')).toBeVisible()
+  expect(within(overlay).getByText('Step 1 of 8')).toBeVisible()
   expect(
     within(overlay).getByText(/Start from the indexed LNET TELCO evidence/i),
   ).toBeVisible()
-  expect(within(overlay).getByRole('button', { name: 'Précédent' })).toBeDisabled()
+  expect(within(overlay).getByRole('button', { name: 'Previous' })).toBeDisabled()
 
-  await user.click(within(overlay).getByRole('button', { name: 'Suivant' }))
+  await user.click(within(overlay).getByRole('button', { name: 'Next' }))
 
-  expect(screen.getByText('Étape 2 sur 8')).toBeVisible()
+  expect(screen.getByText('Step 2 of 8')).toBeVisible()
   expect(localStorage.getItem(STORAGE_KEY)).toContain('"guidedStep":1')
 })
 
@@ -135,7 +135,7 @@ test('quitte le guide sans effacer l’état du workspace', async () => {
   })
   renderGuide()
 
-  await user.click(screen.getByRole('button', { name: 'Quitter le guide' }))
+  await user.click(screen.getByRole('button', { name: 'Exit walkthrough' }))
 
   expect(screen.queryByRole('region', { name: /guided workspace workflow/i })).not.toBeInTheDocument()
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
@@ -151,7 +151,7 @@ test('confirme un reset via la boîte de dialogue', async () => {
     <ResetDemoDialog
       open
       title="Reset workspace?"
-      description="Le parcours local sera remis à zéro."
+      description="The local workspace will be reset."
       onCancel={() => undefined}
       onConfirm={() => confirmed.push(true)}
     />,
@@ -173,7 +173,7 @@ test('restores focus to the opener after the dialog stays open through a busy tr
         open={open}
         busy={busy}
         title="Reset workspace?"
-        description="Le parcours local sera remis à zéro."
+        description="The local workspace will be reset."
         onCancel={() => undefined}
         onConfirm={() => undefined}
       />
@@ -239,9 +239,9 @@ test('runs the provider-backed control campaign before advancing from the contro
   })
   renderGuide()
 
-  await user.click(screen.getByRole('button', { name: 'Suivant' }))
+  await user.click(screen.getByRole('button', { name: 'Next' }))
 
-  expect(await screen.findByText('Étape 7 sur 8')).toBeVisible()
+  expect(await screen.findByText('Step 7 of 8')).toBeVisible()
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
     guidedStep: 6,
     validationResults: {

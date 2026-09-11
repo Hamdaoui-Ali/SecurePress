@@ -68,7 +68,7 @@ test('repeated campaigns process again while applied change sets leave no new ac
     expect(assessment.activeOperation).toMatchObject({ status: 'running', processed: 0, total: 10 })
     await completePhases()
     expect(assessment.lastRun).toMatchObject({
-      status: 'completed', currentStep: 'Clôture de la campagne', processed: 10, total: 10,
+      status: 'completed', currentStep: 'Finalizing control campaign', processed: 10, total: 10,
     })
     expect(assessment.state.timeline).toHaveLength(run + 2)
   }
@@ -99,9 +99,9 @@ test('manual remediation and campaign followed by guided next do not manufacture
   saveAssessment({ ...createInitialAssessment(), auditCompleted: true, guidedStep: 4 })
   renderProvider(true)
   act(() => { void assessment.applyRemediation('F-001') })
-  expect(screen.getByRole('button', { name: 'En cours…' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Working…' })).toBeDisabled()
   await completePhases()
-  fireEvent.click(screen.getByRole('button', { name: 'Suivant' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Next' }))
   await completePhases()
   expect(assessment.state.guidedStep).toBe(5)
   expect(assessment.operationHistory).toHaveLength(6)
@@ -109,20 +109,20 @@ test('manual remediation and campaign followed by guided next do not manufacture
   act(() => { void assessment.runValidation() })
   await completePhases()
   const history = assessment.operationHistory
-  fireEvent.click(screen.getByRole('button', { name: 'Suivant' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Next' }))
   await completePhases()
   expect(assessment.state.guidedStep).toBe(6)
   expect(assessment.operationHistory).toEqual(history)
 })
 
-test.each(['Quitter le guide', 'Précédent'])('guided batch stops after %s during an awaited phase', async (action) => {
+test.each(['Exit walkthrough', 'Previous'])('guided batch stops after %s during an awaited phase', async (action) => {
   saveAssessment({ ...createInitialAssessment(), auditCompleted: true, guidedStep: 4 })
   renderProvider(true)
-  fireEvent.click(screen.getByRole('button', { name: 'Suivant' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Next' }))
   expect(assessment.busy).toBe(true)
   fireEvent.click(screen.getByRole('button', { name: action }))
   await completePhases()
-  expect(assessment.state.guidedStep).toBe(action === 'Précédent' ? 3 : null)
+  expect(assessment.state.guidedStep).toBe(action === 'Previous' ? 3 : null)
   expect(assessment.state.appliedFindingIds).toEqual(['F-001'])
   expect(assessment.operationHistory).toHaveLength(1)
 })
@@ -130,19 +130,19 @@ test.each(['Quitter le guide', 'Précédent'])('guided batch stops after %s duri
 test('a failed guided operation keeps its step available for retry', async () => {
   saveAssessment({ ...createInitialAssessment(), guidedStep: 4 })
   renderProvider(true)
-  fireEvent.click(screen.getByRole('button', { name: 'Suivant' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Next' }))
   await completePhases()
   expect(assessment.lastRun?.status).toBe('failed')
   expect(assessment.state.guidedStep).toBe(4)
   expect(assessment.operationHistory).toHaveLength(1)
-  expect(screen.getByRole('button', { name: 'Suivant' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled()
 })
 
 test.each(['reset', 'guided-start'] as const)('disables %s and its already-open confirmation while discovery runs', async (action) => {
   window.location.hash = '/inventaire'
   render(<App />)
   const reset = screen.getByRole('button', { name: 'Reset workspace' })
-  const guidedStart = screen.getByRole('button', { name: 'Démarrer le parcours guidé' })
+  const guidedStart = screen.getByRole('button', { name: 'Start guided walkthrough' })
   fireEvent.click(action === 'reset' ? reset : guidedStart)
   const dialog = screen.getByRole('dialog')
   const confirmation = within(dialog).getByRole('button', { name: 'Confirm reset' })

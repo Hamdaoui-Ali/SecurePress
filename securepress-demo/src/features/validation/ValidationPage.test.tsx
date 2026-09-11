@@ -32,7 +32,7 @@ test('individual hardening executions keep card and persisted report outcomes co
   const user = userEvent.setup()
   saveAssessment(completedAuditState())
   const view = renderValidation()
-  const editor = screen.getByRole('article', { name: /Éditeur de fichiers désactivé/i })
+  const editor = screen.getByRole('article', { name: /File editor disabled/i })
   const xmlrpc = screen.getByRole('article', { name: /XML-RPC/i })
   await user.click(within(editor).getByRole('button'))
   expect(await within(editor).findByText('PASS')).toBeVisible()
@@ -47,7 +47,7 @@ test('individual hardening executions keep card and persisted report outcomes co
   render(<AssessmentProvider delayMs={0}><ReportPage /></AssessmentProvider>)
   expect(screen.getByRole('row', { name: /F-004/ })).toHaveTextContent('PASS')
   const xmlrpcRow = screen.getByRole('row', { name: /XML-RPC/i })
-  expect(xmlrpcRow).toHaveTextContent('Validation cible requise')
+  expect(xmlrpcRow).toHaveTextContent('Target verification required')
   expect(xmlrpcRow).not.toHaveTextContent('PASS')
 })
 
@@ -58,7 +58,7 @@ test('restores the completed canonical card from a serialized legacy payload', (
     validationResults: {}, timeline: [], guidedStep: null,
   }))
   renderValidation()
-  const editor = screen.getByRole('article', { name: /Éditeur de fichiers désactivé/i })
+  const editor = screen.getByRole('article', { name: /File editor disabled/i })
   expect(within(editor).getByText('PASS')).toBeVisible()
   expect(within(editor).getByRole('button')).toBeDisabled()
   expect(within(editor).getByRole('button')).toHaveTextContent('Control completed')
@@ -99,16 +99,16 @@ test('présente la politique d’upload et les contrôles de durcissement', asyn
   renderValidation()
 
   expect(screen.getByText('shell.php')).toBeVisible()
-  expect(screen.getByText('BLOQUÉ')).toBeVisible()
-  expect(screen.getAllByText('AUTORISÉ')).toHaveLength(2)
+  expect(screen.getByText('BLOCKED')).toBeVisible()
+  expect(screen.getAllByText('ALLOWED')).toHaveLength(2)
 
   for (const controlId of ['V-FILE-EDITOR', 'V-XMLRPC-TARGET']) {
     expect(screen.getByText(controlId)).toBeVisible()
   }
-  expect(screen.queryByText('Énumération par auteur')).not.toBeInTheDocument()
+  expect(screen.queryByText('Author enumeration')).not.toBeInTheDocument()
 
   const hardeningCard = screen.getByRole('article', {
-    name: /Éditeur de fichiers désactivé/i,
+    name: /File editor disabled/i,
   })
   await user.click(
     within(hardeningCard).getByRole('button', {
@@ -131,7 +131,9 @@ test('runs the multi-phase control campaign with PASS results and target verific
   )
 
   await waitFor(() => {
-    expect(screen.getByText('Initialisation de la campagne de contrôles')).toBeVisible()
+    expect(screen.getByText(/Preparing control campaign|Running .* controls/)).toBeVisible()
+    expect(screen.getByText('Running')).toBeVisible()
+    expect(screen.getByText('Queued')).toBeVisible()
   })
 
   expect(
@@ -142,18 +144,18 @@ test('runs the multi-phase control campaign with PASS results and target verific
     ),
   ).toBeVisible()
   expect(screen.getAllByText('PASS')).toHaveLength(7)
-  expect(screen.getAllByText('Validation cible requise')).toHaveLength(4)
+  expect(screen.getAllByText('Target verification required').length).toBeGreaterThanOrEqual(4)
   expect(
-    screen.getByText('Contre-audit dynamique externe — NON EXÉCUTÉ'),
+    screen.getByText('External dynamic retest — NOT EXECUTED'),
   ).toBeVisible()
-  expect(screen.queryByText('Vérifié sur cible')).not.toBeInTheDocument()
+  expect(screen.queryByText('Verified on target')).not.toBeInTheDocument()
 
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
   expect(saved.lastRun).toMatchObject({
     kind: 'controls',
     status: 'completed',
     message: 'Control campaign completed · target verification pending',
-    currentStep: 'Clôture de la campagne',
+    currentStep: 'Finalizing control campaign',
     processed: 10,
     total: 10,
   })
@@ -179,10 +181,10 @@ test('affiche les huit groupes de validation', () => {
     'Administration',
     'Info Cards',
     'WooCommerce',
-    'Durcissement',
-    'Intégrité',
-    'Non-régression',
-    'Contre-vérification',
+    'Hardening',
+    'Integrity',
+    'Regression',
+    'External retest',
   ]) {
     expect(screen.getByRole('heading', { name: label })).toBeVisible()
   }

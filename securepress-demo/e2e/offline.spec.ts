@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
+import { prepareSource } from './helpers'
 
-test('ne contacte aucun hôte externe', async ({ page }) => {
+test('does not contact an external host', async ({ page }) => {
   const external: string[] = []
   page.on('request', (request) => {
     const url = new URL(request.url())
@@ -9,10 +10,10 @@ test('ne contacte aucun hôte externe', async ({ page }) => {
     }
   })
 
-  await page.goto('/')
-  await page.getByRole('button', { name: /Démarrer le parcours guidé/i }).click()
+  await prepareSource(page)
+  await page.getByRole('button', { name: /Start guided walkthrough/i }).click()
   await expect(
-    page.getByRole('dialog', { name: /Démarrer le parcours guidé/i }),
+    page.getByRole('dialog', { name: /Start the guided walkthrough/i }),
   ).toBeVisible()
 
   expect(external).toEqual([])

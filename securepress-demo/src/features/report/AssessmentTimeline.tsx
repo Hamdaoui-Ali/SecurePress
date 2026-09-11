@@ -3,12 +3,11 @@ import type { TimelineEvent } from '../../domain/models'
 interface AssessmentTimelineProps {
   events: TimelineEvent[]
 }
-
 function formatTimestamp(timestamp: string) {
   const date = new Date(timestamp)
   if (Number.isNaN(date.getTime())) return timestamp
 
-  return new Intl.DateTimeFormat('fr-FR', {
+  return new Intl.DateTimeFormat('en-GB', {
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(date)
@@ -28,13 +27,15 @@ export function AssessmentTimeline({ events }: AssessmentTimelineProps) {
     <section className="timeline-panel" aria-labelledby="timeline-title">
       <div className="report-section-heading">
         <div>
-          <p className="eyebrow">ACTIVITÉ DES OPÉRATIONS</p>
-          <h2 id="timeline-title">Chronologie des opérations exécutées</h2>
+          <p className="eyebrow">WORKSPACE ACTIVITY</p>
+          <h2 id="timeline-title">Executed operation timeline</h2>
         </div>
-        <span className="timeline-count">{orderedEvents.length} événement{orderedEvents.length > 1 ? 's' : ''}</span>
+        <span className="timeline-count">
+          {orderedEvents.length} event{orderedEvents.length === 1 ? '' : 's'}
+        </span>
       </div>
       {orderedEvents.length > 0 ? (
-        <ol className="assessment-timeline" aria-label="Chronologie de session">
+        <ol className="assessment-timeline" aria-label="Session timeline">
           {orderedEvents.map((event) => (
             <li key={event.id}>
               <span className="timeline-marker" aria-hidden="true" />
@@ -46,7 +47,7 @@ export function AssessmentTimeline({ events }: AssessmentTimelineProps) {
           ))}
         </ol>
       ) : (
-        <p className="timeline-empty">Aucune opération exécutée dans cette session.</p>
+        <p className="timeline-empty">No operations have been executed in this session.</p>
       )}
     </section>
   )

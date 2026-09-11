@@ -65,7 +65,7 @@ test('associates a real dependency-phase failure through later activity, reload,
   const factory = vi.spyOn(engineModule, 'createSimulationEngine').mockImplementation(options =>
     createEngine({ ...options, onProgress: update => {
       options.onProgress?.(update)
-      if (failOnce && update.step === 'Vérification des dépendances') {
+      if (failOnce && update.step === 'Checking change-set dependencies') {
         failOnce = false
         throw new Error('DEPENDENCY_UNAVAILABLE')
       }
@@ -78,7 +78,7 @@ test('associates a real dependency-phase failure through later activity, reload,
     const failed = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
     expect(failed.appliedFindingIds).toEqual([])
     expect(failed.lastRun).toMatchObject({
-      findingId: 'F-001', status: 'failed', currentStep: 'Vérification des dépendances',
+      findingId: 'F-001', status: 'failed', currentStep: 'Checking change-set dependencies',
       message: 'Change set failed: an unexpected operation error occurred.',
     })
     await user.click(screen.getByRole('button', { name: 'Apply change set · F-002' }))
@@ -227,7 +227,7 @@ test('keeps artifact previews scoped to generated workspace artifacts', () => {
   renderRemediation()
 
   expect(screen.getAllByText('Target verification required')).toHaveLength(2)
-  expect(screen.getByText('Artefact mentionné mais absent')).toBeVisible()
+  expect(screen.getByText('Referenced artifact not present')).toBeVisible()
   expect(screen.getAllByText('Generated workspace artifact · proposed change set')).toHaveLength(3)
   expect(screen.getAllByText(/DISALLOW_FILE_EDIT/).at(-1)).toBeVisible()
   expect(screen.getAllByText(/FORCE_SSL_ADMIN/).at(-1)).toBeVisible()

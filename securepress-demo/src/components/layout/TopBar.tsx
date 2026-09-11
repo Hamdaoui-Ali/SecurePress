@@ -9,12 +9,12 @@ interface TopBarProps {
 }
 
 const titles: Record<string, string> = {
-  '/': 'Vue d’ensemble',
-  '/inventaire': 'Inventaire de la copie',
-  '/audit': 'Audit et qualification',
-  '/remediation': 'Centre de remédiation',
-  '/validation': 'Durcissement et validation',
-  '/rapport': 'Comparaison et rapport',
+  '/': 'Overview',
+  '/inventaire': 'Discovery',
+  '/audit': 'Finding analysis',
+  '/remediation': 'Change sets',
+  '/validation': 'Controls & validation',
+  '/rapport': 'Comparison & report',
 }
 
 export function TopBar({ busy, onReset }: TopBarProps) {
@@ -24,9 +24,9 @@ export function TopBar({ busy, onReset }: TopBarProps) {
   return (
     <header className="topbar" aria-labelledby="page-title">
       <div>
-        <p className="topbar-kicker">{project.name} · AUDIT STATIQUE</p>
+        <p className="topbar-kicker">{project.name} · STATIC AUDIT</p>
         <h1 id="page-title">
-          SecurePress Operations · {titles[pathname] ?? 'Vue d’ensemble'}
+          SecurePress Operations · {titles[pathname] ?? 'Overview'}
         </h1>
       </div>
       <div className="topbar-actions">

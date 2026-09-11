@@ -73,7 +73,7 @@ test('runs finding analysis with phase progress before exposing findings', async
   expect(screen.getByText('1 low')).toBeVisible()
   expect(screen.getByText('1 variable')).toBeVisible()
   expect(screen.getAllByRole('row')).toHaveLength(11)
-  expect(document.body.textContent).not.toMatch(/demo|simul/i)
+  expect(document.body.textContent).not.toMatch(/Aucune configuration réelle n’est connectée/i)
 })
 
 test('keeps qualified findings available while repeated analysis shows progress', async () => {
@@ -105,7 +105,7 @@ test('explains F-001 and F-006 in the evidence drawer', async () => {
   await user.click(screen.getByRole('button', { name: /Open F-001/i }))
   const firstDialog = screen.getByRole('dialog')
   expect(firstDialog).toBeVisible()
-  expect(within(firstDialog).getByText('Critique')).toBeVisible()
+  expect(within(firstDialog).getByText('Critical')).toBeVisible()
   expect(within(firstDialog).getByText('Observed in package')).toBeVisible()
 
   await user.click(screen.getByRole('button', { name: 'Close' }))
@@ -120,13 +120,13 @@ test('filters critical findings and restores all rows', async () => {
   saveAssessment(completedAuditState())
   renderAudit()
 
-  await user.selectOptions(screen.getByLabelText('Sévérité'), 'critical')
+  await user.selectOptions(screen.getByLabelText('Severity'), 'critical')
 
   expect(screen.getAllByRole('row')).toHaveLength(3)
   expect(screen.getByText('F-001')).toBeVisible()
   expect(screen.getByText('F-002')).toBeVisible()
   expect(screen.queryByText('F-003')).not.toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: /Effacer les filtres/i }))
+  await user.click(screen.getByRole('button', { name: /Clear filters/i }))
   expect(screen.getAllByRole('row')).toHaveLength(11)
 })

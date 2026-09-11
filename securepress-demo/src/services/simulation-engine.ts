@@ -125,6 +125,7 @@ export function createSimulationEngine(
     if (!state.inventoryCompleted) throw new Error('INVENTORY_REQUIRED')
 
     const findingTotal = telcoScenario.findings.length
+
     return runPhases(
       [
         { step: 'Preparing finding analysis', processed: 0, total: findingTotal },
@@ -165,22 +166,22 @@ export function createSimulationEngine(
     return runPhases(
       [
         {
-          step: 'Préparation du change set',
+          step: 'Preparing change set',
           processed: 0,
           total: dependencyTotal,
         },
         {
-          step: 'Vérification des dépendances',
+          step: 'Checking change-set dependencies',
           processed: dependencyTotal,
           total: dependencyTotal,
         },
         {
-          step: 'Enregistrement des changements',
+          step: 'Recording workspace changes',
           processed: dependencyTotal,
           total: dependencyTotal,
         },
         {
-          step: 'Finalisation du change set',
+          step: 'Finalizing change set',
           processed: dependencyTotal,
           total: dependencyTotal,
         },
@@ -222,17 +223,17 @@ export function createSimulationEngine(
     return runPhases(
       [
         {
-          step: 'Initialisation de la campagne de contrôles',
+          step: 'Preparing hardening control',
           processed: 0,
           total: controlTotal,
         },
         {
-          step: 'Contrôles de durcissement',
+          step: `Running ${control.id}`,
           processed: processedControlCount,
           total: controlTotal,
         },
         {
-          step: 'Clôture de la campagne',
+          step: 'Hardening control ready',
           processed: processedControlCount,
           total: controlTotal,
         },
@@ -275,27 +276,27 @@ export function createSimulationEngine(
     return runPhases(
       [
         {
-          step: 'Initialisation de la campagne de contrôles',
+          step: 'Preparing control campaign',
           processed: 0,
           total: validationTotal,
         },
         {
-          step: 'Contrôles fonctionnels',
+          step: 'Running functional controls',
           processed: functionalCount,
           total: validationTotal,
         },
         {
-          step: 'Contrôles de durcissement',
+          step: 'Running hardening controls',
           processed: functionalCount + hardeningCount,
           total: validationTotal,
         },
         {
-          step: 'Contrôles d’intégrité',
+          step: 'Running integrity controls',
           processed: functionalCount + hardeningCount + integrityCount,
           total: validationTotal,
         },
         {
-          step: 'Clôture de la campagne',
+          step: 'Finalizing control campaign',
           processed: validationTotal,
           total: validationTotal,
         },

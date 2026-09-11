@@ -31,7 +31,7 @@ export const Button = forwardRef<
       disabled={disabled || busy}
       aria-busy={busy || props['aria-busy'] || undefined}
     >
-      {busy ? 'En cours…' : children}
+      {busy ? 'Working…' : children}
     </button>
   )
 })

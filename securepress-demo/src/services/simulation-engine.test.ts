@@ -190,10 +190,10 @@ describe('simulation engine', () => {
     const afterChangeSet = await engine.applyRemediation(audit, 'F-001')
 
     expectPhasedProgress(progressUpdates, [
-      'Préparation du change set',
-      'Vérification des dépendances',
-      'Enregistrement des changements',
-      'Finalisation du change set',
+      'Preparing change set',
+      'Checking change-set dependencies',
+      'Recording workspace changes',
+      'Finalizing change set',
     ])
     expect(progressUpdates.map((update) => update.processed)).toEqual([0, 1, 1, 1])
     expect(progressUpdates.map((update) => update.total)).toEqual([1, 1, 1, 1])
@@ -253,9 +253,9 @@ describe('simulation engine', () => {
     )
 
     expectPhasedProgress(hardeningUpdates, [
-      'Initialisation de la campagne de contrôles',
-      'Contrôles de durcissement',
-      'Clôture de la campagne',
+      'Preparing hardening control',
+      'Running V-FILE-EDITOR',
+      'Hardening control ready',
     ])
     expect(hardeningUpdates.map((update) => update.processed)).toEqual([0, 1, 1])
     expect(hardeningUpdates.map((update) => update.total)).toEqual([2, 2, 2])
@@ -267,11 +267,11 @@ describe('simulation engine', () => {
     const afterValidation = await campaignEngine.runValidation(audit)
 
     expectPhasedProgress(campaignUpdates, [
-      'Initialisation de la campagne de contrôles',
-      'Contrôles fonctionnels',
-      'Contrôles de durcissement',
-      'Contrôles d’intégrité',
-      'Clôture de la campagne',
+      'Preparing control campaign',
+      'Running functional controls',
+      'Running hardening controls',
+      'Running integrity controls',
+      'Finalizing control campaign',
     ])
     expect(campaignUpdates.map((update) => update.processed)).toEqual([0, 1, 3, 8, 10])
     expect(campaignUpdates.map((update) => update.total)).toEqual([

@@ -2,6 +2,7 @@ import { Check, Play } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { StatusBadge } from '../../components/ui/StatusBadge'
 import type { ValidationStatus } from '../../domain/models'
+import type { CampaignCheckState } from '../../domain/operation-view'
 
 export interface HardeningControlDefinition {
   id: string
@@ -13,10 +14,35 @@ export interface HardeningControlDefinition {
 interface HardeningControlProps {
   control: HardeningControlDefinition
   completed: boolean
-  status: ValidationStatus
+  status: ValidationStatus | CampaignCheckState
   busy: boolean
   auditCompleted: boolean
   onRun: () => void
+}
+
+function statusLabel(status: ValidationStatus | CampaignCheckState): string {
+  switch (status) {
+    case 'simulated_pass':
+    case 'pass':
+      return 'PASS'
+    case 'simulated_fail':
+      return 'FAIL'
+    case 'target_validation_required':
+    case 'target':
+      return 'Target verification required'
+    case 'running':
+      return 'Running'
+    case 'queued':
+      return 'Queued'
+    default:
+      return 'Not run'
+  }
+}
+
+function statusTone(status: ValidationStatus | CampaignCheckState) {
+  if (status === 'simulated_pass' || status === 'pass') return 'success' as const
+  if (status === 'simulated_fail') return 'critical' as const
+  return 'prepared' as const
 }
 
 export function HardeningControl({
@@ -37,17 +63,11 @@ export function HardeningControl({
           <p className="validation-control-id">{control.id}</p>
           <h3 id={`hardening-title-${control.id}`}>{control.title}</h3>
         </div>
-        <StatusBadge
-          label={status === 'target_validation_required'
-            ? 'Target verification required'
-            : status === 'simulated_pass' ? 'PASS'
-              : status === 'simulated_fail' ? 'FAIL' : 'Prêt à exécuter'}
-          tone={status === 'simulated_pass' ? 'success' : status === 'simulated_fail' ? 'critical' : 'prepared'}
-        />
+        <StatusBadge label={statusLabel(status)} tone={statusTone(status)} />
       </div>
       <p>{control.description}</p>
       <div className="hardening-control-expected">
-        <span>Résultat attendu</span>
+        <span>Expected result</span>
         <strong>{control.expectedResult}</strong>
       </div>
       <div className="hardening-control-footer">

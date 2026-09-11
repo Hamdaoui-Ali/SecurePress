@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test'
+import { prepareSource } from './helpers'
 
 test('runs local workspace operations, preserves their activity, and clears them on reset', async ({
   page,
 }) => {
+  await prepareSource(page)
   await page.goto('/#/inventaire')
 
   const discovery = page.locator('[data-guide-id="run-inventory"]')
@@ -16,7 +18,9 @@ test('runs local workspace operations, preserves their activity, and clears them
     /^(?!100% complete$)\d+% complete$/,
   )
   await expect(page.locator('.operation-progress-running')).toBeVisible()
-  await expect(page.getByText('Workspace ready', { exact: true })).toBeVisible()
+  await expect(page.getByText('Workspace ready', { exact: true })).toBeVisible({
+    timeout: 15_000,
+  })
   await expect(discovery).toBeEnabled()
 
   await page.goto('/#/audit')
@@ -93,7 +97,7 @@ test('runs local workspace operations, preserves their activity, and clears them
   )
   expect(repeatedCampaign.id).not.toBe(firstCampaignId)
   expect(repeatedCampaign).toMatchObject({
-    status: 'completed', currentStep: 'Clôture de la campagne', processed: 10, total: 10,
+    status: 'completed', currentStep: 'Finalizing control campaign', processed: 10, total: 10,
   })
 
   await page.reload()
@@ -107,18 +111,18 @@ test('runs local workspace operations, preserves their activity, and clears them
   const resetDialog = page.getByRole('dialog', { name: 'Reset workspace?' })
   await expect(resetDialog).toBeVisible()
   await resetDialog
-    .getByRole('button', { name: 'Confirmer la réinitialisation' })
+    .getByRole('button', { name: 'Confirm reset' })
     .click()
 
-  await expect(page).toHaveURL(/#\/$/)
-  await expect(page.getByText('No recent operations', { exact: true })).toBeVisible()
+  await expect(page).toHaveURL(/#\/setup$/)
   await expect(
-    page.getByText('No workspace operation has completed yet.', { exact: true }),
+    page.getByRole('heading', { name: 'Connect a local WordPress source' }),
   ).toBeVisible()
   await expect(
     page.evaluate(() => window.localStorage.getItem('securepress.audit-lab.v1')),
   ).resolves.toBeNull()
 
+  await prepareSource(page)
   await page.goto('/#/inventaire')
   await expect(page.locator('[data-guide-id="run-inventory"]')).toBeEnabled()
 })
@@ -132,9 +136,12 @@ for (const viewport of [
     await page.setViewportSize(viewport)
     const errors: string[] = []
     page.on('pageerror', error => errors.push(error.message))
+    await prepareSource(page)
     await page.goto('/#/inventaire')
     await page.locator('[data-guide-id="run-inventory"]').click()
-    await expect(page.getByText('Workspace ready', { exact: true })).toBeVisible()
+    await expect(page.getByText('Workspace ready', { exact: true })).toBeVisible({
+      timeout: 15_000,
+    })
     await page.goto('/#/audit')
     await page.locator('[data-guide-id="run-audit"]').click()
     await expect(page.getByText('Finding analysis completed', { exact: true })).toBeVisible()

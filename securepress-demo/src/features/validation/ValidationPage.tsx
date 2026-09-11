@@ -1,6 +1,7 @@
 import { ClipboardCheck, ShieldCheck } from 'lucide-react'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { telcoScenario } from '../../data/scenario'
+import { selectCampaignCheckState } from '../../domain/operation-view'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { StatusBadge } from '../../components/ui/StatusBadge'
@@ -14,7 +15,7 @@ const hardeningControls = telcoScenario.validationChecks
   .map((check) => ({
     id: check.id,
     title: check.title,
-    description: `Contrôle de durcissement préparé pour le workspace ${telcoScenario.project.name}.`,
+    description: `Prepared hardening control for the ${telcoScenario.project.name} workspace.`,
     expectedResult: check.expectedResult,
     initialStatus: check.initialStatus,
   }))
@@ -22,60 +23,64 @@ const hardeningControls = telcoScenario.validationChecks
 const groupDefinitions = [
   {
     title: 'Public',
-    description: 'Surfaces visibles sans privilège.',
+    description: 'Surfaces visible without elevated privileges.',
     checkIds: ['V-COMMENTS'],
   },
   {
     title: 'Administration',
-    description: 'Parcours d’administration et transport attendu.',
+    description: 'Administration paths and expected transport controls.',
     checkIds: ['V-HTTPS-TARGET'],
   },
   {
     title: 'Info Cards',
-    description: 'Secrets et informations de configuration présentés dans les cartes.',
+    description: 'Secrets and configuration information represented in the cards.',
     checkIds: ['V-WP-SALTS'],
   },
   {
     title: 'WooCommerce',
-    description: 'Revue de versions et compatibilité des composants métier.',
+    description: 'Review of versions and business-component compatibility.',
     checkIds: ['V-COMPONENT-VERSIONS'],
   },
   {
-    title: 'Durcissement',
-    description: 'Contrôles de réduction de surface d’attaque.',
+    title: 'Hardening',
+    description: 'Controls that reduce the attack surface.',
     checkIds: ['V-FILE-EDITOR', 'V-XMLRPC-TARGET'],
   },
   {
-    title: 'Intégrité',
-    description: 'Secrets, fichiers et permissions à confirmer.',
+    title: 'Integrity',
+    description: 'Secrets, files, and permissions that require confirmation.',
     checkIds: ['V-DB-ACCOUNT', 'V-DB-PASSWORD', 'V-BACKUP-TARGET', 'V-PERMISSIONS'],
   },
   {
-    title: 'Non-régression',
-    description: 'Parcours locaux à rejouer après correction.',
+    title: 'Regression',
+    description: 'Local paths to replay after a workspace change.',
     checkIds: [],
-    emptyMessage:
-      'Les contrôles locaux de connexion et de téléversement restent rejouables ci-dessus.',
+    emptyMessage: 'Local login and upload controls remain replayable above.',
   },
 ]
 
 export function ValidationPage() {
-  const { state, busy, progress, runHardeningCheck, runValidation } = useAssessment()
+  const { state, busy, progress, activeOperation, runHardeningCheck, runValidation } = useAssessment()
 
   const checksById = new Map(
     telcoScenario.validationChecks.map((check) => [check.id, check]),
   )
   const externalStatus = state.validationResults['external-dynamic-retest']
+  const campaignStates = selectCampaignCheckState(
+    telcoScenario.validationChecks,
+    state,
+    activeOperation,
+    progress,
+  )
 
   return (
     <div className="page-stack">
       <div className="page-heading">
-        <p className="eyebrow">ÉTAPE 5 · VALIDATION</p>
+        <p className="eyebrow">STEP 5 · VALIDATION</p>
         <h2>Run controls with explicit provenance</h2>
         <p>
-          Les contrôles sont des opérations locales déterministes fondées sur les
-          preuves {telcoScenario.project.name} indexées. Un résultat PASS ne remplace pas la vérification
-          de la cible.
+          Controls are deterministic local operations based on indexed {telcoScenario.project.name}
+          evidence. A PASS result does not replace verification on the target.
         </p>
       </div>
 
@@ -90,13 +95,14 @@ export function ValidationPage() {
         <div className="validation-launch">
           <div>
             <p>
-              Run the multi-phase control campaign. Results retain their local
-              evidence boundary while target verification remains pending.
+              Run the multi-phase control campaign. Results retain their local evidence boundary
+              while target verification remains pending.
             </p>
             {progress && busy ? (
               <div className="validation-progress" aria-live="polite">
                 <span className="progress-pulse" aria-hidden="true" />
                 <strong>{progress.message}</strong>
+                <span>{progress.processed} of {progress.total} controls processed</span>
                 <span>{progress.percent}%</span>
               </div>
             ) : null}
@@ -118,11 +124,11 @@ export function ValidationPage() {
               tone="success"
             />
             <div className="external-retest-banner">
-            <StatusBadge
-              label="Contre-audit dynamique externe — NON EXÉCUTÉ"
-              tone="prepared"
-            />
-            <span>Plan the external campaign only for the authorized target.</span>
+              <StatusBadge
+                label="External dynamic retest — NOT EXECUTED"
+                tone="prepared"
+              />
+              <span>Plan the external campaign only for the authorized target.</span>
             </div>
           </div>
         ) : null}
@@ -133,16 +139,14 @@ export function ValidationPage() {
         <UploadPolicyDemo />
       </div>
 
-      <Card title="Contrôles de durcissement" eyebrow="MESURES LOCALES">
+      <Card title="Hardening controls" eyebrow="LOCAL MEASURES">
         <div className="hardening-control-grid">
           {hardeningControls.map((control) => (
             <HardeningControl
               key={control.id}
               control={control}
               completed={state.completedHardeningCheckIds.includes(control.id)}
-              status={control.initialStatus === 'target_validation_required'
-                ? control.initialStatus
-                : state.validationResults[control.id] ?? control.initialStatus}
+              status={campaignStates[control.id]}
               busy={busy}
               auditCompleted={state.auditCompleted}
               onRun={() => void runHardeningCheck(control.id)}
@@ -154,11 +158,11 @@ export function ValidationPage() {
       <section className="validation-groups" aria-labelledby="validation-groups-title">
         <div className="section-heading-inline">
           <div>
-            <p className="eyebrow">CAMPAGNE PAR PÉRIMÈTRE</p>
-            <h2 id="validation-groups-title">Résultats et limites</h2>
+            <p className="eyebrow">CAMPAIGN BY SCOPE</p>
+            <h2 id="validation-groups-title">Results and limits</h2>
           </div>
           <StatusBadge
-            label={externalStatus ? 'Control campaign completed' : 'En attente'}
+            label={externalStatus ? 'Control campaign completed' : 'Awaiting results'}
             tone={externalStatus ? 'success' : 'prepared'}
           />
         </div>
@@ -171,18 +175,18 @@ export function ValidationPage() {
               checks={group.checkIds
                 .map((checkId) => checksById.get(checkId))
                 .filter((check): check is NonNullable<typeof check> => Boolean(check))}
-              results={state.validationResults}
+              results={campaignStates}
               emptyMessage={group.emptyMessage}
             />
           ))}
           <TestGroup
-            title="Contre-vérification"
-            description="Ce qui doit encore être démontré sur la cible autorisée."
-            results={state.validationResults}
+            title="External retest"
+            description="Evidence that must still be demonstrated on the authorized target."
+            results={campaignStates}
             emptyMessage={
               externalStatus
-                ? 'La contre-vérification dynamique est explicitement restée hors périmètre.'
-                : 'Aucun contrôle externe n’a encore été lancé.'
+                ? 'The dynamic retest was explicitly kept outside this local workspace.'
+                : 'No external control campaign has been launched.'
             }
           />
         </div>

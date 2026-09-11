@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import { telcoScenario } from '../data/scenario'
-import type { OperationRun } from './models'
-import { selectVisibleComponents, selectVisibleFindings } from './operation-view'
+import { createInitialAssessment, type OperationRun } from './models'
+import { selectCampaignCheckState, selectVisibleComponents, selectVisibleFindings } from './operation-view'
 import type { ProgressUpdate } from '../services/simulation-engine'
 
 const runningDiscovery: OperationRun = {
@@ -53,5 +53,42 @@ describe('progressive operation views', () => {
     expect(
       selectVisibleFindings(telcoScenario.findings, null, null, true),
     ).toHaveLength(10)
+  })
+
+  test('derives queued, running, PASS, and target-only campaign states without persisting them', () => {
+    const campaign: OperationRun = {
+      id: 'controls-1',
+      kind: 'controls',
+      status: 'running',
+      startedAt: '2026-09-11T10:00:00.000Z',
+      message: 'Control campaign in progress',
+    }
+    const state = {
+      ...createInitialAssessment(),
+      validationResults: {
+        'V-HTTPS-TARGET': 'target_validation_required' as const,
+      },
+    }
+
+    const view = selectCampaignCheckState(
+      telcoScenario.validationChecks,
+      {
+        ...state,
+        validationResults: {
+          'V-DB-ACCOUNT': 'simulated_pass' as const,
+          'V-HTTPS-TARGET': 'target_validation_required' as const,
+        },
+      },
+      campaign,
+      progress(2, 10),
+    )
+
+    expect(view).toMatchObject({
+      'V-DB-ACCOUNT': 'pass',
+      'V-DB-PASSWORD': 'pass',
+      'V-WP-SALTS': 'running',
+      'V-HTTPS-TARGET': 'queued',
+    })
+    expect(selectCampaignCheckState(telcoScenario.validationChecks, state, null, null)['V-HTTPS-TARGET']).toBe('target')
   })
 })

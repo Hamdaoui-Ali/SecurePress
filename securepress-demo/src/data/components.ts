@@ -1,6 +1,6 @@
 import type { ComponentRecord } from '../domain/models'
 
-const sourceNote = 'Présence confirmée dans l’archive hors production.'
+const sourceNote = 'Presence confirmed in the offline archive.'
 
 export const components: ComponentRecord[] = [
   {
@@ -24,12 +24,12 @@ export const components: ComponentRecord[] = [
   ...(['02', '03', '04'] as const).map(
     (suffix): ComponentRecord => ({
       id: `theme-undetailed-${suffix}`,
-      name: `Thème inventorié non détaillé ${suffix}`,
+      name: `Undetailed inventoried theme ${suffix}`,
       type: 'theme',
       version: null,
       presence: 'confirmed_in_files',
       activation: 'unknown',
-      sourceNote: 'Nom non détaillé dans le rapport.',
+      sourceNote: 'Name not detailed in the source report.',
     }),
   ),
   {
@@ -71,17 +71,17 @@ export const components: ComponentRecord[] = [
     version: '1.0.2',
     presence: 'confirmed_in_files',
     activation: 'unknown',
-    sourceNote: 'Extension tierce présente dans l’archive et analysée.',
+    sourceNote: 'Third-party extension present in and analyzed from the archive.',
   },
   ...(['14', '15', '16', '17'] as const).map(
     (suffix): ComponentRecord => ({
       id: `plugin-undetailed-${suffix}`,
-      name: `Extension inventoriée non détaillée ${suffix}`,
+      name: `Undetailed inventoried extension ${suffix}`,
       type: 'plugin',
       version: null,
       presence: 'confirmed_in_files',
       activation: 'unknown',
-      sourceNote: 'Nom non détaillé dans le rapport.',
+      sourceNote: 'Name not detailed in the source report.',
     }),
   ),
 ]

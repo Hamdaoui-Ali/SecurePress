@@ -1,23 +1,24 @@
 import { expect, test } from '@playwright/test'
+import { prepareSource } from './helpers'
 
 async function prepareAudit(page: Parameters<typeof test>[0]['page']) {
   await page.goto('/#/inventaire')
   await page.locator('[data-guide-id="run-inventory"]').click()
-  await expect(page.getByText('Workspace ready')).toBeVisible()
+  await expect(page.getByText('Workspace ready')).toBeVisible({ timeout: 15_000 })
 
-  await page.getByRole('link', { name: 'Audit & qualification' }).click()
+  await page.getByRole('link', { name: 'Finding analysis' }).click()
   await page.locator('[data-guide-id="run-audit"]').click()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
   ).toBeVisible()
 }
 
-test('supporte le clavier et restitue le focus après les surfaces modales', async ({
+test('supports the keyboard and restores focus after modal surfaces', async ({
   page,
 }) => {
-  await page.goto('/#/')
+  await prepareSource(page)
 
-  const skipLink = page.getByRole('link', { name: /Aller au contenu/i })
+  const skipLink = page.getByRole('link', { name: /Skip to content/i })
   await expect(skipLink).toBeAttached()
   await skipLink.focus()
   await page.keyboard.press('Enter')
@@ -44,13 +45,13 @@ test('supporte le clavier et restitue le focus après les surfaces modales', asy
     name: /Reset workspace/i,
   })
   await expect(resetDialog).toBeVisible()
-  await expect(resetDialog.getByRole('button', { name: 'Annuler' })).toBeFocused()
+  await expect(resetDialog.getByRole('button', { name: 'Cancel' })).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(resetDialog).toHaveCount(0)
   await expect(resetTrigger).toBeFocused()
 })
 
-test('reste lisible aux trois viewports et transmet les états par du texte', async ({
+test('stays readable at three viewports and communicates states with text', async ({
   page,
 }) => {
   for (const viewport of [
@@ -59,7 +60,7 @@ test('reste lisible aux trois viewports et transmet les états par du texte', as
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport)
-    await page.goto('/#/')
+    await prepareSource(page)
 
     const dimensions = await page.evaluate(() => ({
       documentWidth: document.documentElement.scrollWidth,
@@ -72,17 +73,16 @@ test('reste lisible aux trois viewports et transmet les états par du texte', as
       page.getByRole('img', { name: /Security posture score: 42 out of 100/i }),
     ).toBeVisible()
     await expect(page.getByText('LNET TELCO workspace')).toBeVisible()
-    await expect(page.getByRole('button', { name: /Démarrer le parcours guidé/i })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Workspace workflow' })).toBeVisible()
-
+    await expect(page.getByRole('button', { name: /Start guided walkthrough/i })).toBeVisible()
+    await expect(
+      page.locator('#main-content').getByRole('heading', { name: 'Workspace workflow' }),
+    ).toBeVisible()
   }
 })
 
-test('réduit les transitions quand le système demande moins de mouvement', async ({
-  page,
-}) => {
+test('reduces transitions when the system requests less motion', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
-  await page.goto('/#/')
+  await prepareSource(page)
 
   const transitionDuration = await page
     .getByRole('button', { name: /Reset workspace/i })

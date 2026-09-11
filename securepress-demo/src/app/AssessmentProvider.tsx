@@ -403,7 +403,7 @@ export function AssessmentProvider({
           runningMessage: 'Discovery run in progress',
           failurePrefix: 'Discovery run failed',
           getCompletedMessage: () =>
-            `Discovery run completed · ${telcoScenario.inventory.components.length} components indexed`,
+            `Discovery run completed \u00b7 ${telcoScenario.inventory.components.length} components indexed`,
         },
         (current) => engineRef.current!.runInventory(current),
       ),

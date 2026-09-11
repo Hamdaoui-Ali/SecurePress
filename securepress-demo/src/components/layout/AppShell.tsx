@@ -20,7 +20,7 @@ export function AppShell({
   return (
     <>
       <a className="skip-link" href="#main-content">
-        Aller au contenu
+        Skip to content
       </a>
       <div className="app-shell">
         <Sidebar busy={busy} onStartGuidedDemo={onStartGuidedDemo} />

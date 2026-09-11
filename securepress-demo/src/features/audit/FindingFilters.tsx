@@ -28,18 +28,18 @@ export function FindingFilters({
   return (
     <div className="finding-filters">
       <label className="filter-field filter-search">
-        <span>Rechercher</span>
+        <span>Search</span>
         <input
           type="search"
           value={value.query}
-          placeholder="ID ou titre"
+          placeholder="ID or title"
           onChange={(event) =>
             onChange({ ...value, query: event.currentTarget.value })
           }
         />
       </label>
       <label className="filter-field">
-        <span>Sévérité</span>
+        <span>Severity</span>
         <select
           value={value.severity}
           onChange={(event) =>
@@ -49,16 +49,16 @@ export function FindingFilters({
             })
           }
         >
-          <option value="all">Toutes</option>
-          <option value="critical">Critique</option>
-          <option value="high">Élevée</option>
-          <option value="medium">Moyenne</option>
-          <option value="low">Faible</option>
+          <option value="all">All</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
           <option value="variable">Variable</option>
         </select>
       </label>
       <label className="filter-field">
-        <span>État de preuve</span>
+        <span>Evidence status</span>
         <select
           value={value.evidence}
           onChange={(event) =>
@@ -68,14 +68,14 @@ export function FindingFilters({
             })
           }
         >
-          <option value="all">Tous</option>
-          <option value="observed_in_snapshot">Instantané</option>
-          <option value="documented_in_audit">Rapport</option>
-          <option value="not_observable_offline">Non observable hors ligne</option>
+          <option value="all">All</option>
+          <option value="observed_in_snapshot">Observed in package</option>
+          <option value="documented_in_audit">Documented finding</option>
+          <option value="not_observable_offline">Not observable locally</option>
         </select>
       </label>
       <label className="filter-field">
-        <span>État de remédiation</span>
+        <span>Change-set status</span>
         <select
           value={value.remediation}
           onChange={(event) =>
@@ -85,13 +85,13 @@ export function FindingFilters({
             })
           }
         >
-          <option value="all">Tous</option>
+          <option value="all">All</option>
           <option value="applied">Change set applied</option>
           <option value="pending">Change set pending</option>
         </select>
       </label>
       <button type="button" className="filter-clear" onClick={onClear}>
-        Effacer les filtres
+        Clear filters
       </button>
     </div>
   )

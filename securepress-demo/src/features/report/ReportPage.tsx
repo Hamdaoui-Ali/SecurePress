@@ -1,4 +1,4 @@
-import { Printer, ShieldCheck } from 'lucide-react'
+import { Download, Printer, ShieldCheck } from 'lucide-react'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { telcoScenario } from '../../data/scenario'
 import {
@@ -12,6 +12,7 @@ import { StatusBadge } from '../../components/ui/StatusBadge'
 import { ComparisonTable } from './ComparisonTable'
 import { AssessmentTimeline } from './AssessmentTimeline'
 import { ResidualRisk } from './ResidualRisk'
+import { downloadReportPdf } from '../../services/report-pdf'
 
 export function ReportPage() {
   const { state } = useAssessment()
@@ -28,20 +29,20 @@ export function ReportPage() {
   )
   const riskLabel =
     remainingRiskPoints === totalRiskPoints
-      ? 'Risque élevé depuis les preuves indexées'
+      ? 'High risk from indexed evidence'
       : remainingRiskPoints > 0
-        ? 'Risque résiduel non nul'
-        : 'Risque résiduel nul'
+        ? 'Residual risk remains'
+        : 'No residual risk in the change set'
 
   return (
     <div className="page-stack report-page" data-guide-id="review-comparison">
       <div className="page-heading page-heading-with-action">
         <div>
-          <p className="eyebrow">ÉTAPE 6 · RAPPORT</p>
-          <h2>Comparer, expliquer et laisser une trace</h2>
+          <p className="eyebrow">STEP 6 · REPORT</p>
+          <h2>Compare, explain, and leave an evidence trail</h2>
           <p>
-            La synthèse est recalculée depuis le package source {telcoScenario.project.name} indexé et les
-            opérations courantes du workspace.
+            This summary is recalculated from the indexed {telcoScenario.project.name} source package
+            and the workspace operations recorded in this session.
           </p>
         </div>
         <div className="report-actions">
@@ -51,7 +52,20 @@ export function ReportPage() {
             data-guide-id="finish-report"
           >
             <Printer aria-hidden="true" size={16} />
-            Imprimer le rapport
+            Print report
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              downloadReportPdf({
+                scenario: telcoScenario,
+                state,
+                generatedAt: new Date(),
+              })
+            }
+          >
+            <Download aria-hidden="true" size={16} />
+            Download report
           </Button>
         </div>
       </div>
@@ -59,40 +73,42 @@ export function ReportPage() {
       <div className="report-disclaimer" role="note">
         <ShieldCheck aria-hidden="true" size={19} />
         <div>
-          <strong>Rapport fondé sur les preuves locales indexées</strong>
+          <strong>Report grounded in indexed local evidence</strong>
           <span>
-            Constats issus du package source {telcoScenario.project.name} indexé ; change sets générés par
-            le workspace ; vérification cible en attente.
+            Findings come from the indexed {telcoScenario.project.name} source package; change sets
+            are generated in the workspace; target verification remains pending.
           </span>
         </div>
         <StatusBadge
-          label="Contre-audit dynamique externe — NON EXÉCUTÉ"
+          label="External dynamic retest — NOT EXECUTED"
           tone="prepared"
         />
       </div>
 
-      <Card title="Synthèse de posture" eyebrow="RÉSUMÉ CALCULÉ">
+      <Card title="Posture summary" eyebrow="CALCULATED SUMMARY">
         <div className="report-summary-grid">
           <div>
-            <span>Posture calculée</span>
+            <span>Calculated posture</span>
             <strong>{postureScore} / 100</strong>
           </div>
           <div>
-            <span>Périmètre qualifié</span>
-            <strong>{totalFindings} constats qualifiés</strong>
+            <span>Qualified scope</span>
+            <strong>{totalFindings} qualified findings</strong>
           </div>
           <div>
-            <span>Remédiations</span>
+            <span>Change sets</span>
             <strong>
               {appliedCount === 0
-                ? 'Aucun change set appliqué'
-                : `${appliedCount} change sets appliqués`}
+                ? 'No change set applied'
+                : appliedCount === 1
+                  ? '1 change set applied'
+                  : appliedCount + ' change sets applied'}
             </strong>
           </div>
           <div>
-            <span>Qualification du risque</span>
+            <span>Risk qualification</span>
             <strong>{riskLabel}</strong>
-            <small>{remainingRiskPoints} points encore ouverts</small>
+            <small>{remainingRiskPoints} points remain open</small>
           </div>
         </div>
       </Card>
@@ -100,10 +116,10 @@ export function ReportPage() {
       <section className="report-section" aria-labelledby="comparison-title">
         <div className="report-section-heading">
           <div>
-            <p className="eyebrow">AVANT / APRÈS</p>
-            <h2 id="comparison-title">Comparaison des dix constats</h2>
+            <p className="eyebrow">BEFORE / AFTER</p>
+            <h2 id="comparison-title">Comparison of the ten findings</h2>
           </div>
-          <span className="report-section-note">{totalFindings} lignes liées au scénario</span>
+          <span className="report-section-note">{totalFindings} scenario-linked rows</span>
         </div>
         <ComparisonTable scenario={telcoScenario} state={state} />
       </section>

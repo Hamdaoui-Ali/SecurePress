@@ -2,11 +2,11 @@ import type { Severity } from '../../domain/models'
 import { Badge } from './Badge'
 
 const labels: Record<Severity, string> = {
-  critical: 'Critique',
-  high: 'Élevée',
-  medium: 'Moyenne',
-  low: 'Faible',
-  variable: 'Sévérité variable',
+  critical: 'Critical',
+  high: 'High',
+  medium: 'Medium',
+  low: 'Low',
+  variable: 'Variable severity',
 }
 
 export function SeverityBadge({ severity }: { severity: Severity }) {

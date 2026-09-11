@@ -72,19 +72,19 @@ export function RemediationCard({
           <StatusBadge label="Target verification required" tone="prepared" />
         ) : null}
         {isMissingArtifact ? (
-          <StatusBadge label="Artefact mentionné mais absent" tone="prepared" />
+          <StatusBadge label="Referenced artifact not present" tone="prepared" />
         ) : null}
       </div>
 
       <BeforeAfterDiff before={remediation.before} after={remediation.after} />
 
       <div className="remediation-rationale">
-        <span>Pourquoi</span>
+        <span>Why it matters</span>
         <p>{remediation.rationale}</p>
       </div>
 
       <div className="remediation-artifact-line">
-        <span>Artefact associé</span>
+        <span>Associated artifact</span>
         <strong>{remediation.artifact}</strong>
       </div>
 

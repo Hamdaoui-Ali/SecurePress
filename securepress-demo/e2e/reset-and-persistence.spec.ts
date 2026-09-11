@@ -1,19 +1,21 @@
 import { expect, test } from '@playwright/test'
+import { prepareSource } from './helpers'
 
-test('persists a local change set and returns to the initial state after reset', async ({
+test('persists a local change set and returns to source setup after reset', async ({
   page,
 }) => {
+  await prepareSource(page)
   await page.goto('/#/inventaire')
   await page.locator('[data-guide-id="run-inventory"]').click()
   await expect(page.getByText('Workspace ready')).toBeVisible()
 
-  await page.getByRole('link', { name: 'Audit & qualification' }).click()
+  await page.getByRole('link', { name: 'Finding analysis' }).click()
   await page.locator('[data-guide-id="run-audit"]').click()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
   ).toBeVisible()
 
-  await page.getByRole('link', { name: 'Remédiation' }).click()
+  await page.getByRole('link', { name: 'Change sets' }).click()
   const applyFinding = page.locator('[data-guide-id="apply-F-001"]')
   await expect(applyFinding).toBeEnabled()
   await applyFinding.click()
@@ -23,7 +25,7 @@ test('persists a local change set and returns to the initial state after reset',
 
   await page.reload()
   await expect(
-    page.getByRole('button', { name: /Change set applied . F-001/i }),
+    page.getByRole('button', { name: 'Change set applied · F-001' }),
   ).toBeDisabled()
   const storedAfterReload = await page.evaluate(() =>
     window.localStorage.getItem('securepress.audit-lab.v1'),
@@ -35,16 +37,12 @@ test('persists a local change set and returns to the initial state after reset',
     name: /Reset workspace/i,
   })
   await resetDialog
-    .getByRole('button', { name: 'Confirmer la réinitialisation' })
+    .getByRole('button', { name: 'Confirm reset' })
     .click()
 
-  await page.goto('/#/remediation')
-  await expect(page.getByText('Complete finding analysis before preparing a change set')).toBeVisible()
+  await expect(page).toHaveURL(/#\/setup$/)
   await expect(
-    page.getByRole('button', { name: /Apply change set . F-001/i }),
-  ).toBeDisabled()
-  await expect(
-    page.getByText('0', { exact: true }).first(),
+    page.getByRole('heading', { name: 'Connect a local WordPress source' }),
   ).toBeVisible()
   await expect(
     page.evaluate(() => window.localStorage.getItem('securepress.audit-lab.v1')),
