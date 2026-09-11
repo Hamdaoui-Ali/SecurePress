@@ -40,7 +40,7 @@ export function ReportPage() {
           <p className="eyebrow">ÉTAPE 6 · RAPPORT</p>
           <h2>Comparer, expliquer et laisser une trace</h2>
           <p>
-            La synthèse est recalculée depuis le package source TELCO indexé et les
+            La synthèse est recalculée depuis le package source {telcoScenario.project.name} indexé et les
             opérations courantes du workspace.
           </p>
         </div>
@@ -61,7 +61,7 @@ export function ReportPage() {
         <div>
           <strong>Rapport fondé sur les preuves locales indexées</strong>
           <span>
-            Constats issus du package source TELCO indexé ; change sets générés par
+            Constats issus du package source {telcoScenario.project.name} indexé ; change sets générés par
             le workspace ; vérification cible en attente.
           </span>
         </div>

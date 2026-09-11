@@ -52,7 +52,7 @@ export function InventoryPage() {
         <div>
           <strong>{componentCount} components indexed</strong>
           <span>
-            TELCO source package · WordPress {telcoScenario.project.wordpressVersion}
+            {telcoScenario.project.name} source package · WordPress {telcoScenario.project.wordpressVersion}
           </span>
         </div>
       </div>

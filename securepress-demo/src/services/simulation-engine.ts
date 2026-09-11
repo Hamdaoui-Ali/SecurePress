@@ -101,7 +101,11 @@ export function createSimulationEngine(
 
     return runPhases(
       [
-        { step: 'Read TELCO source package', processed: 0, total: componentTotal },
+        {
+          step: `Read ${telcoScenario.project.name} source package`,
+          processed: 0,
+          total: componentTotal,
+        },
         {
           step: 'Index WordPress core',
           processed: coreCount,

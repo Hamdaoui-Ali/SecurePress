@@ -14,7 +14,7 @@ const hardeningControls = telcoScenario.validationChecks
   .map((check) => ({
     id: check.id,
     title: check.title,
-    description: 'Contrôle de durcissement préparé pour le workspace TELCO.',
+    description: `Contrôle de durcissement préparé pour le workspace ${telcoScenario.project.name}.`,
     expectedResult: check.expectedResult,
     initialStatus: check.initialStatus,
   }))
@@ -74,7 +74,7 @@ export function ValidationPage() {
         <h2>Run controls with explicit provenance</h2>
         <p>
           Les contrôles sont des opérations locales déterministes fondées sur les
-          preuves TELCO indexées. Un résultat PASS ne remplace pas la vérification
+          preuves {telcoScenario.project.name} indexées. Un résultat PASS ne remplace pas la vérification
           de la cible.
         </p>
       </div>

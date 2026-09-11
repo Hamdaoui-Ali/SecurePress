@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { NavLink } from 'react-router'
 import { Button } from '../ui/Button'
+import { project } from '../../data/project'
 
 interface SidebarProps {
   busy: boolean
@@ -42,7 +43,7 @@ export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
 
       <div className="project-block">
         <p className="sidebar-label">Projet</p>
-        <p className="project-name">TELCO</p>
+        <p className="project-name">{project.name}</p>
       </div>
 
       <nav className="sidebar-nav" aria-labelledby="sidebar-nav-title">

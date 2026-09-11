@@ -43,7 +43,7 @@ export function OverviewPage() {
         <p className="eyebrow">WORKSPACE OVERVIEW</p>
         <h2>Assess workspace posture</h2>
         <p>
-          Review the indexed TELCO package, qualified findings, and required
+          Review the indexed {telcoScenario.project.name} package, qualified findings, and required
           target verification before making a change.
         </p>
       </div>
@@ -56,7 +56,7 @@ export function OverviewPage() {
           tone="blue"
         />
         <MetricCard
-          label="TELCO source package"
+          label={`${telcoScenario.project.name} source package`}
           value="Indexed"
           detail={`WordPress ${telcoScenario.project.wordpressVersion}`}
           tone="blue"

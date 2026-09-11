@@ -1,7 +1,8 @@
 import type { ProgressUpdate } from '../../services/simulation-engine'
+import { project } from '../../data/project'
 
 const steps = [
-  'Read TELCO source package',
+  `Read ${project.name} source package`,
   'Index WordPress core',
   'Inventory themes',
   'Inventory plugins',

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router'
+import { project } from '../../data/project'
 import { ResetDemoDialog } from '../workflow/ResetDemoDialog'
 
 interface TopBarProps {
@@ -23,7 +24,7 @@ export function TopBar({ busy, onReset }: TopBarProps) {
   return (
     <header className="topbar" aria-labelledby="page-title">
       <div>
-        <p className="topbar-kicker">TELCO · AUDIT STATIQUE</p>
+        <p className="topbar-kicker">{project.name} · AUDIT STATIQUE</p>
         <h1 id="page-title">
           SecurePress Operations · {titles[pathname] ?? 'Vue d’ensemble'}
         </h1>
