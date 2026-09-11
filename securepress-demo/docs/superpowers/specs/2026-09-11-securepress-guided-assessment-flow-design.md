@@ -53,6 +53,8 @@ The overview disclosure rules are:
 - Corrections/control work: applied change sets and projected posture are visible with the target-verification caveat.
 - Control campaign completed: validation status and report action are visible.
 
+The report route is also evidence-gated. A direct visit before finding analysis shows a pending-report explanation rather than the comparison table. A direct visit after analysis but before the control campaign points back to controls; the printable/downloadable report is available once the campaign has completed.
+
 Pages may still render a prerequisite message if reached directly by URL, but the sidebar locks future navigation and explains the missing prerequisite. This keeps direct-link testability while giving normal users a single path.
 
 ### 4. Every operation ends with a next action
@@ -78,6 +80,7 @@ On narrow screens the workflow rail remains horizontally scrollable, but each it
 - `SourceStatus` renders the checklist and source boundary copy.
 - `Sidebar` derives navigation availability from `AssessmentState`; no page owns navigation state.
 - `OverviewPage` derives disclosure from `AssessmentState` and renders only stage-appropriate panels.
+- `ReportPage` renders its full comparison only after the control campaign has a completed external-retest marker; otherwise it renders the missing-prerequisite state.
 - Feature pages own their completion CTA, while the simulation engine remains unchanged except for existing operation state consumption.
 - A small workflow helper in `domain/selectors.ts` provides the shared stage/lock/next-action decisions so sidebar, overview, and tests do not duplicate prerequisite logic.
 
