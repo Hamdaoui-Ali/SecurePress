@@ -1,4 +1,5 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
+import { HashRouter } from 'react-router'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
@@ -23,7 +24,9 @@ function completedAuditState() {
 function renderValidation(delayMs = 0) {
   return render(
     <AssessmentProvider delayMs={delayMs}>
-      <ValidationPage />
+      <HashRouter>
+        <ValidationPage />
+      </HashRouter>
     </AssessmentProvider>,
   )
 }
@@ -43,8 +46,18 @@ test('individual hardening executions keep card and persisted report outcomes co
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).validationResults).toMatchObject({
     'V-FILE-EDITOR': 'simulated_pass', 'V-XMLRPC-TARGET': 'target_validation_required',
   })
+  await user.click(screen.getByRole('button', { name: 'Run control campaign' }))
+  await waitFor(() => {
+    expect(screen.getByText('Control campaign completed · target verification pending')).toBeVisible()
+  })
   view.unmount()
-  render(<AssessmentProvider delayMs={0}><ReportPage /></AssessmentProvider>)
+  render(
+    <AssessmentProvider delayMs={0}>
+      <HashRouter>
+        <ReportPage />
+      </HashRouter>
+    </AssessmentProvider>,
+  )
   expect(screen.getByRole('row', { name: /F-004/ })).toHaveTextContent('PASS')
   const xmlrpcRow = screen.getByRole('row', { name: /XML-RPC/i })
   expect(xmlrpcRow).toHaveTextContent('Target verification required')
@@ -149,6 +162,7 @@ test('runs the multi-phase control campaign with PASS results and target verific
     screen.getByText('External dynamic retest — NOT EXECUTED'),
   ).toBeVisible()
   expect(screen.queryByText('Verified on target')).not.toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Review report' })).toBeVisible()
 
   const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')
   expect(saved.lastRun).toMatchObject({

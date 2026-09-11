@@ -1,4 +1,5 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
+import { HashRouter } from 'react-router'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test } from 'vitest'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
@@ -14,7 +15,9 @@ beforeEach(() => {
 function renderAudit(delayMs = 0) {
   return render(
     <AssessmentProvider delayMs={delayMs}>
-      <AuditPage />
+      <HashRouter>
+        <AuditPage />
+      </HashRouter>
     </AssessmentProvider>,
   )
 }
@@ -73,6 +76,7 @@ test('runs finding analysis with phase progress before exposing findings', async
   expect(screen.getByText('1 low')).toBeVisible()
   expect(screen.getByText('1 variable')).toBeVisible()
   expect(screen.getAllByRole('row')).toHaveLength(11)
+  expect(screen.getByRole('link', { name: 'Continue to corrections' })).toBeVisible()
   expect(document.body.textContent).not.toMatch(/Aucune configuration réelle n’est connectée/i)
 })
 
@@ -95,6 +99,7 @@ test('keeps qualified findings available while repeated analysis shows progress'
   await waitFor(() => {
     expect(screen.getByText('Finding analysis completed')).toBeVisible()
   }, { timeout: 5_000 })
+  expect(screen.getByRole('link', { name: 'Continue to corrections' })).toBeVisible()
 })
 
 test('explains F-001 and F-006 in the evidence drawer', async () => {

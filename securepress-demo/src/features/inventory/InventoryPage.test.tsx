@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { HashRouter } from 'react-router'
 import { beforeEach, expect, test } from 'vitest'
 import { AssessmentProvider } from '../../app/AssessmentProvider'
 import { createInitialAssessment } from '../../domain/models'
@@ -12,7 +13,9 @@ beforeEach(() => {
 function renderInventory(delayMs = 0) {
   return render(
     <AssessmentProvider delayMs={delayMs}>
-      <InventoryPage />
+      <HashRouter>
+        <InventoryPage />
+      </HashRouter>
     </AssessmentProvider>,
   )
 }
@@ -38,6 +41,7 @@ test('runs discovery with phase progress and waits to expose the indexed table',
   await waitFor(() => expect(screen.getByText('Workspace ready')).toBeVisible(), { timeout: 20_000 })
   expect(screen.getByText('22 components indexed')).toBeVisible()
   expect(screen.getByRole('table')).toBeVisible()
+  expect(screen.getByRole('link', { name: 'Continue to finding analysis' })).toBeVisible()
   expect(document.body.textContent).not.toMatch(/demo|simul/i)
 })
 
@@ -66,4 +70,5 @@ test('keeps indexed components available while a repeated discovery shows progre
   await waitFor(() => {
     expect(screen.getByText('Workspace ready')).toBeVisible()
   }, { timeout: 5_000 })
+  expect(screen.getByRole('link', { name: 'Continue to finding analysis' })).toBeVisible()
 })

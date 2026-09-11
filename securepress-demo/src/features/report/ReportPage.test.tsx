@@ -1,4 +1,5 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
+import { HashRouter } from 'react-router'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { AssessmentProvider, useAssessment } from '../../app/AssessmentProvider'
@@ -14,7 +15,9 @@ beforeEach(() => {
 function renderReport() {
   return render(
     <AssessmentProvider delayMs={0}>
-      <ReportPage />
+      <HashRouter>
+        <ReportPage />
+      </HashRouter>
     </AssessmentProvider>,
   )
 }
@@ -41,19 +44,36 @@ function renderReportWithOperations() {
   return render(
     <AssessmentProvider delayMs={0}>
       <ReportOperationControls />
-      <ReportPage />
+      <HashRouter>
+        <ReportPage />
+      </HashRouter>
     </AssessmentProvider>,
   )
 }
 
-test('shows the initial report with a 42 posture and high risk', () => {
+test('shows a pending report before discovery and hides report evidence', () => {
   renderReport()
 
-  expect(screen.getByText('42 / 100')).toBeVisible()
-  expect(screen.getByText('10 qualified findings')).toBeVisible()
-  expect(screen.getByText('No change set applied')).toBeVisible()
-  expect(screen.getByText('High risk from indexed evidence')).toBeVisible()
-  expect(screen.getAllByRole('row')).toHaveLength(11)
+  expect(screen.getByText('Report pending')).toBeVisible()
+  expect(screen.getByRole('link', { name: 'Continue to discovery' })).toBeVisible()
+  expect(screen.queryByText('42 / 100')).not.toBeInTheDocument()
+  expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Download report/i })).not.toBeInTheDocument()
+})
+
+test('points an analyzed workspace to controls before exposing the final report', () => {
+  saveAssessment({
+    ...createInitialAssessment(),
+    stage: 'audit',
+    inventoryCompleted: true,
+    auditCompleted: true,
+  })
+  renderReport()
+
+  expect(screen.getByText('Controls required before final report')).toBeVisible()
+  expect(screen.getByRole('link', { name: 'Run control campaign' })).toBeVisible()
+  expect(screen.queryByText('42 / 100')).not.toBeInTheDocument()
+  expect(screen.queryByRole('table')).not.toBeInTheDocument()
 })
 
 test('shows the projected 82 posture and four residual findings', () => {
@@ -84,6 +104,7 @@ test('links each finding to its hardened state, validation, and limit', () => {
     appliedFindingIds: ['F-001', 'F-002', 'F-003', 'F-004', 'F-007', 'F-009'],
     validationResults: {
       'V-HTTPS-TARGET': 'target_validation_required',
+      'external-dynamic-retest': 'dynamic_retest_not_executed',
     },
   })
   renderReport()
@@ -100,6 +121,9 @@ test('shows ordered operation activity without implying target verification', ()
   saveAssessment({
     ...createInitialAssessment(),
     stage: 'report',
+    validationResults: {
+      'external-dynamic-retest': 'dynamic_retest_not_executed',
+    },
     timeline: [
       {
         id: 'second',
@@ -130,11 +154,11 @@ test('shows one provider-owned control completion from a real workflow', async (
 
   await user.click(screen.getByRole('button', { name: 'run discovery' }))
   await waitFor(() => {
-    expect(screen.getByText('Discovery run completed \u00b7 22 components indexed')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Continue to finding analysis' })).toBeVisible()
   })
   await user.click(screen.getByRole('button', { name: 'run analysis' }))
   await waitFor(() => {
-    expect(screen.getByText('Finding analysis completed \u00b7 10 findings')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Run control campaign' })).toBeVisible()
   })
   await user.click(screen.getByRole('button', { name: 'run controls' }))
 
@@ -157,6 +181,14 @@ test('shows one provider-owned control completion from a real workflow', async (
 test('states indexed evidence, generated change sets, and pending target verification in the printable report', async () => {
   const user = userEvent.setup()
   const printSpy = vi.spyOn(window, 'print').mockImplementation(() => undefined)
+  saveAssessment({
+    ...createInitialAssessment(),
+    stage: 'report',
+    auditCompleted: true,
+    validationResults: {
+      'external-dynamic-retest': 'dynamic_retest_not_executed',
+    },
+  })
   renderReport()
 
   expect(
@@ -190,6 +222,14 @@ test('offers the same report as a downloadable PDF', async () => {
   const click = vi
     .spyOn(HTMLAnchorElement.prototype, 'click')
     .mockImplementation(() => undefined)
+  saveAssessment({
+    ...createInitialAssessment(),
+    stage: 'report',
+    auditCompleted: true,
+    validationResults: {
+      'external-dynamic-retest': 'dynamic_retest_not_executed',
+    },
+  })
   renderReport()
 
   await user.click(screen.getByRole('button', { name: /Download report/i }))

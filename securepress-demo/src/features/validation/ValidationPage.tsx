@@ -1,4 +1,5 @@
 import { ClipboardCheck, ShieldCheck } from 'lucide-react'
+import { Link } from 'react-router'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { telcoScenario } from '../../data/scenario'
 import { selectCampaignCheckState } from '../../domain/operation-view'
@@ -191,6 +192,19 @@ export function ValidationPage() {
           />
         </div>
       </section>
+
+      {externalStatus === 'dynamic_retest_not_executed' && !busy ? (
+        <div className="workflow-continue">
+          <div>
+            <p className="eyebrow">NEXT OPERATION</p>
+            <strong>Control campaign is complete</strong>
+            <span>Review the evidence trail and download the final report.</span>
+          </div>
+          <Link className="button button-primary" to="/rapport">
+            Review report
+          </Link>
+        </div>
+      ) : null}
     </div>
   )
 }

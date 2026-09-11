@@ -1,4 +1,5 @@
 import { FileSearch, LoaderCircle, Play, RotateCcw } from 'lucide-react'
+import { Link } from 'react-router'
 import { useMemo, useRef, useState } from 'react'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { Card } from '../../components/ui/Card'
@@ -157,6 +158,19 @@ export function AuditPage() {
           </p>
         </Card>
       )}
+
+      {state.auditCompleted && !busy ? (
+        <div className="workflow-continue">
+          <div>
+            <p className="eyebrow">NEXT OPERATION</p>
+            <strong>Finding analysis is complete</strong>
+            <span>Review the qualified findings before preparing corrections.</span>
+          </div>
+          <Link className="button button-primary" to="/remediation">
+            Continue to corrections
+          </Link>
+        </div>
+      ) : null}
 
       <FindingDrawer
         finding={selectedFinding}

@@ -1,7 +1,9 @@
 import { Download, Printer, ShieldCheck } from 'lucide-react'
+import { Link } from 'react-router'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { telcoScenario } from '../../data/scenario'
 import {
+  isControlCampaignComplete,
   selectAppliedCount,
   selectPostureScore,
   selectRemainingRiskPoints,
@@ -16,6 +18,64 @@ import { downloadReportPdf } from '../../services/report-pdf'
 
 export function ReportPage() {
   const { state } = useAssessment()
+  const campaignComplete = isControlCampaignComplete(state)
+
+  if (!campaignComplete) {
+    const nextAction = state.auditCompleted
+      ? {
+          label: 'Run control campaign',
+          to: '/validation',
+          title: 'Controls required before final report',
+          message:
+            'Finding analysis is complete. Run the local control campaign before generating the printable or downloadable report.',
+        }
+      : state.inventoryCompleted
+        ? {
+            label: 'Continue to finding analysis',
+            to: '/audit',
+            title: 'Complete finding analysis first',
+            message:
+              'The report can only summarize evidence after discovery and finding analysis have completed.',
+          }
+        : {
+            label: 'Continue to discovery',
+            to: '/inventaire',
+            title: 'Complete discovery first',
+            message:
+              'Choose a verified source, index the package, and analyze its findings before opening the final report.',
+          }
+
+    return (
+      <div className="page-stack report-page" data-guide-id="review-comparison">
+        <div className="page-heading">
+          <p className="eyebrow">STEP 6 · REPORT</p>
+          <h2>Report pending</h2>
+          <p>
+            SecurePress keeps the final report closed until the evidence-producing operations are
+            complete.
+          </p>
+        </div>
+
+        <Card title={nextAction.title} eyebrow="REPORT STATUS">
+          <div className="report-pending-state">
+            <p>{nextAction.message}</p>
+            <Link className="button button-primary" to={nextAction.to}>
+              {nextAction.label}
+            </Link>
+          </div>
+        </Card>
+
+        <Card title="What the final report will contain" eyebrow="EVIDENCE BOUNDARY">
+          <ul className="report-pending-list">
+            <li>Indexed source evidence and qualified findings</li>
+            <li>Applied change sets and projected posture</li>
+            <li>Control results with target-verification limits</li>
+          </ul>
+        </Card>
+      </div>
+    )
+  }
+
   const appliedCount = selectAppliedCount(state)
   const postureScore = selectPostureScore(telcoScenario, state)
   const remainingRiskPoints = selectRemainingRiskPoints(telcoScenario, state)

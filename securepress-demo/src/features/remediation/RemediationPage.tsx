@@ -1,4 +1,5 @@
 import { ShieldCheck } from 'lucide-react'
+import { Link } from 'react-router'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { telcoScenario } from '../../data/scenario'
 import type { OperationRun } from '../../domain/models'
@@ -26,6 +27,52 @@ function findLatestChangeSetRun(
 export function RemediationPage() {
   const { state, busy, progress, activeOperation, lastRun, applyRemediation } = useAssessment()
   const score = selectPostureScore(telcoScenario, state)
+  const priorityRemediation = telcoScenario.remediations.find(
+    (remediation) => remediation.findingId === 'F-001',
+  )
+  const additionalRemediations = telcoScenario.remediations.filter(
+    (remediation) => remediation.findingId !== 'F-001',
+  )
+
+  const renderRemediationCard = (remediation: (typeof telcoScenario.remediations)[number]) => {
+    const finding = telcoScenario.findings.find(
+      (item) => item.id === remediation.findingId,
+    )
+    if (!finding) return null
+
+    const isApplying = isChangeSetForFinding(activeOperation, finding.id)
+    const isApplied = state.appliedFindingIds.includes(finding.id)
+    const latestChangeSetRun = findLatestChangeSetRun(
+      [lastRun, ...state.operationHistory],
+      finding.id,
+    )
+    const failedRun = latestChangeSetRun?.status === 'failed'
+    const completedRun =
+      latestChangeSetRun?.status === 'completed'
+        ? latestChangeSetRun
+        : undefined
+    const changeSetState = isApplied
+      ? 'applied'
+      : isApplying
+        ? 'applying'
+        : failedRun
+          ? 'failed'
+          : 'staged'
+
+    return (
+      <RemediationCard
+        key={remediation.id}
+        finding={finding}
+        remediation={remediation}
+        changeSetState={changeSetState}
+        busy={busy}
+        auditCompleted={state.auditCompleted}
+        phase={isApplying ? progress?.step : undefined}
+        durationMs={completedRun?.durationMs}
+        onApply={() => void applyRemediation(finding.id)}
+      />
+    )
+  }
 
   return (
     <div className="page-stack">
@@ -61,47 +108,42 @@ export function RemediationPage() {
         </div>
       </Card>
 
-      <div className="remediation-grid">
-        {telcoScenario.remediations.map((remediation) => {
-          const finding = telcoScenario.findings.find(
-            (item) => item.id === remediation.findingId,
-          )
-          if (!finding) return null
+      {state.auditCompleted ? (
+        <>
+          <section className="remediation-priority" aria-labelledby="priority-correction-title">
+            <div className="section-heading-inline">
+              <div>
+                <p className="eyebrow">START HERE</p>
+                <h2 id="priority-correction-title">Priority correction</h2>
+              </div>
+              <span className="section-heading-note">Highest-risk finding first</span>
+            </div>
+            <div className="remediation-grid">
+              {priorityRemediation ? renderRemediationCard(priorityRemediation) : null}
+            </div>
+          </section>
 
-          const isApplying = isChangeSetForFinding(activeOperation, finding.id)
-          const isApplied = state.appliedFindingIds.includes(finding.id)
-          const latestChangeSetRun = findLatestChangeSetRun(
-            [lastRun, ...state.operationHistory],
-            finding.id,
-          )
-          const failedRun = latestChangeSetRun?.status === 'failed'
-          const completedRun =
-            latestChangeSetRun?.status === 'completed'
-              ? latestChangeSetRun
-              : undefined
-          const changeSetState = isApplied
-            ? 'applied'
-            : isApplying
-              ? 'applying'
-              : failedRun
-                ? 'failed'
-                : 'staged'
+          <details className="remediation-disclosure">
+            <summary>Additional change sets ({additionalRemediations.length})</summary>
+            <div className="remediation-grid">
+              {additionalRemediations.map(renderRemediationCard)}
+            </div>
+          </details>
 
-          return (
-            <RemediationCard
-              key={remediation.id}
-              finding={finding}
-              remediation={remediation}
-              changeSetState={changeSetState}
-              busy={busy}
-              auditCompleted={state.auditCompleted}
-              phase={isApplying ? progress?.step : undefined}
-              durationMs={completedRun?.durationMs}
-              onApply={() => void applyRemediation(finding.id)}
-            />
-          )
-        })}
-      </div>
+          {state.appliedFindingIds.length > 0 && !busy ? (
+            <div className="workflow-continue">
+              <div>
+                <p className="eyebrow">NEXT OPERATION</p>
+                <strong>Change set review is ready for controls</strong>
+                <span>Run the local control campaign and retain the target-verification boundary.</span>
+              </div>
+              <Link className="button button-primary" to="/validation">
+                Continue to controls
+              </Link>
+            </div>
+          ) : null}
+        </>
+      ) : null}
     </div>
   )
 }

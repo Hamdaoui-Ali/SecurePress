@@ -1,4 +1,5 @@
 import { Database, LoaderCircle, Play, RefreshCcw } from 'lucide-react'
+import { Link } from 'react-router'
 import { useAssessment } from '../../app/AssessmentProvider'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
@@ -93,6 +94,19 @@ export function InventoryPage() {
           </p>
         </Card>
       )}
+
+      {completed && !busy ? (
+        <div className="workflow-continue">
+          <div>
+            <p className="eyebrow">NEXT OPERATION</p>
+            <strong>Discovery is complete</strong>
+            <span>Review the indexed package to continue to finding analysis.</span>
+          </div>
+          <Link className="button button-primary" to="/audit">
+            Continue to finding analysis
+          </Link>
+        </div>
+      ) : null}
     </div>
   )
 }

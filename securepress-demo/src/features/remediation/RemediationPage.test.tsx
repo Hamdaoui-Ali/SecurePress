@@ -1,4 +1,5 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { HashRouter } from 'react-router'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, expect, test, vi } from 'vitest'
 import * as engineModule from '../../services/simulation-engine'
@@ -36,10 +37,30 @@ function renderRemediation({
 } = {}) {
   return render(
     <AssessmentProvider delayMs={delayMs} now={now}>
-      <RemediationPage />
+      <HashRouter>
+        <RemediationPage />
+      </HashRouter>
     </AssessmentProvider>,
   )
 }
+
+test('keeps correction cards hidden until finding analysis completes', () => {
+  renderRemediation()
+
+  expect(screen.getByText('Complete finding analysis before preparing a change set')).toBeVisible()
+  expect(screen.queryByRole('article', { name: /F-001/i })).not.toBeInTheDocument()
+})
+
+test('offers a continuation to controls after a change set is applied', () => {
+  saveAssessment({
+    ...completedAuditState(),
+    stage: 'remediation',
+    appliedFindingIds: ['F-001'],
+  })
+  renderRemediation()
+
+  expect(screen.getByRole('link', { name: 'Continue to controls' })).toBeVisible()
+})
 
 test('shows a staged local change set with before and after evidence', () => {
   saveAssessment(completedAuditState())
@@ -52,6 +73,8 @@ test('shows a staged local change set with before and after evidence', () => {
       'Change set staged',
     ),
   ).toBeVisible()
+  expect(screen.getByText('Priority correction')).toBeVisible()
+  expect(screen.getByText('Additional change sets (9)')).toBeVisible()
   expect(
     screen.getByRole('button', { name: 'Apply change set · F-001' }),
   ).toBeEnabled()
@@ -225,6 +248,8 @@ test('retains a failed change set after a later provider operation completes', (
 test('keeps artifact previews scoped to generated workspace artifacts', () => {
   saveAssessment(completedAuditState())
   renderRemediation()
+
+  fireEvent.click(screen.getByText('Additional change sets (9)'))
 
   expect(screen.getAllByText('Target verification required')).toHaveLength(2)
   expect(screen.getByText('Referenced artifact not present')).toBeVisible()
