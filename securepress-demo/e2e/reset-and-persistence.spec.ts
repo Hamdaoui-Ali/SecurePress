@@ -15,7 +15,7 @@ test('persists a local change set and returns to source setup after reset', asyn
   await page.locator('[data-guide-id="run-audit"]').click()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 10_000 })
 
   await page.getByRole('link', { name: 'Change sets' }).click()
   const applyFinding = page.locator('[data-guide-id="apply-F-001"]')

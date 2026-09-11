@@ -2,6 +2,8 @@ import { expect, test } from '@playwright/test'
 import { prepareSource } from './helpers'
 
 test('runs the eight guided workspace steps through the provenance report', async ({ page }) => {
+  test.setTimeout(60_000)
+
   await prepareSource(page)
   await page.goto('/#/')
 
@@ -30,7 +32,7 @@ test('runs the eight guided workspace steps through the provenance report', asyn
   await page.locator('[data-guide-id="run-audit"]').click()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 10_000 })
   await expect(
     page.getByRole('link', { name: 'Continue to corrections' }),
   ).toBeVisible()
@@ -48,7 +50,7 @@ test('runs the eight guided workspace steps through the provenance report', asyn
   ).toBeVisible()
   await guide.getByRole('button', { name: 'Next' }).click()
 
-  await expect(guide.getByText('Step 6 of 8')).toBeVisible()
+  await expect(guide.getByText('Step 6 of 8')).toBeVisible({ timeout: 15_000 })
   await page.locator('[data-guide-id="run-validation"]').click()
   await expect(
     page.locator('#main-content').getByText(

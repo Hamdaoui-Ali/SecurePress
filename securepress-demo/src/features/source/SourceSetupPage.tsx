@@ -17,7 +17,7 @@ export function SourceSetupPage() {
     sourceChecking,
     sourceCheckProgress,
     selectLocalFolder,
-    usePreparedSource,
+    selectPreparedSource,
     verifySelectedSource,
   } = useAssessment()
   const [pickerError, setPickerError] = useState<string | undefined>()
@@ -100,7 +100,7 @@ export function SourceSetupPage() {
                 disabled={sourceChecking}
                 onClick={() => {
                   setPickerError(undefined)
-                  usePreparedSource()
+                  selectPreparedSource()
                 }}
               >
                 Use prepared LNET TELCO package

@@ -10,7 +10,7 @@ async function prepareAudit(page: Parameters<typeof test>[0]['page']) {
   await page.locator('[data-guide-id="run-audit"]').click()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 10_000 })
 }
 
 test('supports the keyboard and restores focus after modal surfaces', async ({

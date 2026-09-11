@@ -4,6 +4,8 @@ import { prepareSource } from './helpers'
 test('runs local workspace operations, preserves their activity, and clears them on reset', async ({
   page,
 }) => {
+  test.setTimeout(60_000)
+
   await prepareSource(page)
   await page.goto('/#/inventaire')
 
@@ -37,7 +39,7 @@ test('runs local workspace operations, preserves their activity, and clears them
   await expect(page.locator('.operation-progress-running')).toBeVisible()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 10_000 })
   await expect(analysis).toBeEnabled()
 
   await page.goto('/#/remediation')
@@ -144,7 +146,9 @@ for (const viewport of [
     })
     await page.goto('/#/audit')
     await page.locator('[data-guide-id="run-audit"]').click()
-    await expect(page.getByText('Finding analysis completed', { exact: true })).toBeVisible()
+    await expect(page.getByText('Finding analysis completed', { exact: true })).toBeVisible({
+      timeout: 10_000,
+    })
     await page.goto('/#/remediation')
     const card = page.locator('#remediation-F-001')
     await card.getByRole('button', { name: 'Apply change set · F-001' }).click()

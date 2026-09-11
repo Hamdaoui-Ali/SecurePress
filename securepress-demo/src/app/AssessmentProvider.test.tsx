@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, expect, test } from 'vitest'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { STORAGE_KEY } from '../services/storage'
 import { AssessmentProvider, useAssessment } from './AssessmentProvider'
 
@@ -23,7 +23,7 @@ function AssessmentProbe() {
     previousGuidedStep,
     exitGuidedDemo,
     resetDemo,
-    usePreparedSource,
+    selectPreparedSource,
     verifySelectedSource,
   } = useAssessment()
 
@@ -77,7 +77,7 @@ function AssessmentProbe() {
       <button type="button" onClick={resetDemo}>
         reset
       </button>
-      <button type="button" onClick={usePreparedSource}>
+      <button type="button" onClick={selectPreparedSource}>
         use prepared source
       </button>
       <button type="button" onClick={() => void verifySelectedSource()}>
@@ -106,6 +106,10 @@ async function waitForStage(stage: string) {
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
 })
 
 test('exposes an ordered source verification checklist while preparing the package', async () => {
@@ -140,6 +144,59 @@ test('exposes an ordered source verification checklist while preparing the packa
       'pending',
     ])
   })
+})
+
+test('keeps the initial source verification phase visible for the demo audience', async () => {
+  vi.useFakeTimers()
+  render(
+    <AssessmentProvider>
+      <AssessmentProbe />
+    </AssessmentProvider>,
+  )
+
+  fireEvent.click(screen.getByRole('button', { name: 'use prepared source' }))
+  fireEvent.click(screen.getByRole('button', { name: 'verify source' }))
+
+  expect(readJson<{ message: string }>('source-check-progress').message).toBe(
+    'Checking folder access and path existence',
+  )
+
+  await act(async () => {
+    vi.advanceTimersByTime(699)
+  })
+  expect(readJson<{ message: string }>('source-check-progress').message).toBe(
+    'Checking folder access and path existence',
+  )
+
+  await act(async () => {
+    vi.advanceTimersByTime(1)
+  })
+  expect(readJson<{ message: string }>('source-check-progress').message).toBe(
+    'Reading WordPress files',
+  )
+})
+
+test('keeps the first discovery phase visible before indexing begins', async () => {
+  vi.useFakeTimers()
+  render(
+    <AssessmentProvider>
+      <AssessmentProbe />
+    </AssessmentProvider>,
+  )
+
+  fireEvent.click(screen.getByRole('button', { name: 'lancer inventaire' }))
+
+  expect(screen.getByTestId('progress')).toHaveTextContent('Preparing source package')
+
+  await act(async () => {
+    vi.advanceTimersByTime(449)
+  })
+  expect(screen.getByTestId('progress')).toHaveTextContent('Preparing source package')
+
+  await act(async () => {
+    vi.advanceTimersByTime(1)
+  })
+  expect(screen.getByTestId('progress')).toHaveTextContent(/Indexing .+/)
 })
 
 test('exposes a running discovery operation and persists its completed metadata', async () => {

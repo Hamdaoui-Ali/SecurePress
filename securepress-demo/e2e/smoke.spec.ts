@@ -90,7 +90,9 @@ test('downloads the final report as a PDF', async ({ page }) => {
   })
   await page.goto('/#/audit')
   await page.locator('[data-guide-id="run-audit"]').click()
-  await expect(page.getByText('Finding analysis completed', { exact: true })).toBeVisible()
+  await expect(page.getByText('Finding analysis completed', { exact: true })).toBeVisible({
+    timeout: 10_000,
+  })
   await page.goto('/#/validation')
   await page.locator('[data-guide-id="run-validation"]').click()
   await expect(

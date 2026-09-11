@@ -80,8 +80,7 @@ export function ValidationPage() {
         <p className="eyebrow">STEP 5 · VALIDATION</p>
         <h2>Run controls with explicit provenance</h2>
         <p>
-          Controls are deterministic local operations based on indexed {telcoScenario.project.name}
-          evidence. A PASS result does not replace verification on the target.
+          Controls are deterministic local operations based on indexed {telcoScenario.project.name} evidence. A PASS result does not replace verification on the target.
         </p>
       </div>
 

@@ -40,7 +40,12 @@ test('prefills the prepared package without marking it ready', async () => {
     'C:\\SecurePress\\targets\\lnet-telco-wordpress',
   )
   expect(screen.getByRole('button', { name: 'Verify source' })).toBeEnabled()
-  expect(screen.getByRole('status', { name: 'Source verification status' })).toHaveTextContent('Not registered')
+  expect(screen.getByRole('status', { name: 'Source verification status' })).toHaveTextContent(
+    'Source selected',
+  )
+  expect(screen.getByRole('status', { name: 'Source verification status' })).toHaveTextContent(
+    'Selected locally. Ready to verify the WordPress files.',
+  )
 })
 
 test('shows the ordered verification checklist while the source is being checked', async () => {
@@ -75,7 +80,7 @@ test('verifies the prepared source and unlocks discovery', async () => {
 
   await waitFor(() => {
     expect(screen.getByRole('link', { name: 'Start discovery' })).toBeVisible()
-  })
+  }, { timeout: 5_000 })
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
     source: { status: 'ready', mode: 'prepared' },
   })
@@ -112,7 +117,9 @@ test('reset clears the source and returns to setup', async () => {
 
   await user.click(screen.getByRole('button', { name: 'Use prepared LNET TELCO package' }))
   await user.click(screen.getByRole('button', { name: 'Verify source' }))
-  await waitFor(() => expect(screen.getByRole('link', { name: 'Start discovery' })).toBeVisible())
+  await waitFor(() => expect(screen.getByRole('link', { name: 'Start discovery' })).toBeVisible(), {
+    timeout: 5_000,
+  })
 
   await user.click(screen.getByRole('button', { name: 'Reset workspace' }))
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Confirm reset' }))

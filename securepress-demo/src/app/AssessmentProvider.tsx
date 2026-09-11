@@ -85,7 +85,7 @@ export interface AssessmentContextValue {
   exitGuidedDemo(): void
   setSourcePath(pathLabel: string): void
   selectLocalFolder(handle: DirectoryHandleLike): void
-  usePreparedSource(): void
+  selectPreparedSource(): void
   verifySelectedSource(): Promise<boolean>
   clearSource(): void
   resetDemo(): void
@@ -95,6 +95,9 @@ interface AssessmentProviderProps {
   delayMs?: number
   now?: () => Date
 }
+
+const DEFAULT_OPERATION_DELAY_MS = 450
+const DEFAULT_SOURCE_CHECK_DELAY_MS = 700
 
 interface OperationDefinition {
   kind: OperationKind
@@ -187,9 +190,11 @@ function createSourceCheckProgress(
 
 export function AssessmentProvider({
   children,
-  delayMs = 200,
+  delayMs,
   now = () => new Date(),
 }: PropsWithChildren<AssessmentProviderProps>) {
+  const operationDelayMs = delayMs ?? DEFAULT_OPERATION_DELAY_MS
+  const sourceCheckDelayMs = delayMs ?? DEFAULT_SOURCE_CHECK_DELAY_MS
   const [state, setState] = useState<AssessmentState>(() => {
     return loadAssessment().state
   })
@@ -216,7 +221,7 @@ export function AssessmentProvider({
 
   if (engineRef.current === null) {
     engineRef.current = createSimulationEngine({
-      delayMs,
+      delayMs: operationDelayMs,
       now,
       onProgress: (update) => {
         progressRef.current = update
@@ -272,7 +277,7 @@ export function AssessmentProvider({
     setSourceCheckProgress(null)
   }, [])
 
-  const usePreparedSource = useCallback(() => {
+  const selectPreparedSource = useCallback(() => {
     setSourceDraft({
       mode: 'prepared',
       pathLabel: PREPARED_SOURCE_PATH,
@@ -311,21 +316,21 @@ export function AssessmentProvider({
     )
 
     try {
-      await pause(delayMs)
+      await pause(sourceCheckDelayMs)
       setSourceCheckProgress(
         createSourceCheckProgress(1, 30, 'Reading WordPress files'),
       )
-      await pause(delayMs)
+      await pause(sourceCheckDelayMs)
 
       setSourceCheckProgress(
         createSourceCheckProgress(2, 50, 'Detecting WordPress version'),
       )
-      await pause(delayMs)
+      await pause(sourceCheckDelayMs)
 
       setSourceCheckProgress(
         createSourceCheckProgress(3, 75, 'Reading plugins and themes'),
       )
-      await pause(delayMs)
+      await pause(sourceCheckDelayMs)
 
       const verifiedSource =
         draft.mode === 'prepared'
@@ -379,7 +384,7 @@ export function AssessmentProvider({
       sourceCheckingRef.current = false
       setSourceChecking(false)
     }
-  }, [commitAssessmentTransition, delayMs, now])
+  }, [commitAssessmentTransition, now, sourceCheckDelayMs])
 
   const runOperation = useCallback(
     async (
@@ -638,7 +643,7 @@ export function AssessmentProvider({
       exitGuidedDemo,
       setSourcePath,
       selectLocalFolder,
-      usePreparedSource,
+      selectPreparedSource,
       verifySelectedSource,
       clearSource,
       resetDemo,
@@ -662,7 +667,7 @@ export function AssessmentProvider({
       exitGuidedDemo,
       setSourcePath,
       selectLocalFolder,
-      usePreparedSource,
+      selectPreparedSource,
       verifySelectedSource,
       clearSource,
       resetDemo,

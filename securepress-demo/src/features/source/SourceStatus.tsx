@@ -10,10 +10,15 @@ interface SourceStatusProps {
   pickerError?: string
 }
 
-function statusLabel(source: WorkspaceSource, checking: boolean): string {
+function statusLabel(
+  source: WorkspaceSource,
+  checking: boolean,
+  hasCandidate: boolean,
+): string {
   if (checking) return 'Verifying source'
   if (source.status === 'ready') return 'Source verified'
   if (source.status === 'invalid') return 'Source verification failed'
+  if (hasCandidate) return 'Source selected'
   return 'Not registered'
 }
 
@@ -24,14 +29,21 @@ export function SourceStatus({
   progress,
   pickerError,
 }: SourceStatusProps) {
-  const message = pickerError ?? progress?.message ?? source.message
+  const message =
+    pickerError ??
+    progress?.message ??
+    (candidateLabel && source.status !== 'ready'
+      ? 'Selected locally. Ready to verify the WordPress files.'
+      : source.message)
   const Icon = checking
     ? LoaderCircle
     : source.status === 'ready'
       ? CircleCheck
       : source.status === 'invalid'
         ? CircleAlert
-        : null
+        : candidateLabel
+          ? CircleCheck
+          : null
 
   return (
     <section
@@ -43,7 +55,7 @@ export function SourceStatus({
       <div className="source-status-heading">
         <span className="source-status-label">
           {Icon ? <Icon aria-hidden="true" size={18} /> : null}
-          {statusLabel(source, checking)}
+          {statusLabel(source, checking, Boolean(candidateLabel))}
         </span>
         {progress && checking ? <span>{progress.percent}%</span> : null}
       </div>
