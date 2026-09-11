@@ -1,9 +1,10 @@
-import { CircleAlert, CircleCheck, LoaderCircle } from 'lucide-react'
+import { CheckCircle2, Circle, CircleAlert, CircleCheck, LoaderCircle } from 'lucide-react'
 import type { WorkspaceSource } from '../../domain/models'
 import type { SourceCheckProgress } from '../../app/AssessmentProvider'
 
 interface SourceStatusProps {
   source: WorkspaceSource
+  candidateLabel?: string
   checking: boolean
   progress: SourceCheckProgress | null
   pickerError?: string
@@ -11,13 +12,14 @@ interface SourceStatusProps {
 
 function statusLabel(source: WorkspaceSource, checking: boolean): string {
   if (checking) return 'Verifying source'
-  if (source.status === 'ready') return 'Source ready'
+  if (source.status === 'ready') return 'Source verified'
   if (source.status === 'invalid') return 'Source verification failed'
   return 'Not registered'
 }
 
 export function SourceStatus({
   source,
+  candidateLabel,
   checking,
   progress,
   pickerError,
@@ -45,8 +47,38 @@ export function SourceStatus({
         </span>
         {progress && checking ? <span>{progress.percent}%</span> : null}
       </div>
-      <strong>{source.displayName || 'No source selected'}</strong>
+      <strong>{source.displayName || candidateLabel || 'No source selected'}</strong>
       <p>{message}</p>
+      {checking && progress ? (
+        <ol className="source-check-list" aria-label="Source verification checklist">
+          {progress.steps.map((step) => {
+            const StepIcon =
+              step.status === 'complete'
+                ? CheckCircle2
+                : step.status === 'running'
+                  ? LoaderCircle
+                  : Circle
+
+            return (
+              <li
+                key={step.id}
+                className={`source-check-step source-check-step-${step.status}`}
+                aria-current={step.status === 'running' ? 'step' : undefined}
+              >
+                <StepIcon aria-hidden="true" size={17} />
+                <span>{step.label}</span>
+                <small>
+                  {step.status === 'complete'
+                    ? 'Complete'
+                    : step.status === 'running'
+                      ? 'Running'
+                      : 'Pending'}
+                </small>
+              </li>
+            )
+          })}
+        </ol>
+      ) : null}
       {source.status === 'ready' && source.wordpressVersion ? (
         <p className="source-status-meta">
           WordPress {source.wordpressVersion} · {source.pluginCount} plugins · {source.themeCount} themes

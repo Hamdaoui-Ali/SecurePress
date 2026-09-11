@@ -16,7 +16,6 @@ export function SourceSetupPage() {
     sourceDraft,
     sourceChecking,
     sourceCheckProgress,
-    setSourcePath,
     selectLocalFolder,
     usePreparedSource,
     verifySelectedSource,
@@ -24,6 +23,10 @@ export function SourceSetupPage() {
   const [pickerError, setPickerError] = useState<string | undefined>()
 
   const pathValue = sourceDraft?.pathLabel ?? source.pathLabel
+  const hasCandidate = Boolean(
+    sourceDraft?.pathLabel &&
+      (sourceDraft.mode === 'prepared' || sourceDraft.directoryHandle),
+  )
 
   const selectFolder = async () => {
     setPickerError(undefined)
@@ -57,34 +60,31 @@ export function SourceSetupPage() {
       <div className="source-setup-layout">
         <div className="source-setup-intro">
           <p className="eyebrow">WORKSPACE SETUP</p>
-          <h1>Connect a local WordPress source</h1>
+          <h1>Choose your WordPress source</h1>
           <p>
-            Register the local copy you want SecurePress to inspect. Discovery, finding analysis,
-            change sets, and the report stay scoped to this source package.
+            Select the local copy you want SecurePress to inspect. Every later step stays scoped to
+            this source package.
           </p>
           <p className="source-setup-note">
-            No website is contacted. The browser verifies a selected folder locally, or you can use
+            No website is contacted. SecurePress checks the selected folder locally, or you can use
             the prepared LNET TELCO package for the demonstration.
           </p>
         </div>
 
-        <Card title="Source registration" eyebrow="LOCAL EVIDENCE" className="source-setup-card">
+        <Card title="Choose a source package" eyebrow="LOCAL EVIDENCE" className="source-setup-card">
           <div className="source-form">
-            <label htmlFor="source-path">Source path</label>
-            <input
-              id="source-path"
-              value={pathValue}
-              onChange={(event) => {
-                setPickerError(undefined)
-                setSourcePath(event.target.value)
-              }}
-              placeholder="Select a folder or enter a path label"
-              autoComplete="off"
-            />
-            <p className="field-help">
-              This label identifies the local workspace. Verification requires a browser-selected
-              folder or the prepared package; a typed path alone is not inspected.
-            </p>
+            <section className="registered-source" aria-label="Registered source">
+              <div className="registered-source-heading">
+                <span>Registered source</span>
+                <span className="registered-source-state">
+                  {hasCandidate ? 'Ready to verify' : 'Selection required'}
+                </span>
+              </div>
+              <strong>{pathValue || 'No source selected'}</strong>
+              <p>
+                Select a folder to grant local access. A typed path is not inspected in this browser.
+              </p>
+            </section>
 
             <div className="source-action-row">
               <Button
@@ -93,7 +93,7 @@ export function SourceSetupPage() {
                 onClick={() => void selectFolder()}
               >
                 <FolderOpen aria-hidden="true" size={17} />
-                Select local folder
+                Select local WordPress folder
               </Button>
               <Button
                 variant="ghost"
@@ -108,15 +108,22 @@ export function SourceSetupPage() {
             </div>
 
             <Button
-              disabled={sourceChecking}
+              disabled={sourceChecking || !hasCandidate}
               busy={sourceChecking}
               onClick={() => void verifySelectedSource()}
             >
               Verify source
             </Button>
 
+            {!hasCandidate && !sourceChecking ? (
+              <p className="field-help">
+                Select a local folder or use the prepared package before verifying.
+              </p>
+            ) : null}
+
             <SourceStatus
               source={source}
+              candidateLabel={sourceDraft?.pathLabel}
               checking={sourceChecking}
               progress={sourceCheckProgress}
               pickerError={pickerError}

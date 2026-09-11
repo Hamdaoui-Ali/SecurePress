@@ -563,6 +563,44 @@ textarea:focus-visible {
   gap: 12px;
 }
 
+.registered-source {
+  display: grid;
+  gap: 8px;
+  padding: 15px 16px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.registered-source-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--navy);
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.registered-source-state {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.registered-source strong {
+  color: var(--navy);
+  font-size: 0.94rem;
+  overflow-wrap: anywhere;
+}
+
+.registered-source p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .source-form label {
   color: var(--navy);
   font-size: 0.88rem;
@@ -655,6 +693,58 @@ textarea:focus-visible {
 
 .source-status-meta {
   color: var(--muted);
+}
+
+.source-check-list {
+  display: grid;
+  gap: 7px;
+  margin: 4px 0 0;
+  padding: 11px 0 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.source-check-step {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.source-check-step svg {
+  color: #94a3b8;
+}
+
+.source-check-step small {
+  color: #94a3b8;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.source-check-step-complete {
+  color: #166534;
+}
+
+.source-check-step-complete svg,
+.source-check-step-complete small {
+  color: var(--green);
+}
+
+.source-check-step-running {
+  color: var(--navy);
+  font-weight: 750;
+}
+
+.source-check-step-running svg {
+  color: var(--blue);
+  animation: operation-spin 1.1s linear infinite;
+}
+
+.source-check-step-running small {
+  color: var(--blue);
 }
 
 .main-content {

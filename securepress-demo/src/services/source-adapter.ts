@@ -99,7 +99,7 @@ export function getPreparedSource(pathLabel: string, now: Date): WorkspaceSource
     pluginCount: telcoScenario.inventory.pluginCount,
     themeCount: telcoScenario.inventory.themeCount,
     verifiedAt: now.toISOString(),
-    message: 'Prepared local source package verified',
+    message: 'Source verified. No website was contacted.',
   }
 }
 
@@ -143,6 +143,6 @@ export async function inspectSelectedDirectory(
     pluginCount: await countChildDirectories(pluginsDirectory),
     themeCount: await countChildDirectories(themesDirectory),
     verifiedAt: now.toISOString(),
-    message: 'Local WordPress source verified',
+    message: 'Source verified. No website was contacted.',
   }
 }
