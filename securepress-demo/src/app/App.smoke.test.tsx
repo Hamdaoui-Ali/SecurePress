@@ -6,7 +6,7 @@ test('starts with the local source setup gate', () => {
   const { container } = render(<App />)
 
   expect(
-    screen.getByRole('heading', { name: 'Connect a local WordPress source' }),
+    screen.getByRole('heading', { name: 'Choose your WordPress source' }),
   ).toBeInTheDocument()
   expect(
     screen.getByRole('button', { name: 'Verify source' }),

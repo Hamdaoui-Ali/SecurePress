@@ -74,7 +74,7 @@ test('verifies the prepared source and unlocks discovery', async () => {
   await user.click(screen.getByRole('button', { name: 'Verify source' }))
 
   await waitFor(() => {
-    expect(screen.getByText('Run discovery')).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Start discovery' })).toBeVisible()
   })
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}')).toMatchObject({
     source: { status: 'ready', mode: 'prepared' },
@@ -112,7 +112,7 @@ test('reset clears the source and returns to setup', async () => {
 
   await user.click(screen.getByRole('button', { name: 'Use prepared LNET TELCO package' }))
   await user.click(screen.getByRole('button', { name: 'Verify source' }))
-  await waitFor(() => expect(screen.getByText('Run discovery')).toBeVisible())
+  await waitFor(() => expect(screen.getByRole('link', { name: 'Start discovery' })).toBeVisible())
 
   await user.click(screen.getByRole('button', { name: 'Reset workspace' }))
   await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Confirm reset' }))

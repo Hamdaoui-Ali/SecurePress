@@ -116,7 +116,7 @@ test('runs local workspace operations, preserves their activity, and clears them
 
   await expect(page).toHaveURL(/#\/setup$/)
   await expect(
-    page.getByRole('heading', { name: 'Connect a local WordPress source' }),
+    page.getByRole('heading', { name: 'Choose your WordPress source' }),
   ).toBeVisible()
   await expect(
     page.evaluate(() => window.localStorage.getItem('securepress.audit-lab.v1')),

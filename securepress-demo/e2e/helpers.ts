@@ -3,7 +3,7 @@ import { expect, type Page } from '@playwright/test'
 export async function prepareSource(page: Page) {
   await page.goto('/#/setup')
   const setupHeading = page.getByRole('heading', {
-    name: 'Connect a local WordPress source',
+    name: 'Choose your WordPress source',
   })
 
   if (await setupHeading.count()) {
@@ -14,7 +14,7 @@ export async function prepareSource(page: Page) {
   }
 
   await expect(
-    page.getByRole('heading', { name: 'Assess workspace posture' }),
+    page.getByRole('heading', { name: 'Build the workspace assessment' }),
   ).toBeVisible()
 }
 

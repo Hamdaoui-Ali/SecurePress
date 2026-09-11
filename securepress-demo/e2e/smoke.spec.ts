@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test'
+import { prepareSource } from './helpers'
 
 test('requires a verified local source before opening the workspace', async ({ page }) => {
   await page.goto('/')
   await expect(
-    page.getByRole('heading', { name: 'Connect a local WordPress source' }),
+    page.getByRole('heading', { name: 'Choose your WordPress source' }),
   ).toBeVisible()
 
   await page.getByRole('button', {
@@ -12,7 +13,7 @@ test('requires a verified local source before opening the workspace', async ({ p
   await page.getByRole('button', { name: 'Verify source' }).click()
 
   await expect(
-    page.getByRole('heading', { name: 'Assess workspace posture' }),
+    page.getByRole('heading', { name: 'Build the workspace assessment' }),
   ).toBeVisible()
 })
 
@@ -80,13 +81,22 @@ test('validates the local campaign and its evidence boundary', async ({ page }) 
 })
 
 test('downloads the final report as a PDF', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('button', {
-    name: 'Use prepared LNET TELCO package',
-  }).click()
-  await page.getByRole('button', { name: 'Verify source' }).click()
+  await prepareSource(page)
+
+  await page.goto('/#/inventaire')
+  await page.locator('[data-guide-id="run-inventory"]').click()
+  await expect(page.getByText('Workspace ready', { exact: true })).toBeVisible({
+    timeout: 15_000,
+  })
+  await page.goto('/#/audit')
+  await page.locator('[data-guide-id="run-audit"]').click()
+  await expect(page.getByText('Finding analysis completed', { exact: true })).toBeVisible()
+  await page.goto('/#/validation')
+  await page.locator('[data-guide-id="run-validation"]').click()
   await expect(
-    page.getByRole('heading', { name: 'Assess workspace posture' }),
+    page
+      .locator('.validation-result-banner')
+      .getByText('Control campaign completed \u00b7 target verification pending', { exact: true }),
   ).toBeVisible()
 
   await page.goto('/#/rapport')

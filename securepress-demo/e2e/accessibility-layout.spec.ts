@@ -6,7 +6,7 @@ async function prepareAudit(page: Parameters<typeof test>[0]['page']) {
   await page.locator('[data-guide-id="run-inventory"]').click()
   await expect(page.getByText('Workspace ready')).toBeVisible({ timeout: 15_000 })
 
-  await page.getByRole('link', { name: 'Finding analysis' }).click()
+  await page.getByRole('link', { name: 'Finding analysis', exact: true }).click()
   await page.locator('[data-guide-id="run-audit"]').click()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
@@ -69,9 +69,11 @@ test('stays readable at three viewports and communicates states with text', asyn
     expect(dimensions.documentWidth).toBeLessThanOrEqual(viewport.width)
     expect(dimensions.bodyWidth).toBeLessThanOrEqual(viewport.width)
 
+    await expect(page.getByText('Source verified')).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Start discovery' })).toBeVisible()
     await expect(
       page.getByRole('img', { name: /Security posture score: 42 out of 100/i }),
-    ).toBeVisible()
+    ).toHaveCount(0)
     await expect(page.getByText('LNET TELCO workspace')).toBeVisible()
     await expect(page.getByRole('button', { name: /Start guided walkthrough/i })).toBeVisible()
     await expect(

@@ -90,6 +90,7 @@ export function OperationProgress() {
       <p className="operation-progress-message">{operation.message}</p>
 
       <div
+        key={operation.id}
         className="operation-progress-track"
         role="progressbar"
         aria-label={`${title} progress`}

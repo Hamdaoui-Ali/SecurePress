@@ -59,7 +59,7 @@ describe('workspace source adapter', () => {
       pluginCount: 17,
       themeCount: 4,
       verifiedAt: '2026-09-11T10:00:00.000Z',
-      message: 'Prepared local source package verified',
+      message: 'Source verified. No website was contacted.',
     })
   })
 

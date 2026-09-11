@@ -21,12 +21,18 @@ test('runs the eight guided workspace steps through the provenance report', asyn
   await expect(guide.getByText('Step 2 of 8')).toBeVisible()
   await page.locator('[data-guide-id="run-inventory"]').click()
   await expect(page.getByText('Workspace ready')).toBeVisible({ timeout: 15_000 })
+  await expect(
+    page.getByRole('link', { name: 'Continue to finding analysis' }),
+  ).toBeVisible()
 
   await guide.getByRole('button', { name: 'Next' }).click()
   await expect(guide.getByText('Step 3 of 8')).toBeVisible()
   await page.locator('[data-guide-id="run-audit"]').click()
   await expect(
     page.getByText('Finding analysis completed', { exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Continue to corrections' }),
   ).toBeVisible()
 
   await guide.getByRole('button', { name: 'Next' }).click()
@@ -50,6 +56,7 @@ test('runs the eight guided workspace steps through the provenance report', asyn
       { exact: true },
     ),
   ).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Review report' })).toBeVisible()
   await guide.getByRole('button', { name: 'Next' }).click()
 
   await expect(guide.getByText('Step 7 of 8')).toBeVisible()
@@ -79,7 +86,7 @@ test('confirms the workspace reset and returns to source setup', async ({ page }
 
   await expect(page).toHaveURL(/#\/setup$/)
   await expect(
-    page.getByRole('heading', { name: 'Connect a local WordPress source' }),
+    page.getByRole('heading', { name: 'Choose your WordPress source' }),
   ).toBeVisible()
   const stored = await page.evaluate(() => localStorage.getItem('securepress.audit-lab.v1'))
   expect(stored).toBeNull()

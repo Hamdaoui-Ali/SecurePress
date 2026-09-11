@@ -24,8 +24,8 @@ export const guidedStepDetails: Record<GuidedStep, GuidedStepDetail> = {
   overview: {
     route: '/',
     targetId: 'overview',
-    title: 'Review workspace posture',
-    description: `Start from the indexed ${project.name} evidence and the calculated 42/100 posture.`,
+    title: 'Start the workspace assessment',
+    description: `Start from the verified ${project.name} source and follow the next evidence-producing operation.`,
   },
   'run-inventory': {
     route: '/inventaire',

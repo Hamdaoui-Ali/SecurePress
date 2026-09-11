@@ -116,7 +116,7 @@ test('affiche un overlay non bloquant et avance d’une étape', async () => {
   const overlay = screen.getByRole('region', { name: /guided workspace workflow/i })
   expect(within(overlay).getByText('Step 1 of 8')).toBeVisible()
   expect(
-    within(overlay).getByText(/Start from the indexed LNET TELCO evidence/i),
+    within(overlay).getByText(/Start from the verified LNET TELCO source/i),
   ).toBeVisible()
   expect(within(overlay).getByRole('button', { name: 'Previous' })).toBeDisabled()
 

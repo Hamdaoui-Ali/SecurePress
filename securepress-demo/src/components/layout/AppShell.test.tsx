@@ -125,6 +125,27 @@ test('shows the latest completed operation and its compact recent activity', asy
   )
 })
 
+test('remounts the progress track when a new operation replaces a completed one', async () => {
+  const user = userEvent.setup()
+  renderShell()
+
+  await user.click(screen.getByRole('button', { name: 'Run discovery' }))
+  await waitFor(() => {
+    expect(screen.getByText('Discovery run completed · 22 components indexed')).toBeVisible()
+  })
+
+  const discoveryProgress = screen.getByRole('progressbar', {
+    name: 'Discovery run progress',
+  })
+
+  await user.click(screen.getByRole('button', { name: 'Run analysis' }))
+
+  const analysisProgress = await screen.findByRole('progressbar', {
+    name: 'Finding analysis progress',
+  })
+  expect(analysisProgress).not.toBe(discoveryProgress)
+})
+
 test('shows a failed operation without creating independent shell state', async () => {
   const user = userEvent.setup()
   renderShell()
