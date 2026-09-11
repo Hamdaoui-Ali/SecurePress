@@ -96,7 +96,7 @@ describe('simulation engine', () => {
     const afterInventory = await engine.runInventory(createInitialAssessment())
 
     expectPhasedProgress(progressUpdates, [
-      'Read TELCO source package',
+      'Read LNET TELCO source package',
       'Index WordPress core',
       'Inventory themes',
       'Inventory plugins',
@@ -178,7 +178,7 @@ describe('simulation engine', () => {
     const afterDiscoveryRerun = await engine.runInventory(remediated)
 
     expectPhasedProgress(progressUpdates, [
-      'Read TELCO source package',
+      'Read LNET TELCO source package',
       'Index WordPress core',
       'Inventory themes',
       'Inventory plugins',
@@ -211,7 +211,7 @@ describe('simulation engine', () => {
     expect(afterAnalysisRerun.timeline).toEqual([])
   })
 
-  test('emits controls phases for a TELCO hardening check and the validation campaign', async () => {
+  test('emits controls phases for an LNET TELCO hardening check and the validation campaign', async () => {
     const setupEngine = createEngine()
     const inventory = await setupEngine.runInventory(createInitialAssessment())
     const audit = await setupEngine.runStaticAudit(inventory)

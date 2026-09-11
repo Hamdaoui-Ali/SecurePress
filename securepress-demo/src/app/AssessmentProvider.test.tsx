@@ -114,7 +114,7 @@ test('exposes a running discovery operation and persists its completed metadata'
   await waitFor(() => {
     expect(screen.getByTestId('busy')).toHaveTextContent('true')
     expect(screen.getByTestId('progress')).toHaveTextContent(
-      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
     )
     expect(
       readJson<{
@@ -128,7 +128,7 @@ test('exposes a running discovery operation and persists its completed metadata'
       kind: 'discovery',
       status: 'running',
       currentStep: expect.stringMatching(
-        /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
       ),
       processed: 0,
       total: 22,
@@ -186,7 +186,7 @@ test('reruns completed discovery with progress and records a new completed opera
   await waitFor(() => {
     expect(screen.getByTestId('busy')).toHaveTextContent('true')
     expect(screen.getByTestId('progress')).toHaveTextContent(
-      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
     )
   }, { timeout: 5_000 })
   await waitFor(() => {

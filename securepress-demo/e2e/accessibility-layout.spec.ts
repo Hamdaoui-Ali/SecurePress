@@ -71,7 +71,7 @@ test('reste lisible aux trois viewports et transmet les états par du texte', as
     await expect(
       page.getByRole('img', { name: /Security posture score: 42 out of 100/i }),
     ).toBeVisible()
-    await expect(page.getByText('TELCO workspace')).toBeVisible()
+    await expect(page.getByText('LNET TELCO workspace')).toBeVisible()
     await expect(page.getByRole('button', { name: /Démarrer le parcours guidé/i })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Workspace workflow' })).toBeVisible()
 

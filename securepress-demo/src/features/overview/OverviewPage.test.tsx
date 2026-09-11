@@ -22,7 +22,7 @@ test('presents deterministic workspace posture and next operational action', () 
 
   expect(screen.getByText('Indexed components')).toBeVisible()
   expect(screen.getByText('22')).toBeVisible()
-  expect(screen.getByText('TELCO source package')).toBeVisible()
+  expect(screen.getByText('LNET TELCO source package')).toBeVisible()
   expect(screen.getByText('Findings available')).toBeVisible()
   expect(
     screen.getByRole('img', { name: /Security posture score: 42 out of 100/i }),

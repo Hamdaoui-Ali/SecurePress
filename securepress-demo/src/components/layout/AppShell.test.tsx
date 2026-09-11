@@ -45,7 +45,7 @@ test('shows truthful workspace context and an empty operational activity state',
 
   expect(
     screen.getByRole('complementary', { name: 'Workspace context' }),
-  ).toHaveTextContent('TELCO workspace')
+  ).toHaveTextContent('LNET TELCO workspace')
   expect(screen.getByText('Source package · indexed')).toBeVisible()
   expect(screen.getByText('Target verification required')).toBeVisible()
   expect(screen.getByText('No recent operations')).toBeVisible()
@@ -73,7 +73,7 @@ test('renders provider-backed discovery progress while an operation is running',
   expect(screen.getByText('Discovery run in progress')).toBeVisible()
   expect(
     screen.getByText(
-      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
     ),
   ).toBeVisible()
   expect(screen.getByText(/of 22 processed/)).toBeVisible()

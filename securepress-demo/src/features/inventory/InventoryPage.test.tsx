@@ -29,7 +29,7 @@ test('runs discovery with phase progress and waits to expose the indexed table',
     expect(discoveryButton).toHaveAttribute('aria-busy', 'true')
     expect(liveProgress).toBeVisible()
     expect(liveProgress).toHaveTextContent(
-      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
     )
   }, { timeout: 10_000 })
 
@@ -62,7 +62,7 @@ test('keeps indexed components available while a repeated discovery shows progre
     expect(discoveryButton).toHaveAttribute('aria-busy', 'true')
     expect(liveProgress).toBeVisible()
     expect(liveProgress).toHaveTextContent(
-      /Read TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
     )
   }, { timeout: 10_000 })
   expect(screen.getByRole('table')).toBeVisible()

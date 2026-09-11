@@ -164,7 +164,7 @@ test('states indexed evidence, generated change sets, and pending target verific
   ).toBeVisible()
   expect(
     screen.getByText(
-      'Constats issus du package source TELCO indexé ; change sets générés par le workspace ; vérification cible en attente.',
+      'Constats issus du package source LNET TELCO indexé ; change sets générés par le workspace ; vérification cible en attente.',
     ),
   ).toBeVisible()
   expect(

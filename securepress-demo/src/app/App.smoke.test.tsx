@@ -10,7 +10,7 @@ test('keeps the workspace context and removes the legacy disclaimer', () => {
   ).toBeInTheDocument()
   expect(
     screen.getByRole('complementary', { name: 'Workspace context' }),
-  ).toHaveTextContent('TELCO workspace')
+  ).toHaveTextContent('LNET TELCO workspace')
   expect(container).not.toHaveTextContent(
     /Aucune configuration r.elle n.?a .t. modifi.e/i,
   )
