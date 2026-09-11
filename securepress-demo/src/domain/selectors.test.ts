@@ -2,10 +2,13 @@ import { describe, expect, test } from 'vitest'
 import { telcoScenario } from '../data/scenario'
 import { createInitialAssessment, type AssessmentState } from './models'
 import {
+  isControlCampaignComplete,
   selectAppliedCount,
+  selectNextWorkflowAction,
   selectPostureScore,
   selectRemainingRiskPoints,
   selectSeverityCounts,
+  selectWorkflowStep,
   selectWorkflowProgress,
 } from './selectors'
 
@@ -54,6 +57,81 @@ describe('assessment selectors', () => {
       completedStages: 4,
       totalStages: 6,
       percentage: 67,
+    })
+  })
+
+  test('starts the workflow with discovery as the next action and later steps locked', () => {
+    const state = createInitialAssessment()
+
+    expect(selectNextWorkflowAction(state)).toEqual({
+      label: 'Start discovery',
+      to: '/inventaire',
+    })
+    expect(selectWorkflowStep(state, 'audit')).toMatchObject({
+      status: 'locked',
+      reason: 'Complete discovery first',
+    })
+  })
+
+  test('unlocks analysis after discovery and corrections after analysis', () => {
+    const initial = createInitialAssessment()
+    const inventoryState = {
+      ...initial,
+      source: { ...initial.source, status: 'ready' as const },
+      inventoryCompleted: true,
+      stage: 'inventory' as const,
+    }
+    const auditState = {
+      ...inventoryState,
+      auditCompleted: true,
+      stage: 'audit' as const,
+    }
+
+    expect(selectWorkflowStep(inventoryState, 'audit')).toMatchObject({
+      status: 'available',
+    })
+    expect(selectNextWorkflowAction(inventoryState)).toEqual({
+      label: 'Analyze findings',
+      to: '/audit',
+    })
+    expect(selectWorkflowStep(auditState, 'remediation')).toMatchObject({
+      status: 'available',
+    })
+    expect(selectNextWorkflowAction(auditState)).toEqual({
+      label: 'Review change sets',
+      to: '/remediation',
+    })
+  })
+
+  test('moves from corrections to controls and then to the report', () => {
+    const initial = createInitialAssessment()
+    const state = {
+      ...initial,
+      source: { ...initial.source, status: 'ready' as const },
+      inventoryCompleted: true,
+      auditCompleted: true,
+      stage: 'remediation' as const,
+      appliedFindingIds: ['F-001' as const],
+    }
+    const campaignState = {
+      ...state,
+      stage: 'validation' as const,
+      validationResults: {
+        'external-dynamic-retest': 'dynamic_retest_not_executed' as const,
+      },
+    }
+
+    expect(selectNextWorkflowAction(state)).toEqual({
+      label: 'Run controls',
+      to: '/validation',
+    })
+    expect(selectNextWorkflowAction(campaignState)).toEqual({
+      label: 'Review report',
+      to: '/rapport',
+    })
+    expect(isControlCampaignComplete(campaignState)).toBe(true)
+    expect(selectWorkflowStep(campaignState, 'report')).toMatchObject({
+      status: 'current',
     })
   })
 })

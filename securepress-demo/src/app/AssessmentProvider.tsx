@@ -41,9 +41,26 @@ export interface SourceDraft {
   directoryHandle: DirectoryHandleLike | null
 }
 
+export type SourceCheckStepId =
+  | 'access'
+  | 'wordpress-files'
+  | 'version'
+  | 'extensions'
+  | 'verified'
+
+export type SourceCheckStepStatus = 'pending' | 'running' | 'complete'
+
+export interface SourceCheckStep {
+  id: SourceCheckStepId
+  label: string
+  status: SourceCheckStepStatus
+}
+
 export interface SourceCheckProgress {
   percent: number
   message: string
+  activeStep: SourceCheckStepId | null
+  steps: SourceCheckStep[]
 }
 
 export interface AssessmentContextValue {
@@ -127,6 +144,45 @@ function newestFirstHistory(
 function pause(delayMs: number): Promise<void> {
   if (delayMs <= 0) return Promise.resolve()
   return new Promise((resolve) => window.setTimeout(resolve, delayMs))
+}
+
+const sourceCheckStepDefinitions: Array<{
+  id: SourceCheckStepId
+  label: string
+}> = [
+  { id: 'access', label: 'Checking folder access and path existence' },
+  { id: 'wordpress-files', label: 'Reading WordPress files' },
+  { id: 'version', label: 'Detecting WordPress version' },
+  { id: 'extensions', label: 'Reading plugins and themes' },
+  { id: 'verified', label: 'Source verified' },
+]
+
+function createSourceCheckProgress(
+  activeIndex: number | null,
+  percent: number,
+  message: string,
+): SourceCheckProgress {
+  const steps = sourceCheckStepDefinitions.map((step, index) => ({
+    ...step,
+    status:
+      activeIndex === null
+        ? 'complete'
+        : index < activeIndex
+          ? 'complete'
+          : index === activeIndex
+            ? 'running'
+            : 'pending',
+  })) satisfies SourceCheckStep[]
+
+  return {
+    percent,
+    message,
+    activeStep:
+      activeIndex === null
+        ? null
+        : sourceCheckStepDefinitions[activeIndex]?.id ?? null,
+    steps,
+  }
 }
 
 export function AssessmentProvider({
@@ -234,20 +290,41 @@ export function AssessmentProvider({
       draft.pathLabel.trim() === '' ||
       (draft.mode === 'folder' && draft.directoryHandle === null)
     ) {
-      setSourceCheckProgress({
-        percent: 0,
-        message: 'Select a local folder or use the prepared package before verifying.',
-      })
+      setSourceCheckProgress(
+        createSourceCheckProgress(
+          null,
+          0,
+          'Select a local folder or use the prepared package before verifying.',
+        ),
+      )
       return false
     }
 
     sourceCheckingRef.current = true
     setSourceChecking(true)
-    setSourceCheckProgress({ percent: 10, message: 'Checking local source access' })
+    setSourceCheckProgress(
+      createSourceCheckProgress(
+        0,
+        10,
+        'Checking folder access and path existence',
+      ),
+    )
 
     try {
       await pause(delayMs)
-      setSourceCheckProgress({ percent: 45, message: 'Reading WordPress source markers' })
+      setSourceCheckProgress(
+        createSourceCheckProgress(1, 30, 'Reading WordPress files'),
+      )
+      await pause(delayMs)
+
+      setSourceCheckProgress(
+        createSourceCheckProgress(2, 50, 'Detecting WordPress version'),
+      )
+      await pause(delayMs)
+
+      setSourceCheckProgress(
+        createSourceCheckProgress(3, 75, 'Reading plugins and themes'),
+      )
       await pause(delayMs)
 
       const verifiedSource =
@@ -256,11 +333,13 @@ export function AssessmentProvider({
           : await inspectSelectedDirectory(draft.directoryHandle!, draft.pathLabel, now())
 
       setSourceCheckProgress({
-        percent: verifiedSource.status === 'ready' ? 100 : 0,
-        message:
+        ...createSourceCheckProgress(
+          verifiedSource.status === 'ready' ? null : 3,
+          verifiedSource.status === 'ready' ? 100 : 0,
           verifiedSource.status === 'ready'
-            ? 'Source ready'
+            ? 'Source verified. No website was contacted.'
             : verifiedSource.message,
+        ),
       })
 
       if (verifiedSource.status !== 'ready') {
@@ -290,7 +369,7 @@ export function AssessmentProvider({
         message: 'The source could not be inspected in this browser session.',
         verifiedAt: null,
       }
-      setSourceCheckProgress({ percent: 0, message: failedSource.message })
+      setSourceCheckProgress(createSourceCheckProgress(null, 0, failedSource.message))
       commitAssessmentTransition({
         ...stateRef.current,
         source: failedSource,

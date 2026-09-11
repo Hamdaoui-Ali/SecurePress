@@ -10,6 +10,7 @@ function AssessmentProbe() {
     activeOperation,
     busy,
     progress,
+    sourceCheckProgress,
     lastRun,
     operationHistory,
     runInventory,
@@ -22,6 +23,8 @@ function AssessmentProbe() {
     previousGuidedStep,
     exitGuidedDemo,
     resetDemo,
+    usePreparedSource,
+    verifySelectedSource,
   } = useAssessment()
 
   return (
@@ -30,6 +33,9 @@ function AssessmentProbe() {
       <output data-testid="guided-step">{state.guidedStep ?? 'none'}</output>
       <output data-testid="busy">{String(busy)}</output>
       <output data-testid="progress">{progress?.message ?? 'idle'}</output>
+      <output data-testid="source-check-progress">
+        {sourceCheckProgress ? JSON.stringify(sourceCheckProgress) : 'idle'}
+      </output>
       <output data-testid="active-operation">
         {activeOperation ? JSON.stringify(activeOperation) : 'idle'}
       </output>
@@ -71,6 +77,12 @@ function AssessmentProbe() {
       <button type="button" onClick={resetDemo}>
         reset
       </button>
+      <button type="button" onClick={usePreparedSource}>
+        use prepared source
+      </button>
+      <button type="button" onClick={() => void verifySelectedSource()}>
+        verify source
+      </button>
     </div>
   )
 }
@@ -94,6 +106,40 @@ async function waitForStage(stage: string) {
 
 beforeEach(() => {
   localStorage.clear()
+})
+
+test('exposes an ordered source verification checklist while preparing the package', async () => {
+  const user = userEvent.setup()
+  render(
+    <AssessmentProvider delayMs={500}>
+      <AssessmentProbe />
+    </AssessmentProvider>,
+  )
+
+  await user.click(screen.getByRole('button', { name: 'use prepared source' }))
+  await user.click(screen.getByRole('button', { name: 'verify source' }))
+
+  await waitFor(() => {
+    const progress = readJson<{
+      message: string
+      steps: Array<{ label: string; status: string }>
+    }>('source-check-progress')
+    expect(progress.message).toBe('Checking folder access and path existence')
+    expect(progress.steps.map((step) => step.label)).toEqual([
+      'Checking folder access and path existence',
+      'Reading WordPress files',
+      'Detecting WordPress version',
+      'Reading plugins and themes',
+      'Source verified',
+    ])
+    expect(progress.steps.map((step) => step.status)).toEqual([
+      'running',
+      'pending',
+      'pending',
+      'pending',
+      'pending',
+    ])
+  })
 })
 
 test('exposes a running discovery operation and persists its completed metadata', async () => {
