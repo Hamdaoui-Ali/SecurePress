@@ -9,10 +9,13 @@ import {
 } from 'react'
 import {
   createInitialAssessment,
+  type DirectoryHandleLike,
   type AssessmentState,
   type Finding,
   type OperationKind,
   type OperationRun,
+  type SourceMode,
+  type WorkspaceSource,
 } from '../domain/models'
 import { telcoScenario } from '../data/scenario'
 import {
@@ -25,9 +28,30 @@ import {
   type ProgressUpdate,
   type SimulationEngine,
 } from '../services/simulation-engine'
+import {
+  getPreparedSource,
+  inspectSelectedDirectory,
+} from '../services/source-adapter'
+
+export const PREPARED_SOURCE_PATH = 'C:\\SecurePress\\targets\\lnet-telco-wordpress'
+
+export interface SourceDraft {
+  mode: SourceMode
+  pathLabel: string
+  directoryHandle: DirectoryHandleLike | null
+}
+
+export interface SourceCheckProgress {
+  percent: number
+  message: string
+}
 
 export interface AssessmentContextValue {
   state: AssessmentState
+  source: WorkspaceSource
+  sourceDraft: SourceDraft | null
+  sourceChecking: boolean
+  sourceCheckProgress: SourceCheckProgress | null
   busy: boolean
   progress: ProgressUpdate | null
   activeOperation: OperationRun | null
@@ -42,6 +66,11 @@ export interface AssessmentContextValue {
   nextGuidedStep(expectedStep?: number): void
   previousGuidedStep(): void
   exitGuidedDemo(): void
+  setSourcePath(pathLabel: string): void
+  selectLocalFolder(handle: DirectoryHandleLike): void
+  usePreparedSource(): void
+  verifySelectedSource(): Promise<boolean>
+  clearSource(): void
   resetDemo(): void
 }
 
@@ -95,6 +124,11 @@ function newestFirstHistory(
     .slice(0, 20)
 }
 
+function pause(delayMs: number): Promise<void> {
+  if (delayMs <= 0) return Promise.resolve()
+  return new Promise((resolve) => window.setTimeout(resolve, delayMs))
+}
+
 export function AssessmentProvider({
   children,
   delayMs = 120,
@@ -103,12 +137,18 @@ export function AssessmentProvider({
   const [state, setState] = useState<AssessmentState>(() => {
     return loadAssessment().state
   })
+  const [sourceDraft, setSourceDraft] = useState<SourceDraft | null>(null)
+  const [sourceChecking, setSourceChecking] = useState(false)
+  const [sourceCheckProgress, setSourceCheckProgress] =
+    useState<SourceCheckProgress | null>(null)
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<ProgressUpdate | null>(null)
   const [activeOperation, setActiveOperation] = useState<OperationRun | null>(
     null,
   )
   const stateRef = useRef(state)
+  const sourceDraftRef = useRef<SourceDraft | null>(sourceDraft)
+  const sourceCheckingRef = useRef(false)
   const busyRef = useRef(false)
   const activeOperationRef = useRef<OperationRun | null>(null)
   const progressRef = useRef<ProgressUpdate | null>(null)
@@ -116,6 +156,7 @@ export function AssessmentProvider({
   const engineRef = useRef<SimulationEngine | null>(null)
 
   stateRef.current = state
+  sourceDraftRef.current = sourceDraft
 
   if (engineRef.current === null) {
     engineRef.current = createSimulationEngine({
@@ -164,6 +205,102 @@ export function AssessmentProvider({
     },
     [clearTransientOperationState],
   )
+
+  const setSourcePath = useCallback((pathLabel: string) => {
+    setSourceDraft({ mode: 'folder', pathLabel, directoryHandle: null })
+    setSourceCheckProgress(null)
+  }, [])
+
+  const selectLocalFolder = useCallback((handle: DirectoryHandleLike) => {
+    setSourceDraft({ mode: 'folder', pathLabel: handle.name, directoryHandle: handle })
+    setSourceCheckProgress(null)
+  }, [])
+
+  const usePreparedSource = useCallback(() => {
+    setSourceDraft({
+      mode: 'prepared',
+      pathLabel: PREPARED_SOURCE_PATH,
+      directoryHandle: null,
+    })
+    setSourceCheckProgress(null)
+  }, [])
+
+  const verifySelectedSource = useCallback(async () => {
+    if (busyRef.current || sourceCheckingRef.current) return false
+
+    const draft = sourceDraftRef.current
+    if (
+      draft === null ||
+      draft.pathLabel.trim() === '' ||
+      (draft.mode === 'folder' && draft.directoryHandle === null)
+    ) {
+      setSourceCheckProgress({
+        percent: 0,
+        message: 'Select a local folder or use the prepared package before verifying.',
+      })
+      return false
+    }
+
+    sourceCheckingRef.current = true
+    setSourceChecking(true)
+    setSourceCheckProgress({ percent: 10, message: 'Checking local source access' })
+
+    try {
+      await pause(delayMs)
+      setSourceCheckProgress({ percent: 45, message: 'Reading WordPress source markers' })
+      await pause(delayMs)
+
+      const verifiedSource =
+        draft.mode === 'prepared'
+          ? getPreparedSource(draft.pathLabel, now())
+          : await inspectSelectedDirectory(draft.directoryHandle!, draft.pathLabel, now())
+
+      setSourceCheckProgress({
+        percent: verifiedSource.status === 'ready' ? 100 : 0,
+        message:
+          verifiedSource.status === 'ready'
+            ? 'Source ready'
+            : verifiedSource.message,
+      })
+
+      if (verifiedSource.status !== 'ready') {
+        commitAssessmentTransition({
+          ...stateRef.current,
+          source: verifiedSource,
+        })
+        return false
+      }
+
+      commitAssessmentTransition(
+        {
+          ...createInitialAssessment(),
+          source: verifiedSource,
+        },
+        { resetTransientOperation: true },
+      )
+      setSourceDraft(null)
+      return true
+    } catch {
+      const failedSource: WorkspaceSource = {
+        ...stateRef.current.source,
+        status: 'invalid',
+        mode: draft.mode,
+        pathLabel: draft.pathLabel,
+        displayName: draft.pathLabel.split(/[\\/]/).pop() ?? draft.pathLabel,
+        message: 'The source could not be inspected in this browser session.',
+        verifiedAt: null,
+      }
+      setSourceCheckProgress({ percent: 0, message: failedSource.message })
+      commitAssessmentTransition({
+        ...stateRef.current,
+        source: failedSource,
+      })
+      return false
+    } finally {
+      sourceCheckingRef.current = false
+      setSourceChecking(false)
+    }
+  }, [commitAssessmentTransition, delayMs, now])
 
   const runOperation = useCallback(
     async (
@@ -340,6 +477,7 @@ export function AssessmentProvider({
 
     const nextState = {
       ...createInitialAssessment(),
+      source: stateRef.current.source,
       guidedStep: 0,
     }
     commitAssessmentTransition(nextState, {
@@ -381,10 +519,14 @@ export function AssessmentProvider({
     commitAssessmentTransition(nextState)
   }, [commitAssessmentTransition])
 
-  const resetDemo = useCallback(() => {
+  const clearSource = useCallback(() => {
     if (busyRef.current) return
 
     const nextState = createInitialAssessment()
+    setSourceDraft(null)
+    setSourceCheckProgress(null)
+    setSourceChecking(false)
+    sourceCheckingRef.current = false
     commitAssessmentTransition(nextState, {
       clearStoredState: true,
       persist: false,
@@ -392,9 +534,15 @@ export function AssessmentProvider({
     })
   }, [commitAssessmentTransition])
 
+  const resetDemo = clearSource
+
   const value = useMemo<AssessmentContextValue>(
     () => ({
       state,
+      source: state.source,
+      sourceDraft,
+      sourceChecking,
+      sourceCheckProgress,
       busy,
       progress,
       activeOperation,
@@ -409,10 +557,18 @@ export function AssessmentProvider({
       nextGuidedStep,
       previousGuidedStep,
       exitGuidedDemo,
+      setSourcePath,
+      selectLocalFolder,
+      usePreparedSource,
+      verifySelectedSource,
+      clearSource,
       resetDemo,
     }),
     [
       state,
+      sourceDraft,
+      sourceChecking,
+      sourceCheckProgress,
       busy,
       progress,
       activeOperation,
@@ -425,6 +581,11 @@ export function AssessmentProvider({
       nextGuidedStep,
       previousGuidedStep,
       exitGuidedDemo,
+      setSourcePath,
+      selectLocalFolder,
+      usePreparedSource,
+      verifySelectedSource,
+      clearSource,
       resetDemo,
     ],
   )

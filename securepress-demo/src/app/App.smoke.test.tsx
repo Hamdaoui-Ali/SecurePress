@@ -2,16 +2,14 @@ import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import App from '../App'
 
-test('keeps the workspace context and removes the legacy disclaimer', () => {
+test('starts with the local source setup gate', () => {
   const { container } = render(<App />)
 
   expect(
-    screen.getByRole('heading', { name: /SecurePress Operations/i }),
+    screen.getByRole('heading', { name: 'Connect a local WordPress source' }),
   ).toBeInTheDocument()
   expect(
-    screen.getByRole('complementary', { name: 'Workspace context' }),
-  ).toHaveTextContent('LNET TELCO workspace')
-  expect(container).not.toHaveTextContent(
-    /Aucune configuration r.elle n.?a .t. modifi.e/i,
-  )
+    screen.getByRole('button', { name: 'Verify source' }),
+  ).toBeInTheDocument()
+  expect(container).not.toHaveTextContent(/Aucune configuration r.elle/i)
 })

@@ -96,7 +96,7 @@ export function ResetDemoDialog({
           <button
             type="button"
             className="icon-button"
-            aria-label="Fermer"
+            aria-label="Close"
             onClick={onCancel}
           >
             <X aria-hidden="true" size={18} />
@@ -106,10 +106,10 @@ export function ResetDemoDialog({
         <p id={descriptionId}>{description}</p>
         <div className="reset-dialog-actions">
           <Button ref={cancelButtonRef} variant="ghost" onClick={onCancel}>
-            Annuler
+            Cancel
           </Button>
           <Button variant="danger" disabled={busy} onClick={onConfirm}>
-            Confirmer la réinitialisation
+            Confirm reset
           </Button>
         </div>
       </section>

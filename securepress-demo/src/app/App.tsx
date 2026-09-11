@@ -17,7 +17,7 @@ function AppContent() {
         onReset={() => {
           if (busy) return
           resetDemo()
-          navigate('/')
+          navigate('/setup')
         }}
         onStartGuidedDemo={() => setGuidedStartOpen(true)}
       />

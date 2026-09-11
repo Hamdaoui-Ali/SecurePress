@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { HashRouter } from 'react-router'
 import { beforeEach, expect, test, vi } from 'vitest'
 import { AssessmentProvider, useAssessment } from '../../app/AssessmentProvider'
+import { createInitialAssessment } from '../../domain/models'
+import { saveAssessment } from '../../services/storage'
 import { AppShell } from './AppShell'
 
 function OperationControls() {
@@ -21,6 +23,23 @@ function OperationControls() {
 }
 
 function renderShell(delayMs = 0) {
+  const initial = createInitialAssessment()
+  saveAssessment({
+    ...initial,
+    source: {
+      ...initial.source,
+      status: 'ready',
+      mode: 'prepared',
+      pathLabel: 'C:\\SecurePress\\targets\\lnet-telco-wordpress',
+      displayName: 'LNET TELCO WordPress source package',
+      wordpressVersion: '6.4.3',
+      fileMarkerCount: 4,
+      pluginCount: 17,
+      themeCount: 4,
+      verifiedAt: '2026-09-11T10:00:00.000Z',
+      message: 'Prepared local source package verified',
+    },
+  })
   const onReset = vi.fn()
   render(
     <AssessmentProvider delayMs={delayMs}>
@@ -46,7 +65,8 @@ test('shows truthful workspace context and an empty operational activity state',
   expect(
     screen.getByRole('complementary', { name: 'Workspace context' }),
   ).toHaveTextContent('LNET TELCO workspace')
-  expect(screen.getByText('Source package · indexed')).toBeVisible()
+  expect(screen.getByText('LNET TELCO WordPress source package')).toBeVisible()
+  expect(screen.getByText('WordPress 6.4.3')).toBeVisible()
   expect(screen.getByText('Target verification required')).toBeVisible()
   expect(screen.getByText('No recent operations')).toBeVisible()
   expect(
