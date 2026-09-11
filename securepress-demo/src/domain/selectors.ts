@@ -80,17 +80,17 @@ function isWorkflowStepUnlocked(
 function workflowStepLockReason(stage: WorkflowStage): string | undefined {
   switch (stage) {
     case 'overview':
-      return 'Verify a source first'
+      return 'source verification is complete'
     case 'inventory':
-      return 'Verify a source first'
+      return 'source verification is complete'
     case 'audit':
-      return 'Complete discovery first'
+      return 'discovery is complete'
     case 'remediation':
-      return 'Complete finding analysis first'
+      return 'finding analysis is complete'
     case 'validation':
-      return 'Complete finding analysis first'
+      return 'finding analysis is complete'
     case 'report':
-      return 'Run the control campaign first'
+      return 'the control campaign is complete'
   }
 }
 

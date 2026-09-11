@@ -1,5 +1,5 @@
 import type { AssessmentState, WorkflowStage } from '../../domain/models'
-import { selectWorkflowProgress } from '../../domain/selectors'
+import { selectWorkflowStep } from '../../domain/selectors'
 
 interface WorkflowStepperProps {
   state: AssessmentState
@@ -15,29 +15,28 @@ const stages: Array<{ id: WorkflowStage; label: string }> = [
 ]
 
 export function WorkflowStepper({ state }: WorkflowStepperProps) {
-  const progress = selectWorkflowProgress(state)
-
   return (
     <ol className="workflow-stepper" aria-label="Workspace workflow progress">
       {stages.map((stage, index) => {
-        const isCurrent = stage.id === progress.currentStage
-        const isDone = index < progress.completedStages - 1
+        const step = selectWorkflowStep(state, stage.id)
+        const statusLabel =
+          step.status === 'current'
+            ? 'Current'
+            : step.status === 'completed'
+              ? 'Completed'
+              : step.status === 'available'
+                ? 'Next'
+                : `Locked until ${step.reason?.toLowerCase() ?? 'the previous step is complete'}`
 
         return (
           <li
             key={stage.id}
-            className={
-              isCurrent
-                ? 'workflow-step workflow-step-current'
-                : isDone
-                  ? 'workflow-step workflow-step-done'
-                  : 'workflow-step'
-            }
+            className={`workflow-step workflow-step-${step.status}`}
           >
             <span className="workflow-step-marker">{index + 1}</span>
             <span>
               <strong>{stage.label}</strong>
-              <small>{isCurrent ? 'Current' : isDone ? 'Completed' : 'Pending'}</small>
+              <small>{statusLabel}</small>
             </span>
           </li>
         )

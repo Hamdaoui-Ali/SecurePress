@@ -1,6 +1,7 @@
 import {
   ClipboardCheck,
   FileSearch,
+  LockKeyhole,
   LayoutDashboard,
   ListChecks,
   Shield,
@@ -9,26 +10,30 @@ import {
 import { NavLink } from 'react-router'
 import { Button } from '../ui/Button'
 import { project } from '../../data/project'
+import type { AssessmentState, WorkflowStage } from '../../domain/models'
+import { selectWorkflowStep } from '../../domain/selectors'
 
 interface SidebarProps {
   busy: boolean
+  state: AssessmentState
   onStartGuidedDemo: () => void
 }
 
 const navigation = [
-  { to: '/', label: 'Overview', icon: LayoutDashboard },
-  { to: '/inventaire', label: 'Discovery', icon: ListChecks },
-  { to: '/audit', label: 'Finding analysis', icon: FileSearch },
-  { to: '/remediation', label: 'Change sets', icon: Shield },
+  { to: '/', label: 'Overview', icon: LayoutDashboard, stage: 'overview' },
+  { to: '/inventaire', label: 'Discovery', icon: ListChecks, stage: 'inventory' },
+  { to: '/audit', label: 'Finding analysis', icon: FileSearch, stage: 'audit' },
+  { to: '/remediation', label: 'Change sets', icon: Shield, stage: 'remediation' },
   {
     to: '/validation',
     label: 'Controls & validation',
     icon: ClipboardCheck,
+    stage: 'validation',
   },
-  { to: '/rapport', label: 'Comparison & report', icon: Sparkles },
+  { to: '/rapport', label: 'Comparison & report', icon: Sparkles, stage: 'report' },
 ] as const
 
-export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
+export function Sidebar({ busy, state, onStartGuidedDemo }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="brand-block">
@@ -50,19 +55,38 @@ export function Sidebar({ busy, onStartGuidedDemo }: SidebarProps) {
         <h2 id="sidebar-nav-title" className="sr-only">
           Workspace workflow
         </h2>
-        {navigation.map(({ to, label, icon: Icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={to === '/'}
-            className={({ isActive }) =>
-              `nav-link${isActive ? ' nav-link-active' : ''}`
-            }
-          >
-            <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
-            <span>{label}</span>
-          </NavLink>
-        ))}
+        {navigation.map(({ to, label, icon: Icon, stage }) => {
+          const step = selectWorkflowStep(state, stage as WorkflowStage)
+
+          if (step.status === 'locked') {
+            return (
+              <div
+                key={to}
+                className="nav-link nav-link-locked"
+                aria-disabled="true"
+                aria-label={`${label} — ${step.reason}`}
+              >
+                <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
+                <span>{label}</span>
+                <LockKeyhole aria-hidden="true" size={14} />
+              </div>
+            )
+          }
+
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              end={to === '/'}
+              className={({ isActive }) =>
+                `nav-link${isActive ? ' nav-link-active' : ''}${step.status === 'completed' ? ' nav-link-completed' : ''}`
+              }
+            >
+              <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
+              <span>{label}</span>
+            </NavLink>
+          )
+        })}
       </nav>
 
       <div className="sidebar-footer">

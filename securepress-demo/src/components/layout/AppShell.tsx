@@ -16,14 +16,18 @@ export function AppShell({
   onStartGuidedDemo,
   children,
 }: PropsWithChildren<AppShellProps>) {
-  const { busy } = useAssessment()
+  const { busy, state } = useAssessment()
   return (
     <>
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
       <div className="app-shell">
-        <Sidebar busy={busy} onStartGuidedDemo={onStartGuidedDemo} />
+        <Sidebar
+          busy={busy}
+          state={state}
+          onStartGuidedDemo={onStartGuidedDemo}
+        />
         <div className="app-content">
           <TopBar busy={busy} onReset={onReset} />
           <WorkspaceContextBar />

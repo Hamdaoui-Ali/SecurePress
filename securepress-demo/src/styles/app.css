@@ -206,6 +206,21 @@ textarea:focus-visible {
   border-color: #426393;
 }
 
+.nav-link-completed {
+  color: #d2deef;
+}
+
+.nav-link-locked {
+  cursor: not-allowed;
+  color: #7789a7;
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.nav-link-locked span {
+  flex: 1;
+}
+
 .sidebar-footer {
   display: grid;
   gap: 13px;
@@ -885,6 +900,44 @@ textarea:focus-visible {
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
 }
 
+.source-overview-summary,
+.overview-next-action {
+  display: grid;
+  gap: 8px;
+}
+
+.source-overview-summary strong {
+  color: var(--navy);
+  font-size: 1rem;
+}
+
+.source-overview-summary span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.source-overview-summary p,
+.overview-next-action p {
+  max-width: 62ch;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.overview-next-action-link {
+  width: fit-content;
+  margin-top: 7px;
+  text-decoration: none;
+}
+
+.overview-activity {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid var(--line);
+}
+
 .posture-layout {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -999,14 +1052,30 @@ textarea:focus-visible {
   color: var(--navy);
 }
 
+.workflow-step-completed .workflow-step-marker,
 .workflow-step-done .workflow-step-marker {
   color: var(--green);
   background: var(--green-soft);
   border-color: #bbf7d0;
 }
 
+.workflow-step-completed strong,
 .workflow-step-done strong {
   color: var(--green);
+}
+
+.workflow-step-available .workflow-step-marker {
+  color: var(--blue);
+  background: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.workflow-step-available strong {
+  color: var(--navy);
+}
+
+.workflow-step-locked {
+  opacity: 0.72;
 }
 
 .severity-strip {
@@ -1917,6 +1986,8 @@ textarea:focus-visible {
 
   .nav-link {
     flex: 0 0 auto;
+    min-width: max-content;
+    white-space: nowrap;
   }
 
   .sidebar-footer {

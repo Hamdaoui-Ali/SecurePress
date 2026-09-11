@@ -69,7 +69,7 @@ describe('assessment selectors', () => {
     })
     expect(selectWorkflowStep(state, 'audit')).toMatchObject({
       status: 'locked',
-      reason: 'Complete discovery first',
+      reason: 'discovery is complete',
     })
   })
 
