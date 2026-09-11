@@ -36,6 +36,27 @@ describe('assessment storage', () => {
     expect(loadAssessment()).toEqual({ status: 'restored', state })
   })
 
+  test('round-trips verified local source metadata', () => {
+    const state = {
+      ...createInitialAssessment(),
+      source: {
+        status: 'ready' as const,
+        mode: 'folder' as const,
+        pathLabel: 'C:\\SecurePress\\targets\\lnet-telco-wordpress',
+        displayName: 'lnet-telco-wordpress',
+        wordpressVersion: '6.4.3',
+        fileMarkerCount: 4,
+        pluginCount: 17,
+        themeCount: 4,
+        verifiedAt: '2026-09-11T10:00:00.000Z',
+        message: 'Local WordPress source verified',
+      },
+    }
+    saveAssessment(state)
+
+    expect(loadAssessment()).toEqual({ status: 'restored', state })
+  })
+
   beforeEach(() => {
     localStorage.clear()
   })

@@ -29,6 +29,30 @@ export type WorkflowStage =
   | 'validation'
   | 'report'
 
+export type SourceStatus = 'unconfigured' | 'checking' | 'ready' | 'invalid'
+
+export type SourceMode = 'folder' | 'prepared'
+
+export interface WorkspaceSource {
+  status: SourceStatus
+  mode: SourceMode | null
+  pathLabel: string
+  displayName: string
+  wordpressVersion: string | null
+  fileMarkerCount: number
+  pluginCount: number
+  themeCount: number
+  verifiedAt: string | null
+  message: string
+}
+
+export interface DirectoryHandleLike {
+  name: string
+  getFileHandle(name: string): Promise<unknown>
+  getDirectoryHandle(name: string): Promise<unknown>
+  entries?: () => AsyncIterable<[string, unknown]>
+}
+
 export type OperationKind =
   | 'discovery'
   | 'analysis'
@@ -121,6 +145,7 @@ export interface TimelineEvent {
 }
 
 export interface AssessmentState {
+  source: WorkspaceSource
   stage: WorkflowStage
   inventoryCompleted: boolean
   auditCompleted: boolean
@@ -134,8 +159,24 @@ export interface AssessmentState {
   operationHistory: OperationRun[]
 }
 
+export function createInitialWorkspaceSource(): WorkspaceSource {
+  return {
+    status: 'unconfigured',
+    mode: null,
+    pathLabel: '',
+    displayName: '',
+    wordpressVersion: null,
+    fileMarkerCount: 0,
+    pluginCount: 0,
+    themeCount: 0,
+    verifiedAt: null,
+    message: 'No local source registered',
+  }
+}
+
 export function createInitialAssessment(): AssessmentState {
   return {
+    source: createInitialWorkspaceSource(),
     stage: 'overview',
     inventoryCompleted: false,
     auditCompleted: false,

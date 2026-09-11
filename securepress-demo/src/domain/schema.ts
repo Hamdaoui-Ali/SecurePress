@@ -59,6 +59,19 @@ const OperationHistorySchema = z
       .slice(0, OPERATION_HISTORY_LIMIT),
   )
 
+export const WorkspaceSourceSchema = z.object({
+  status: z.enum(['unconfigured', 'checking', 'ready', 'invalid']),
+  mode: z.enum(['folder', 'prepared']).nullable(),
+  pathLabel: z.string(),
+  displayName: z.string(),
+  wordpressVersion: z.string().nullable(),
+  fileMarkerCount: z.number().int().nonnegative(),
+  pluginCount: z.number().int().nonnegative(),
+  themeCount: z.number().int().nonnegative(),
+  verifiedAt: IsoDateTimeSchema.nullable(),
+  message: z.string().min(1),
+})
+
 export const FindingSchema = z.object({
   id: z.string().regex(/^F-\d{3}$/),
   title: z.string().min(1),
@@ -127,6 +140,29 @@ export const ComponentRecordSchema = z.object({
 })
 
 export const AssessmentStateSchema = z.object({
+  source: WorkspaceSourceSchema.catch({
+    status: 'unconfigured',
+    mode: null,
+    pathLabel: '',
+    displayName: '',
+    wordpressVersion: null,
+    fileMarkerCount: 0,
+    pluginCount: 0,
+    themeCount: 0,
+    verifiedAt: null,
+    message: 'No local source registered',
+  }).default({
+    status: 'unconfigured',
+    mode: null,
+    pathLabel: '',
+    displayName: '',
+    wordpressVersion: null,
+    fileMarkerCount: 0,
+    pluginCount: 0,
+    themeCount: 0,
+    verifiedAt: null,
+    message: 'No local source registered',
+  }),
   stage: z.enum([
     'overview',
     'inventory',

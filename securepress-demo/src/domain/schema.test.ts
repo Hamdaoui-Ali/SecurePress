@@ -23,6 +23,20 @@ describe('AssessmentStateSchema', () => {
     expect(AssessmentStateSchema.parse(legacyState)).toMatchObject({
       lastRun: null,
       operationHistory: [],
+      source: { status: 'unconfigured', mode: null, pathLabel: '' },
+    })
+  })
+
+  test('recovers malformed source metadata without blocking application boot', () => {
+    const state = {
+      ...createInitialAssessment(),
+      source: { status: 'ready', pathLabel: 'C:\\tmp\\broken' },
+    }
+
+    expect(AssessmentStateSchema.parse(state).source).toMatchObject({
+      status: 'unconfigured',
+      mode: null,
+      pathLabel: '',
     })
   })
 })
