@@ -158,9 +158,9 @@ test('confirme un reset via la boîte de dialogue', async () => {
   )
 
   const dialog = screen.getByRole('dialog', { name: 'Reset workspace?' })
-  expect(within(dialog).getByRole('button', { name: 'Annuler' })).toBeVisible()
+  expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeVisible()
   await user.click(
-    within(dialog).getByRole('button', { name: 'Confirmer la réinitialisation' }),
+    within(dialog).getByRole('button', { name: 'Confirm reset' }),
   )
   expect(confirmed).toEqual([true])
 })
@@ -185,12 +185,12 @@ test('restores focus to the opener after the dialog stays open through a busy tr
 
   view.rerender(dialog(true, false))
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: 'Annuler' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus()
   })
 
   view.rerender(dialog(true, true))
   expect(
-    screen.getByRole('button', { name: 'Confirmer la réinitialisation' }),
+    screen.getByRole('button', { name: 'Confirm reset' }),
   ).toBeDisabled()
   view.rerender(dialog(true, false))
   view.rerender(dialog(false, false))

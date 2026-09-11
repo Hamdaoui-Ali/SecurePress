@@ -60,7 +60,7 @@ test('shows completed operation activity with the recorded timestamp and duratio
       completedAt: '2026-09-10T10:00:05.000Z',
       durationMs: 5_000,
       message: 'Discovery run completed · 22 components indexed',
-      currentStep: 'Component summary',
+      currentStep: 'Source inventory ready',
       processed: 22,
       total: 22,
     },

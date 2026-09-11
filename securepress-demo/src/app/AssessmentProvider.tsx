@@ -131,7 +131,7 @@ function pause(delayMs: number): Promise<void> {
 
 export function AssessmentProvider({
   children,
-  delayMs = 120,
+  delayMs = 200,
   now = () => new Date(),
 }: PropsWithChildren<AssessmentProviderProps>) {
   const [state, setState] = useState<AssessmentState>(() => {

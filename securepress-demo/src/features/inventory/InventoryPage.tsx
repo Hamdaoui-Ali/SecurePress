@@ -3,6 +3,7 @@ import { useAssessment } from '../../app/AssessmentProvider'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { telcoScenario } from '../../data/scenario'
+import { selectVisibleComponents } from '../../domain/operation-view'
 import { ComponentTable } from './ComponentTable'
 import { InventoryProgress } from './InventoryProgress'
 
@@ -11,6 +12,12 @@ export function InventoryPage() {
   const completed = state.inventoryCompleted
   const isDiscovering = busy && activeOperation?.kind === 'discovery'
   const componentCount = telcoScenario.inventory.components.length
+  const visibleComponents = selectVisibleComponents(
+    telcoScenario.inventory.components,
+    activeOperation,
+    progress,
+    completed,
+  )
 
   return (
     <div className="page-stack">
@@ -65,12 +72,18 @@ export function InventoryPage() {
         />
       </Card>
 
-      {completed ? (
+      {completed || isDiscovering ? (
         <Card title="Indexed components" eyebrow="SOURCE PACKAGE">
           <p className="inventory-truth">
-            Presence in the package does not establish activation or exposure.
+            {isDiscovering
+              ? `Indexing ${visibleComponents.length} of ${componentCount} components from the local source.`
+              : 'Presence in the package does not establish activation or exposure.'}
           </p>
-          <ComponentTable components={telcoScenario.inventory.components} />
+          {visibleComponents.length > 0 ? (
+            <ComponentTable components={visibleComponents} />
+          ) : (
+            <p className="empty-state">Preparing the component index…</p>
+          )}
         </Card>
       ) : (
         <Card title="Component index pending" eyebrow="NEXT ACTION">

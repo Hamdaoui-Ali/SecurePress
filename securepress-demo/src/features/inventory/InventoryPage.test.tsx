@@ -29,16 +29,13 @@ test('runs discovery with phase progress and waits to expose the indexed table',
     expect(discoveryButton).toHaveAttribute('aria-busy', 'true')
     expect(liveProgress).toBeVisible()
     expect(liveProgress).toHaveTextContent(
-      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Preparing source package|Indexing .+|Source inventory ready/,
     )
   }, { timeout: 10_000 })
 
-  await waitFor(
-    () => {
-      expect(screen.getByText('Workspace ready')).toBeVisible()
-    },
-    { timeout: 10_000 },
-  )
+  await waitFor(() => expect(screen.getByRole('table')).toBeVisible(), { timeout: 20_000 })
+  expect(screen.getByText(/Indexing \d+ of 22 components from the local source/)).toBeVisible()
+  await waitFor(() => expect(screen.getByText('Workspace ready')).toBeVisible(), { timeout: 20_000 })
   expect(screen.getByText('22 components indexed')).toBeVisible()
   expect(screen.getByRole('table')).toBeVisible()
   expect(document.body.textContent).not.toMatch(/demo|simul/i)
@@ -62,7 +59,7 @@ test('keeps indexed components available while a repeated discovery shows progre
     expect(discoveryButton).toHaveAttribute('aria-busy', 'true')
     expect(liveProgress).toBeVisible()
     expect(liveProgress).toHaveTextContent(
-      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Preparing source package|Indexing .+|Source inventory ready/,
     )
   }, { timeout: 10_000 })
   expect(screen.getByRole('table')).toBeVisible()

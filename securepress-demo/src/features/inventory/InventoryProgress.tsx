@@ -1,14 +1,4 @@
 import type { ProgressUpdate } from '../../services/simulation-engine'
-import { project } from '../../data/project'
-
-const steps = [
-  `Read ${project.name} source package`,
-  'Index WordPress core',
-  'Inventory themes',
-  'Inventory plugins',
-  'Review configuration',
-  'Component summary',
-]
 
 interface InventoryProgressProps {
   completed: boolean
@@ -34,21 +24,13 @@ export function InventoryProgress({
         <strong>{liveMessage}</strong>
         {progress && running ? <span>{progress.percent}%</span> : null}
       </div>
-      <ol className="inventory-step-list">
-        {steps.map((step, index) => (
-          <li
-            key={step}
-            className={
-              completed || (running && (progress?.percent ?? 0) >= (index + 1) * 15)
-                ? 'inventory-step inventory-step-done'
-                : 'inventory-step'
-            }
-          >
-            <span>{index + 1}</span>
-            {step}
-          </li>
-        ))}
-      </ol>
+      <div className="inventory-progress-count">
+        {running && progress
+          ? `${progress.processed} of ${progress.total} components processed`
+          : completed
+            ? '22 of 22 components processed'
+            : 'No components indexed yet'}
+      </div>
     </div>
   )
 }

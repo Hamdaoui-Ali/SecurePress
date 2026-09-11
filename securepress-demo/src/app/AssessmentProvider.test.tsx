@@ -89,7 +89,7 @@ async function waitForStage(stage: string) {
   await waitFor(() => {
     expect(screen.getByTestId('stage')).toHaveTextContent(stage)
     expect(screen.getByTestId('busy')).toHaveTextContent('false')
-  }, { timeout: 3_000 })
+  }, { timeout: 10_000 })
 }
 
 beforeEach(() => {
@@ -114,7 +114,7 @@ test('exposes a running discovery operation and persists its completed metadata'
   await waitFor(() => {
     expect(screen.getByTestId('busy')).toHaveTextContent('true')
     expect(screen.getByTestId('progress')).toHaveTextContent(
-      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Preparing source package|Indexing .+|Source inventory ready/,
     )
     expect(
       readJson<{
@@ -128,7 +128,7 @@ test('exposes a running discovery operation and persists its completed metadata'
       kind: 'discovery',
       status: 'running',
       currentStep: expect.stringMatching(
-      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Preparing source package|Indexing .+|Source inventory ready/,
       ),
       processed: 0,
       total: 22,
@@ -156,7 +156,7 @@ test('exposes a running discovery operation and persists its completed metadata'
     completedAt: '2026-09-10T10:00:05.000Z',
     durationMs: 5_000,
     message: 'Discovery run completed \u00b7 22 components indexed',
-    currentStep: 'Component summary',
+    currentStep: 'Source inventory ready',
     processed: 22,
     total: 22,
   })
@@ -186,7 +186,7 @@ test('reruns completed discovery with progress and records a new completed opera
   await waitFor(() => {
     expect(screen.getByTestId('busy')).toHaveTextContent('true')
     expect(screen.getByTestId('progress')).toHaveTextContent(
-      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Preparing source package|Indexing .+|Source inventory ready/,
     )
   }, { timeout: 5_000 })
   await waitFor(() => {

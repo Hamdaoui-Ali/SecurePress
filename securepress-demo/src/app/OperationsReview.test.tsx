@@ -6,6 +6,7 @@ import App from './App'
 import { AssessmentProvider, useAssessment, type AssessmentContextValue } from './AssessmentProvider'
 import { createInitialAssessment } from '../domain/models'
 import { saveAssessment, STORAGE_KEY } from '../services/storage'
+import { getPreparedSource } from '../services/source-adapter'
 import { GuidedDemo } from '../components/workflow/GuidedDemo'
 
 let assessment: AssessmentContextValue
@@ -22,6 +23,11 @@ function Probe() {
 
 beforeEach(() => {
   localStorage.clear()
+  const initial = createInitialAssessment()
+  saveAssessment({
+    ...initial,
+    source: getPreparedSource('C:\\SecurePress\\targets\\lnet-telco-wordpress', new Date('2026-09-11T10:00:00.000Z')),
+  })
   vi.useFakeTimers()
 })
 afterEach(() => vi.useRealTimers())
@@ -139,7 +145,7 @@ test.each(['reset', 'guided-start'] as const)('disables %s and its already-open 
   const guidedStart = screen.getByRole('button', { name: 'Démarrer le parcours guidé' })
   fireEvent.click(action === 'reset' ? reset : guidedStart)
   const dialog = screen.getByRole('dialog')
-  const confirmation = within(dialog).getByRole('button', { name: 'Confirmer la réinitialisation' })
+  const confirmation = within(dialog).getByRole('button', { name: 'Confirm reset' })
   // An operation can start after the dialog opens: exercise that race directly.
   fireEvent.click(screen.getByRole('button', { name: 'Run discovery' }))
   expect(screen.getByRole('progressbar', { name: 'Discovery run progress' })).toBeVisible()
@@ -154,7 +160,7 @@ test.each(['reset', 'guided-start'] as const)('disables %s and its already-open 
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).inventoryCompleted).toBe(true)
   fireEvent.click(confirmation)
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-  expect(window.location.hash).toBe('#/')
+  expect(window.location.hash).toBe(action === 'reset' ? '#/setup' : '#/')
   if (action === 'reset') expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
   else expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!)).toMatchObject({ guidedStep: 0, inventoryCompleted: false })
 })

@@ -82,12 +82,6 @@ async function runPhases<T>(
   throw new Error('PHASES_REQUIRED')
 }
 
-function countComponents(type: 'core' | 'theme' | 'plugin'): number {
-  return telcoScenario.inventory.components.filter(
-    (component) => component.type === type,
-  ).length
-}
-
 export function createSimulationEngine(
   options: SimulationOptions,
 ): SimulationEngine {
@@ -95,39 +89,22 @@ export function createSimulationEngine(
   const onProgress = options.onProgress ?? (() => undefined)
 
   async function runInventory(state: AssessmentState): Promise<AssessmentState> {
-    const coreCount = countComponents('core')
-    const themeCount = countComponents('theme')
     const componentTotal = telcoScenario.inventory.components.length
 
     return runPhases(
       [
         {
-          step: `Read ${telcoScenario.project.name} source package`,
+          step: 'Preparing source package',
           processed: 0,
           total: componentTotal,
         },
-        {
-          step: 'Index WordPress core',
-          processed: coreCount,
+        ...telcoScenario.inventory.components.map((component, index) => ({
+          step: `Indexing ${component.name}`,
+          processed: index + 1,
           total: componentTotal,
-        },
+        })),
         {
-          step: 'Inventory themes',
-          processed: coreCount + themeCount,
-          total: componentTotal,
-        },
-        {
-          step: 'Inventory plugins',
-          processed: componentTotal,
-          total: componentTotal,
-        },
-        {
-          step: 'Review configuration',
-          processed: componentTotal,
-          total: componentTotal,
-        },
-        {
-          step: 'Component summary',
+          step: 'Source inventory ready',
           processed: componentTotal,
           total: componentTotal,
         },
@@ -148,30 +125,16 @@ export function createSimulationEngine(
     if (!state.inventoryCompleted) throw new Error('INVENTORY_REQUIRED')
 
     const findingTotal = telcoScenario.findings.length
-    const observedEvidenceCount = telcoScenario.findings.filter(
-      (finding) => finding.evidenceStatus === 'observed_in_snapshot',
-    ).length
-    const correlatedFindingCount = telcoScenario.findings.filter((finding) =>
-      telcoScenario.remediations.some(
-        (remediation) => remediation.findingId === finding.id,
-      ),
-    ).length
-
     return runPhases(
       [
-        { step: 'Load findings', processed: 0, total: findingTotal },
-        {
-          step: 'Analyze evidence',
-          processed: observedEvidenceCount,
+        { step: 'Preparing finding analysis', processed: 0, total: findingTotal },
+        ...telcoScenario.findings.map((finding, index) => ({
+          step: `Qualifying ${finding.id}`,
+          processed: index + 1,
           total: findingTotal,
-        },
+        })),
         {
-          step: 'Correlate risk and remediation',
-          processed: correlatedFindingCount,
-          total: findingTotal,
-        },
-        {
-          step: 'Complete finding analysis',
+          step: 'Finding analysis ready',
           processed: findingTotal,
           total: findingTotal,
         },

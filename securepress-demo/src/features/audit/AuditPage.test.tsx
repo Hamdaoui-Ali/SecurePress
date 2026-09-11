@@ -54,11 +54,12 @@ test('runs finding analysis with phase progress before exposing findings', async
     expect(screen.getByRole('button', { name: 'Finding analysis in progress' })).toBeDisabled()
     expect(
       screen.getByText(
-        /Load findings|Analyze evidence|Correlate risk and remediation|Complete finding analysis/,
+        /Preparing finding analysis|Qualifying F-\d{3}|Finding analysis ready/,
       ),
     ).toBeVisible()
   }, { timeout: 5_000 })
-  expect(screen.queryByRole('table')).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.getByRole('table')).toBeVisible(), { timeout: 10_000 })
+  expect(screen.getByText(/of 10 findings processed/)).toBeVisible()
 
   await waitFor(
     () => {
@@ -86,7 +87,7 @@ test('keeps qualified findings available while repeated analysis shows progress'
     expect(screen.getByRole('button', { name: 'Finding analysis in progress' })).toBeDisabled()
     expect(
       screen.getByText(
-        /Load findings|Analyze evidence|Correlate risk and remediation|Complete finding analysis/,
+        /Preparing finding analysis|Qualifying F-\d{3}|Finding analysis ready/,
       ),
     ).toBeVisible()
   }, { timeout: 5_000 })

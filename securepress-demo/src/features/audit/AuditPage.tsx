@@ -4,6 +4,7 @@ import { useAssessment } from '../../app/AssessmentProvider'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { telcoScenario } from '../../data/scenario'
+import { selectVisibleFindings } from '../../domain/operation-view'
 import type { Finding } from '../../domain/models'
 import { selectSeverityCounts } from '../../domain/selectors'
 import { AuditProgress } from './AuditProgress'
@@ -22,10 +23,15 @@ export function AuditPage() {
   const returnFocusRef = useRef<HTMLElement | null>(null)
 
   const counts = selectSeverityCounts(telcoScenario)
+  const isAnalyzing = busy && activeOperation?.kind === 'analysis'
+  const visibleFindings = selectVisibleFindings(
+    telcoScenario.findings,
+    activeOperation,
+    progress,
+    state.auditCompleted,
+  )
   const findings = useMemo(() => {
-    if (!state.auditCompleted) return []
-
-    return telcoScenario.findings.filter((finding) => {
+    return visibleFindings.filter((finding) => {
       const query = filters.query.trim().toLowerCase()
       const matchesQuery =
         query.length === 0 ||
@@ -43,7 +49,7 @@ export function AuditPage() {
 
       return matchesQuery && matchesSeverity && matchesEvidence && matchesRemediation
     })
-  }, [filters, state.appliedFindingIds, state.auditCompleted])
+  }, [filters, state.appliedFindingIds, visibleFindings])
 
   const selectedFinding = selectedFindingId
     ? telcoScenario.findings.find((finding) => finding.id === selectedFindingId) ?? null
@@ -60,8 +66,6 @@ export function AuditPage() {
     : []
 
   const canAudit = state.inventoryCompleted
-  const isAnalyzing = busy && activeOperation?.kind === 'analysis'
-
   return (
     <div className="page-stack">
       <div className="page-heading page-heading-with-action">
@@ -110,15 +114,17 @@ export function AuditPage() {
         />
       </Card>
 
-      {state.auditCompleted ? (
+      {state.auditCompleted || isAnalyzing ? (
         <>
-          <div className="finding-count-grid" aria-label="Finding severity distribution">
-            <div><strong>{counts.critical} critical</strong></div>
-            <div><strong>{counts.high} high</strong></div>
-            <div><strong>{counts.medium} medium</strong></div>
-            <div><strong>{counts.low} low</strong></div>
-            <div><strong>{counts.variable} variable</strong></div>
-          </div>
+          {!isAnalyzing || visibleFindings.length > 0 ? (
+            <div className="finding-count-grid" aria-label="Finding severity distribution">
+              <div><strong>{counts.critical} critical</strong></div>
+              <div><strong>{counts.high} high</strong></div>
+              <div><strong>{counts.medium} medium</strong></div>
+              <div><strong>{counts.low} low</strong></div>
+              <div><strong>{counts.variable} variable</strong></div>
+            </div>
+          ) : null}
 
           <Card title="Qualified findings" eyebrow="FILTERS">
             <FindingFilters
@@ -126,15 +132,19 @@ export function AuditPage() {
               onChange={setFilters}
               onClear={() => setFilters(initialFindingFilters)}
             />
-            <FindingTable
-              findings={findings}
-              appliedFindingIds={state.appliedFindingIds}
-              onSelect={(finding, trigger) => {
-                returnFocusRef.current = trigger
-                setSelectedFindingId(finding.id)
-              }}
-            />
-            {findings.length === 0 ? (
+            {findings.length > 0 || state.auditCompleted ? (
+              <FindingTable
+                findings={findings}
+                appliedFindingIds={state.appliedFindingIds}
+                onSelect={(finding, trigger) => {
+                  returnFocusRef.current = trigger
+                  setSelectedFindingId(finding.id)
+                }}
+              />
+            ) : (
+              <p className="empty-state">Qualifying findings…</p>
+            )}
+            {state.auditCompleted && findings.length === 0 ? (
               <p className="empty-state">No findings match these filters.</p>
             ) : null}
           </Card>

@@ -22,6 +22,9 @@ export function AuditProgress({
       <span className="progress-pulse" aria-hidden="true" />
       <strong>{message}</strong>
       {running && progress ? <span>{progress.percent}%</span> : null}
+      {running && progress ? (
+        <span>{progress.processed} of {progress.total} findings processed</span>
+      ) : null}
     </div>
   )
 }

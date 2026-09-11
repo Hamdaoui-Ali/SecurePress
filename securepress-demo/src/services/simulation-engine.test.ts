@@ -96,33 +96,40 @@ describe('simulation engine', () => {
     const afterInventory = await engine.runInventory(createInitialAssessment())
 
     expectPhasedProgress(progressUpdates, [
-      'Read LNET TELCO source package',
-      'Index WordPress core',
-      'Inventory themes',
-      'Inventory plugins',
-      'Review configuration',
-      'Component summary',
+      'Preparing source package',
+      ...telcoScenario.inventory.components.map((component) => `Indexing ${component.name}`),
+      'Source inventory ready',
     ])
     expect(progressUpdates.map((update) => update.processed)).toEqual([
       0,
-      1,
-      5,
-      22,
-      22,
+      ...telcoScenario.inventory.components.map((_, index) => index + 1),
       22,
     ])
-    expect(progressUpdates.map((update) => update.total)).toEqual([
-      22,
-      22,
-      22,
-      22,
-      22,
-      22,
-    ])
+    expect(progressUpdates.every((update) => update.total === 22)).toBe(true)
     expect(afterInventory).toMatchObject({
       stage: 'inventory',
       inventoryCompleted: true,
     })
+  })
+
+  test('emits preparation, one update per component, and a discovery summary', async () => {
+    const progressUpdates: ProgressUpdate[] = []
+    await createEngine(progressUpdates).runInventory(createInitialAssessment())
+
+    expect(progressUpdates[0]).toMatchObject({
+      step: 'Preparing source package',
+      processed: 0,
+      total: telcoScenario.inventory.components.length,
+    })
+    expect(progressUpdates.slice(1, -1).map((update) => update.step)).toEqual(
+      telcoScenario.inventory.components.map((component) => `Indexing ${component.name}`),
+    )
+    expect(progressUpdates.at(-1)).toMatchObject({
+      step: 'Source inventory ready',
+      processed: telcoScenario.inventory.components.length,
+      total: telcoScenario.inventory.components.length,
+    })
+    expect(progressUpdates.every((update, index) => index === 0 || update.percent >= progressUpdates[index - 1]!.percent)).toBe(true)
   })
 
   test('emits ordered analysis phases before exposing findings', async () => {
@@ -137,14 +144,40 @@ describe('simulation engine', () => {
     const afterAudit = await analysisEngine.runStaticAudit(afterInventory)
 
     expectPhasedProgress(analysisUpdates, [
-      'Load findings',
-      'Analyze evidence',
-      'Correlate risk and remediation',
-      'Complete finding analysis',
+      'Preparing finding analysis',
+      ...telcoScenario.findings.map((finding) => `Qualifying ${finding.id}`),
+      'Finding analysis ready',
     ])
-    expect(analysisUpdates.map((update) => update.processed)).toEqual([0, 5, 10, 10])
-    expect(analysisUpdates.map((update) => update.total)).toEqual([10, 10, 10, 10])
+    expect(analysisUpdates.map((update) => update.processed)).toEqual([
+      0,
+      ...telcoScenario.findings.map((_, index) => index + 1),
+      10,
+    ])
+    expect(analysisUpdates.every((update) => update.total === 10)).toBe(true)
     expect(afterAudit.visibleFindingIds).toHaveLength(10)
+  })
+
+  test('emits preparation, one update per finding, and an analysis summary', async () => {
+    const progressUpdates: ProgressUpdate[] = []
+    const engine = createEngine(progressUpdates)
+    const inventory = await engine.runInventory(createInitialAssessment())
+
+    progressUpdates.length = 0
+    await engine.runStaticAudit(inventory)
+
+    expect(progressUpdates[0]).toMatchObject({
+      step: 'Preparing finding analysis',
+      processed: 0,
+      total: telcoScenario.findings.length,
+    })
+    expect(progressUpdates.slice(1, -1).map((update) => update.step)).toEqual(
+      telcoScenario.findings.map((finding) => `Qualifying ${finding.id}`),
+    )
+    expect(progressUpdates.at(-1)).toMatchObject({
+      step: 'Finding analysis ready',
+      processed: telcoScenario.findings.length,
+      total: telcoScenario.findings.length,
+    })
   })
 
   test('emits change-set phases using the selected finding dependencies', async () => {
@@ -178,12 +211,9 @@ describe('simulation engine', () => {
     const afterDiscoveryRerun = await engine.runInventory(remediated)
 
     expectPhasedProgress(progressUpdates, [
-      'Read LNET TELCO source package',
-      'Index WordPress core',
-      'Inventory themes',
-      'Inventory plugins',
-      'Review configuration',
-      'Component summary',
+      'Preparing source package',
+      ...telcoScenario.inventory.components.map((component) => `Indexing ${component.name}`),
+      'Source inventory ready',
     ])
     expect(afterDiscoveryRerun).not.toBe(remediated)
     expect(afterDiscoveryRerun).toMatchObject({
@@ -196,10 +226,9 @@ describe('simulation engine', () => {
     const afterAnalysisRerun = await engine.runStaticAudit(afterDiscoveryRerun)
 
     expectPhasedProgress(progressUpdates, [
-      'Load findings',
-      'Analyze evidence',
-      'Correlate risk and remediation',
-      'Complete finding analysis',
+      'Preparing finding analysis',
+      ...telcoScenario.findings.map((finding) => `Qualifying ${finding.id}`),
+      'Finding analysis ready',
     ])
     expect(afterAnalysisRerun).not.toBe(afterDiscoveryRerun)
     expect(afterAnalysisRerun).toMatchObject({

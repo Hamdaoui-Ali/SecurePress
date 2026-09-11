@@ -93,7 +93,7 @@ test('renders provider-backed discovery progress while an operation is running',
   expect(screen.getByText('Discovery run in progress')).toBeVisible()
   expect(
     screen.getByText(
-      /Read LNET TELCO source package|Index WordPress core|Inventory themes|Inventory plugins|Review configuration|Component summary/,
+      /Preparing source package|Indexing .+|Source inventory ready/,
     ),
   ).toBeVisible()
   expect(screen.getByText(/of 22 processed/)).toBeVisible()
