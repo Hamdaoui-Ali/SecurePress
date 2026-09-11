@@ -98,7 +98,7 @@ export interface ValidationCheck {
 
 export interface ProjectRecord {
   id: 'TELCO-AUDIT-2026'
-  name: 'TELCO'
+  name: 'LNET TELCO'
   wordpressVersion: '6.4.3'
 }
 

@@ -165,7 +165,7 @@ export const AssessmentStateSchema = z.object({
 export const ScenarioSchema = z.object({
   project: z.object({
     id: z.literal('TELCO-AUDIT-2026'),
-    name: z.literal('TELCO'),
+    name: z.literal('LNET TELCO'),
     wordpressVersion: z.literal('6.4.3'),
   }),
   inventory: z.object({

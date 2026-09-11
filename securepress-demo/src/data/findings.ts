@@ -1,4 +1,5 @@
 import type { Finding } from '../domain/models'
+import { project } from './project'
 
 export const findings: Finding[] = [
   {
@@ -11,7 +12,7 @@ export const findings: Finding[] = [
     evidenceStatus: 'observed_in_snapshot',
     exposure: 'Privilèges potentiellement trop larges pour l’application.',
     impact: 'Une compromission applicative peut étendre son impact à la base.',
-    recommendation: 'Utiliser un compte dédié limité au périmètre TELCO.',
+    recommendation: `Utiliser un compte dédié limité au périmètre ${project.name}.`,
     remediationId: 'R-001',
     validationIds: ['V-DB-ACCOUNT'],
     sourceNote: 'Constat direct dans la copie hors production.',

@@ -1,3 +1,5 @@
+import { project } from './project'
+
 export const guidedSteps = [
   'overview',
   'run-inventory',
@@ -23,13 +25,13 @@ export const guidedStepDetails: Record<GuidedStep, GuidedStepDetail> = {
     route: '/',
     targetId: 'overview',
     title: 'Review workspace posture',
-    description: 'Start from the indexed TELCO evidence and the calculated 42/100 posture.',
+    description: `Start from the indexed ${project.name} evidence and the calculated 42/100 posture.`,
   },
   'run-inventory': {
     route: '/inventaire',
     targetId: 'run-inventory',
     title: 'Run discovery',
-    description: 'Index the TELCO source package without inferring component activation on a target.',
+    description: `Index the ${project.name} source package without inferring component activation on a target.`,
   },
   'run-audit': {
     route: '/audit',
