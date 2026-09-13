@@ -2552,9 +2552,16 @@ textarea:focus-visible {
 }
 
 .report-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
   flex: 0 0 auto;
   align-items: center;
+  gap: 12px;
+}
+
+.report-actions .button {
+  min-height: 44px;
+  padding-inline: 16px;
 }
 
 .report-pending-state {
@@ -2890,6 +2897,11 @@ textarea:focus-visible {
   .report-section-heading {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .report-actions {
+    width: 100%;
+    grid-template-columns: 1fr;
   }
 
   .report-summary-grid {
