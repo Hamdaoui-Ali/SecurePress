@@ -796,6 +796,14 @@ textarea:focus-visible {
   gap: 24px;
 }
 
+.page-heading-with-action > .button {
+  flex: 0 0 auto;
+  min-width: 190px;
+  min-height: 44px;
+  padding-inline: 18px;
+  white-space: nowrap;
+}
+
 .page-heading > p:last-child,
 .muted-copy {
   max-width: 72ch;
