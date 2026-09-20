@@ -114,4 +114,3 @@
 - [ ] **Step 4: Self-review the guide against the Review Focus.**
 
   Re-read the guide for overclaiming, stale numbers, ambiguous KPI language, missing client explanation, and broken relative paths; correct any issue before handoff.
-
