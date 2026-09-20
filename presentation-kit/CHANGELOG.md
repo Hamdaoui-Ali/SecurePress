@@ -28,4 +28,5 @@
 
 - 17 images PNG rendues et inspectées visuellement; montage disponible dans `qa-improved/montage.png`.
 - Export PPTX et PDF vérifiés après génération; les notes orateur sont intégrées au PPTX.
-- Sorties finales : `SecurePress-soutenance-improved.pptx` et `SecurePress-soutenance-improved.pdf`.
+- Sortie publiée dans cette branche : `SecurePress-soutenance-improved.pdf`.
+- La source éditable améliorée `SecurePress-soutenance-improved.pptx` (415,53 MiB) reste conservée localement, hors du push GitHub pour éviter un artefact trop volumineux.
