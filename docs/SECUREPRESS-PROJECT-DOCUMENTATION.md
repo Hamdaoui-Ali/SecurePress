@@ -871,8 +871,10 @@ SecurePress/
 │   ├── package.json                           Commands and dependencies
 │   └── vite.config.ts                         Vite/Vitest configuration
 ├── presentation-kit/                          Demo deck and QA exports
-├── Rapport-PFE-LNET.pdf                       Supporting report artifact
-└── SecurePress-presentation-kit-backup.zip    Supporting backup artifact
+├── project-artifacts/
+│   ├── Rapport-PFE-LNET.pdf                   Supporting report artifact
+│   ├── SecurePress-presentation-kit-backup.zip Supporting backup artifact
+│   └── README.md                              Artifact inventory and integrity checks
 ```
 
 ### 19.2 Source-of-truth rules

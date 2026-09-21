@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-This brief is derived from `Rapport-PFE-LNET.pdf` (117 pages, scanned) and the local SecurePress demo project in `securepress-demo/`. The PDF remains the authoritative source for the thesis facts. The UI screenshots are evidence of the demo application's local presentation flow, not evidence of a production scan.
+This brief is derived from `project-artifacts/Rapport-PFE-LNET.pdf` (117 pages, scanned) and the local SecurePress demo project in `securepress-demo/`. The PDF remains the authoritative source for the thesis facts. The UI screenshots are evidence of the demo application's local presentation flow, not evidence of a production scan.
 
 ## Defense framing
 
